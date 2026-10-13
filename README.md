@@ -4,8 +4,10 @@ A web interface for monitoring and remote-controlling game servers at LAN partie
 server on one dashboard, change the map, restart a match and manage players without logging
 into each machine.
 
-> **Status: early development.** The repository currently contains the project foundation
-> (tooling, documentation, CI). There is nothing to install or run yet. Progress is tracked in
+> **Status: early development.** The core is in place: accounts, server management, live
+> dashboard, map changes and restarts, map images and distribution packages. What is still
+> missing is the reason to use it: **no real game is supported yet**, only a simulated demo
+> server. Counter-Strike, Trackmania and Unreal Tournament come next. Progress is tracked in
 > [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## What LANPilot will do
@@ -46,6 +48,10 @@ into each machine.
 
 ## Documentation
 
+- [docs/installation.md](docs/installation.md) – packages, first start, backup, upgrade
+- [docs/configuration.md](docs/configuration.md) – all settings, accounts and roles
+- [docs/reverse-proxy.md](docs/reverse-proxy.md) – Nginx, Caddy, Traefik, or none
+- [docs/adapters.md](docs/adapters.md) – adding support for a game
 - [docs/ROADMAP.md](docs/ROADMAP.md) – phases, numbered steps and current status
 - [docs/architecture.md](docs/architecture.md) – how LANPilot is built
 - [docs/research/](docs/research/) – protocol and map image research notes

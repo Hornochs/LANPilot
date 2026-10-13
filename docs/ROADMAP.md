@@ -10,8 +10,8 @@ _Last updated: 2026-10-13_
 
 | Phase | State |
 |---|---|
-| 0 – Foundation | done locally; workflows not yet run on GitHub |
-| 1 – Core and release pipeline | in progress |
+| 0 – Foundation | done |
+| 1 – Core and release pipeline | done |
 | 2 – Counter-Strike | not started |
 | 3 – Trackmania | not started |
 | 4 – Unreal Tournament | not started |
@@ -20,15 +20,16 @@ _Last updated: 2026-10-13_
 | 7 – More games | not started |
 | 8 – Hardening and 1.0 | not started |
 
-**Done:** 0.1–0.5, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8. Lint, type check, tests, wheel build and the secret scan pass
-locally. The GitHub workflows (`ci.yml`, `security.yml`) have been syntax-checked only; their
-first real run happens with the first push. The same holds for `release.yml`: the packages
-build locally, but their install scripts have only been syntax-checked.
+**Done:** 0.1–0.5 and 1.1–1.9, which completes phases 0 and 1.
+
+**Verified:** lint, type check and tests pass locally and in CI. The package workflow built
+all seven distribution packages and ran the install, upgrade, reinstall and removal test for
+each of them successfully (2026-10-13, in a private fork). CodeQL and dependency review are
+skipped while the repository is private; they need a public repository.
 
 **In progress:** –
 
-**Next:** 1.9 (documentation: installation, configuration, reverse proxy, writing an
-adapter)
+**Next:** 2.1 (GoldSrc RCON transport), the start of Counter-Strike support.
 
 **Open questions:** see [Open points](#open-points).
 
@@ -93,7 +94,7 @@ adapter)
   credential encryption key (`lanpilot secret generate-key --output /etc/lanpilot/secret.key`)
   if none exists; an upgrade or reinstall never replaces an existing key. Removing the package
   keeps key, configuration and data; only a purge deletes them.
-- **1.9** Documentation: installation, configuration, reverse proxy (Nginx, Caddy, Traefik,
+- **1.9** ✔ Documentation: installation, configuration, reverse proxy (Nginx, Caddy, Traefik,
   no proxy), "writing an adapter".
 
 ### Phase 2 – Counter-Strike (high priority, v0.2)

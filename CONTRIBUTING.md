@@ -100,8 +100,8 @@ the same license.
 A game is supported through an *adapter*: a class that declares its capabilities (status,
 map list, map change, restart, players, console) and a connection schema from which the
 "add server" form is generated. The interface is described in
-[docs/architecture.md](docs/architecture.md#adapter-interface). A step-by-step guide follows
-with roadmap step 1.9.
+[docs/architecture.md](docs/architecture.md#adapter-interface), and
+[docs/adapters.md](docs/adapters.md) walks through a complete adapter with its test.
 
 What a good adapter contribution contains:
 

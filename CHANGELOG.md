@@ -37,6 +37,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Packages for Debian, Ubuntu, Fedora, Rocky Linux and Arch that contain the complete Python
   environment and install without internet access; they create the service user and the
   encryption key and keep key, configuration and data across upgrades and removal.
+- Documentation for installation, configuration, reverse proxies and writing a game adapter.
 - Server-sent events that tell open pages when a server's state changed.
 - Encryption of game server credentials with a key outside the database
   (`secret_key` / `secret_key_file`, `lanpilot secret generate-key`); known secrets are

@@ -4,10 +4,10 @@ This document describes how LANPilot is built. It is the reference to read befor
 the code, and it is updated in every change that alters structure, interfaces or the data
 model.
 
-> **Implementation state:** the project is in Phase 1 (see [ROADMAP.md](ROADMAP.md)).
-> Configuration, database, migrations, the CLI, accounts, sessions and the request checks
-> exist. Everything else below is the **target design**; each section carries a state marker that is changed to
-> "implemented" together with the code.
+> **Implementation state:** phases 0 and 1 are complete (see [ROADMAP.md](ROADMAP.md)): the
+> whole core exists, with a simulated demo server as the only game. Sections about real
+> games, online image sources and the LAN scan are still the **target design**; each section
+> carries a state marker that is changed to "implemented" together with the code.
 
 ## Overview
 
@@ -602,9 +602,9 @@ _State: planned; each mechanism lands with the step named in brackets._
 
 ## Packaging
 
-_State: implemented (step 1.8) in `packaging/` and `.github/workflows/release.yml`. All three
-formats build locally and LANPilot runs from the unpacked `.deb`; the install scripts and
-the workflow itself have not run yet, which needs the first push._
+_State: implemented (step 1.8) in `packaging/` and `.github/workflows/release.yml`. The
+workflow has built every package and passed the install, upgrade and removal test on all
+seven distributions._
 
 **One description, three formats.** `packaging/build.sh <deb|rpm|archlinux> <wheel>` builds
 a package with [nfpm](https://nfpm.goreleaser.com) from `packaging/nfpm.yaml.in`.

@@ -15,12 +15,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # CodeQL and dependency review are GitHub features that exist for public repositories
+  # and, in private ones, only with GitHub Advanced Security. In a private repository
+  # without it they cannot work, so they are skipped there instead of failing every run.
   codeql:
     name: CodeQL
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       security-events: write
+      actions: read # lets the action read its own workflow run
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -36,7 +41,9 @@ jobs:
 
   dependency-review:
     name: Dependency review
-    if: github.event_name == 'pull_request'
+    # Also needs the dependency graph, which is off by default in forks
+    # (Settings → Advanced Security).
+    if: ${{ github.event_name == 'pull_request' && !github.event.repository.private }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

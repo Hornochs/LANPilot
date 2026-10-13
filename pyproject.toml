@@ -35,6 +35,7 @@ dependencies = [
   "cryptography>=42",
   "fastapi>=0.115",
   "jinja2>=3.1",
+  "opengsq>=3.7",
   "pillow>=10.3",
   "python-multipart>=0.0.18",
   "sqlalchemy[asyncio]>=2.0.30",
@@ -58,6 +59,7 @@ lanpilot = "lanpilot.cli:main"
 # Game adapters are discovered through this entry point group; third-party packages add
 # their own entries to it.
 [project.entry-points."lanpilot.adapters"]
+cs16 = "lanpilot.games.counterstrike.goldsrc:CounterStrike16Adapter"
 demo = "lanpilot.games.demo:DemoAdapter"
 
 [project.urls]
@@ -108,6 +110,11 @@ python_version = "3.11"
 strict = true
 files = ["src", "tests"]
 warn_unreachable = true
+
+[[tool.mypy.overrides]]
+# opengsq ships no type information.
+module = "opengsq.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

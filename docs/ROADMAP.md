@@ -12,7 +12,7 @@ _Last updated: 2026-10-13_
 |---|---|
 | 0 – Foundation | done |
 | 1 – Core and release pipeline | done |
-| 2 – Counter-Strike | not started |
+| 2 – Counter-Strike | in progress |
 | 3 – Trackmania | not started |
 | 4 – Unreal Tournament | not started |
 | 5 – Player management and console | not started |
@@ -20,16 +20,21 @@ _Last updated: 2026-10-13_
 | 7 – More games | not started |
 | 8 – Hardening and 1.0 | not started |
 
-**Done:** 0.1–0.5 and 1.1–1.9, which completes phases 0 and 1.
+**Done:** 0.1–0.5 and 1.1–1.9, which completes phases 0 and 1; 2.1 and 2.2.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
 all seven distribution packages and ran the install, upgrade, reinstall and removal test for
 each of them successfully (2026-10-13, in a private fork). CodeQL and dependency review are
 skipped while the repository is private; they need a public repository.
 
+The Counter-Strike 1.6 adapter was run against a real server (HLDS build 10211): status,
+map list, map change, both restarts and a wrong password behaved as
+[games/counter-strike.md](games/counter-strike.md) describes.
+
 **In progress:** –
 
-**Next:** 2.1 (GoldSrc RCON transport), the start of Counter-Strike support.
+**Next:** 2.3 (Source RCON adapters; needs a CS:Source, CS:GO or CS2 test server) or 2.4
+(stock map catalogue and image providers).
 
 **Open questions:** see [Open points](#open-points).
 
@@ -99,8 +104,8 @@ skipped while the repository is private; they need a public repository.
 
 ### Phase 2 – Counter-Strike (high priority, v0.2)
 
-- **2.1** GoldSrc RCON transport (challenge, split response packets) with a simulator.
-- **2.2** Counter-Strike 1.6 adapter: `maps *`, `changelevel`, `sv_restart`, `restart`,
+- **2.1** ✔ GoldSrc RCON transport (challenge, split response packets) with a simulator.
+- **2.2** ✔ Counter-Strike 1.6 adapter: `maps *`, `changelevel`, `sv_restart`, `restart`,
   `status`, `stats`; verified against a real server; facts in `games/counter-strike.md`.
 - **2.3** Source RCON adapters: CS:Source, CS:GO, CS2, including workshop maps.
 - **2.4** Stock map catalogue; image providers Steam Workshop, GameBanana, GameTracker.

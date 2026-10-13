@@ -92,6 +92,7 @@ src/lanpilot/
     redaction.py ✔          keeps known secrets out of the log
   games/demo.py ✔           simulated server
   testing/contract.py ✔     check_adapter() for adapter authors
+  testing/goldsrc.py ✔      simulator of a GoldSrc server (status query and RCON)
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -104,12 +105,13 @@ src/lanpilot/
     engine.py ✔    async engine with SQLite pragmas, session factory
     migrate.py ✔   upgrade(), current_revision(), head_revision(), pre-migration backup
     migrations/ ✔  Alembic environment and versions/ (shipped inside the package)
-  core/ (planned)
-    transports/            source_rcon, goldsrc_rcon, q3_rcon, gbxremote, uweb (no game logic)
-  games/ (planned)  counterstrike/, trackmania/, unreal/, quake3/, monitor_only
+    transports/goldsrc_rcon.py ✔  RCON over UDP for GoldSrc servers
+    transports/ (planned)        source_rcon, q3_rcon, gbxremote, uweb
+  games/counterstrike/goldsrc.py ✔  Counter-Strike 1.6
+  games/ (planned)  further counterstrike/, trackmania/, unreal/, quake3/, monitor_only
   maps/ (planned)   catalog/ (stock maps as YAML), images/ (provider chain, cache)
   scan/ (planned)   on-demand LAN scan
-  testing/ (planned) protocol simulators
+  testing/ (planned) simulators for the other protocols
 ```
 
 Dependency direction: `web` → `core` → `games` → `core/transports`. Transports know nothing
@@ -206,20 +208,38 @@ change is only accepted for a map that is in this list.
 
 ## Protocols
 
-_State: planned (phases 2–4, 7)._
+_State: GoldSrc RCON and the Counter-Strike 1.6 adapter are implemented and verified against
+a real server (steps 2.1, 2.2); the rest is planned (phases 2–4, 7)._
 
-| Protocol | Games | Implementation |
-|---|---|---|
-| Status query | all | `opengsq` |
-| Source RCON (TCP) | CS:Source, CS:GO, CS2 | `opengsq.rcon_protocols.source_rcon` |
-| GoldSrc RCON (UDP) | Counter-Strike 1.6 | own transport |
-| GBXRemote / XML-RPC (TCP 5000) | Trackmania | own transport, encoding via `xmlrpc.client` |
-| UWeb WebAdmin (HTTP) | UT99, UT2003/2004, UT3 | own transport with `httpx` and HTML parsing |
-| Quake 3 RCON (UDP) | Call of Duty 1/4/5, Quake 3, Jedi Knight | own transport |
+| Protocol | Games | Implementation | State |
+|---|---|---|---|
+| Status query | all | `opengsq` | used by `cs16` |
+| GoldSrc RCON (UDP) | Counter-Strike 1.6 | `core/transports/goldsrc_rcon.py` | ✔ |
+| Source RCON (TCP) | CS:Source, CS:GO, CS2 | `opengsq.rcon_protocols.source_rcon` | planned |
+| GBXRemote / XML-RPC (TCP 5000) | Trackmania | own transport, encoding via `xmlrpc.client` | planned |
+| UWeb WebAdmin (HTTP) | UT99, UT2003/2004, UT3 | own transport with HTTP client and HTML parsing | planned |
+| Quake 3 RCON (UDP) | Call of Duty 1/4/5, Quake 3, Jedi Knight | own transport | planned |
 
-Research results, including what is still unverified, are in
-[research/remote-control-protocols.md](research/remote-control-protocols.md). Facts confirmed
-against real servers move to `games/<game>.md`.
+**Layers.** A *transport* (`core/transports/`) speaks one protocol and knows nothing about
+games; it turns protocol failures into the adapter errors. An *adapter* (`games/`) knows the
+game's commands and parses their output. A *simulator* (`testing/`) reproduces the protocol
+as a real server was observed to speak it, and the adapter's tests run against it. What was
+observed is written down in `games/<game>.md` first.
+
+**Patterns set by the first real adapter** (`games/counterstrike/goldsrc.py`), to be followed
+by the next ones:
+
+- Status comes from the password-less server query wherever the game has one, so a wrong
+  remote-control password shows up as a control problem, not as "offline".
+- A transport that was refused its password does not send it again: game servers ban
+  addresses that keep trying.
+- Everything that goes into a command is checked against a strict pattern in the adapter,
+  directly before sending.
+- Expensive or log-spamming extras (here: `stats`) are fetched at a slower pace than the
+  status, inside `query()`, and never make the status fail.
+
+Research results for the games not yet implemented, including what is unverified, are in
+[research/remote-control-protocols.md](research/remote-control-protocols.md).
 
 ## Configuration and reverse proxy
 

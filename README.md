@@ -5,10 +5,9 @@ server on one dashboard, change the map, restart a match and manage players with
 into each machine.
 
 > **Status: early development.** The core is in place: accounts, server management, live
-> dashboard, map changes and restarts, map images and distribution packages. What is still
-> missing is the reason to use it: **no real game is supported yet**, only a simulated demo
-> server. Counter-Strike, Trackmania and Unreal Tournament come next. Progress is tracked in
-> [docs/ROADMAP.md](docs/ROADMAP.md).
+> dashboard, map changes and restarts, map images and distribution packages. The first game
+> works: **Counter-Strike 1.6**. Other Counter-Strike versions, Trackmania and Unreal
+> Tournament come next. Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## What LANPilot will do
 
@@ -34,17 +33,17 @@ into each machine.
 - **Secure by default.** Stored server credentials are encrypted, everything requires a login,
   and data coming from game servers is treated as untrusted. See [SECURITY.md](SECURITY.md).
 
-## Planned game support
+## Game support
 
-| Game | Remote protocol | Priority |
+| Game | Remote protocol | State |
 |---|---|---|
-| Counter-Strike 1.6 | GoldSrc RCON (UDP) | high |
-| Counter-Strike: Source, CS:GO, CS2 | Source RCON (TCP) | high |
-| TrackMania Nations/United Forever, TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | high |
-| Unreal Tournament 99, 2003, 2004, 3 | UWeb WebAdmin (HTTP) | high |
-| Call of Duty 1/4/5, Quake 3, Jedi Knight | Quake 3 RCON (UDP) | later |
-| Battlefield 2, Renegade X, ElDewrito | game-specific | later |
-| Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | later |
+| Counter-Strike 1.6 | GoldSrc RCON (UDP) | **supported** ([details](docs/games/counter-strike.md)) |
+| Counter-Strike: Source, CS:GO, CS2 | Source RCON (TCP) | planned, high priority |
+| TrackMania Nations/United Forever, TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | planned, high priority |
+| Unreal Tournament 99, 2003, 2004, 3 | UWeb WebAdmin (HTTP) | planned, high priority |
+| Call of Duty 1/4/5, Quake 3, Jedi Knight | Quake 3 RCON (UDP) | planned |
+| Battlefield 2, Renegade X, ElDewrito | game-specific | planned |
+| Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | planned |
 
 ## Documentation
 

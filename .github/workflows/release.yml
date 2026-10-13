@@ -1,0 +1,208 @@
+name: Packages
+
+# Builds the wheel and the distribution packages, installs and upgrades every package in a
+# clean container, and publishes them when a version tag (v1.2.3) is pushed.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - "packaging/**"
+      - "pyproject.toml"
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  wheel:
+    name: Build wheel
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Check that the tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' src/lanpilot/__init__.py)"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match version $version in src/lanpilot/__init__.py"
+            exit 1
+          fi
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install build
+          python -m build
+      - name: Build a wheel with an older version number for the upgrade test
+        run: |
+          cp -r . /tmp/older
+          sed -i 's/^__version__ = .*/__version__ = "0.0.1"/' /tmp/older/src/lanpilot/__init__.py
+          python -m build --wheel --outdir dist-older /tmp/older
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python
+          path: dist/
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python-older
+          path: dist-older/
+          retention-days: 3
+
+  package:
+    name: Package for ${{ matrix.image }}
+    needs: wheel
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # One package per distribution release: each carries a Python environment built
+        # for that release's Python version.
+        include:
+          - id: debian12
+            image: debian:12
+            format: deb
+            setup: apt-get update && apt-get install -y --no-install-recommends python3 python3-venv curl ca-certificates
+          - id: debian13
+            image: debian:13
+            format: deb
+            setup: apt-get update && apt-get install -y --no-install-recommends python3 python3-venv curl ca-certificates
+          - id: ubuntu2404
+            image: ubuntu:24.04
+            format: deb
+            setup: apt-get update && apt-get install -y --no-install-recommends python3 python3-venv curl ca-certificates
+          - id: ubuntu2604
+            image: ubuntu:26.04
+            format: deb
+            setup: apt-get update && apt-get install -y --no-install-recommends python3 python3-venv curl ca-certificates
+          - id: fedora44
+            image: fedora:44
+            format: rpm
+            setup: dnf install -y python3 curl tar gzip
+          - id: el9
+            image: rockylinux:9
+            format: rpm
+            python: python3.11
+            setup: dnf install -y python3.11 tar gzip
+          - id: arch
+            image: archlinux:latest
+            format: archlinux
+            setup: pacman -Syu --noconfirm python curl tar gzip
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Install build requirements
+        run: ${{ matrix.setup }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python
+          path: dist/
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python-older
+          path: dist-older/
+      - name: Build packages
+        env:
+          PYTHON: ${{ matrix.python || 'python3' }}
+          FORMAT: ${{ matrix.format }}
+        run: |
+          sh packaging/fetch-nfpm.sh /tmp/nfpm
+          . /etc/os-release
+          export NFPM=/tmp/nfpm/nfpm DISTRO="${ID}${VERSION_ID:-}"
+          sh packaging/build.sh "$FORMAT" dist/lanpilot-*.whl packages
+          sh packaging/build.sh "$FORMAT" dist-older/lanpilot-*.whl packages-older
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package-${{ matrix.id }}
+          path: packages/
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: older-package-${{ matrix.id }}
+          path: packages-older/
+          retention-days: 3
+
+  test:
+    name: Install and upgrade on ${{ matrix.image }}
+    needs: package
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # The ids match the package job: each test installs the package built for its image.
+        include:
+          - {id: debian12, image: "debian:12", format: deb, setup: "apt-get update && apt-get install -y --no-install-recommends curl ca-certificates"}
+          - {id: debian13, image: "debian:13", format: deb, setup: "apt-get update && apt-get install -y --no-install-recommends curl ca-certificates"}
+          - {id: ubuntu2404, image: "ubuntu:24.04", format: deb, setup: "apt-get update && apt-get install -y --no-install-recommends curl ca-certificates"}
+          - {id: ubuntu2604, image: "ubuntu:26.04", format: deb, setup: "apt-get update && apt-get install -y --no-install-recommends curl ca-certificates"}
+          - {id: fedora44, image: "fedora:44", format: rpm, setup: "dnf install -y curl"}
+          - {id: el9, image: "rockylinux:9", format: rpm, setup: "true"}
+          - {id: arch, image: "archlinux:latest", format: archlinux, setup: "pacman -Syu --noconfirm curl"}
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Install test requirements
+        run: ${{ matrix.setup }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: package-${{ matrix.id }}
+          path: packages/
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: older-package-${{ matrix.id }}
+          path: packages-older/
+      - name: Install, upgrade, reinstall and remove
+        env:
+          FORMAT: ${{ matrix.format }}
+        run: |
+          new="$(find "$PWD/packages" -type f | head -n 1)"
+          old="$(find "$PWD/packages-older" -type f | head -n 1)"
+          sh packaging/test-install.sh "$FORMAT" "$new" "$old"
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [wheel, test]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # create the release
+      id-token: write # sign the provenance attestation
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python
+          path: release/
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: package-*
+          path: release/
+          merge-multiple: true
+      - name: Write checksums
+        working-directory: release
+        run: |
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: release/SHA256SUMS
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes release/*

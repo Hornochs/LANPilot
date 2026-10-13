@@ -1,0 +1,2 @@
+# System user that runs LANPilot.
+u lanpilot - "LANPilot game server control panel" /var/lib/lanpilot /usr/sbin/nologin

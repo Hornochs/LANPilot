@@ -1,0 +1,16 @@
+{# All servers. Refetched as a whole when a server was added, edited or removed. #}
+<div id="server-grid" class="server-grid" hx-get="{{ root }}/cards"
+     hx-trigger="sse:servers, sse:resync" hx-swap="outerHTML">
+  {% for state in states %}
+  {% include "_card.html" %}
+  {% else %}
+  <section class="card">
+    <p>No game servers have been added yet.</p>
+    {% if auth.is_admin %}
+    <p><a class="button" href="{{ root }}/admin/servers/new">Add a server</a></p>
+    {% else %}
+    <p class="muted">An administrator can add them under “Server setup”.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Secrets and local configuration — never commit
+.env
+.env.*
+!.env.example
+secret.key
+lanpilot.toml
+!packaging/lanpilot.toml
+
+# Runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite3
+
+# Network captures and scratch files
+*.pcap
+*.pcapng
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Claude Code local settings
+.claude/settings.local.json

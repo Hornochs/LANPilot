@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Account – LANPilot{% endblock %}
+{% block content %}
+<h1>Account</h1>
+<section class="card narrow">
+  <dl class="facts">
+    <dt>User name</dt><dd>{{ auth.user.username }}</dd>
+    <dt>Role</dt><dd>{{ auth.user.role }}</dd>
+  </dl>
+</section>
+<section class="card narrow">
+  <h2>Change password</h2>
+  {% if error %}
+  <p class="banner error" role="alert">{{ error }}</p>
+  {% endif %}
+  <form method="post" action="{{ root }}/account/password">
+    <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+    <label for="current_password">Current password</label>
+    <input id="current_password" name="current_password" type="password" maxlength="256"
+           autocomplete="current-password" required>
+    <label for="new_password">New password</label>
+    <input id="new_password" name="new_password" type="password" minlength="10" maxlength="256"
+           autocomplete="new-password" required>
+    <label for="new_password_repeat">New password, again</label>
+    <input id="new_password_repeat" name="new_password_repeat" type="password" minlength="10"
+           maxlength="256" autocomplete="new-password" required>
+    <p class="muted">At least 10 characters. Changing it signs out your other sessions.</p>
+    <button type="submit">Change password</button>
+  </form>
+</section>
+{% endblock %}

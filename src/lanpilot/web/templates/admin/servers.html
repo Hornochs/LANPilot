@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Server setup – LANPilot{% endblock %}
+{% block content %}
+<h1>Server setup</h1>
+{% if probe %}
+<div class="banner {{ "success" if probe.ok else "error" }}" role="status">
+  <strong>Connection test for {{ probed.name }}</strong>
+  <ul>
+    {% for line in probe.lines %}
+    <li>{{ line }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+<section class="card scroll">
+  {% if rows %}
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Game</th><th>Address</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for server, adapter in rows %}
+      <tr>
+        <td>{{ server.name }}</td>
+        <td>{% if adapter %}{{ adapter.name }}{% else %}<span class="muted">not installed ({{ server.adapter_id }})</span>{% endif %}</td>
+        <td>{{ server.host }}:{{ server.port }}</td>
+        <td>{{ "enabled" if server.enabled else "disabled" }}</td>
+        <td class="actions">
+          {% if adapter %}
+          <a href="{{ root }}/admin/servers/{{ server.id }}/edit">Edit</a>
+          <a href="{{ root }}/admin/servers/{{ server.id }}/maps">Map images</a>
+          <form method="post" action="{{ root }}/admin/servers/{{ server.id }}/test" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+            <button type="submit" class="small">Test connection</button>
+          </form>
+          {% endif %}
+          <details>
+            <summary>Delete</summary>
+            <form method="post" action="{{ root }}/admin/servers/{{ server.id }}/delete">
+              <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+              <button type="submit" class="small danger">Delete {{ server.name }} for good</button>
+            </form>
+          </details>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No game servers have been added yet.</p>
+  {% endif %}
+</section>
+{% if can_add %}
+<p><a class="button" href="{{ root }}/admin/servers/new">Add a server</a></p>
+{% else %}
+<p class="muted">No game adapters are installed, so no server can be added.</p>
+{% endif %}
+{% endblock %}

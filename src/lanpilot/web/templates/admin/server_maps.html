@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Map images of {{ server.name }} – LANPilot{% endblock %}
+{% block content %}
+<h1>Map images of {{ server.name }}</h1>
+{% if error %}
+<p class="banner error" role="alert">{{ error }}</p>
+{% endif %}
+<p class="muted">An image is used for every server of this game that has a map with the same
+  name. JPEG, PNG or WebP, up to {{ max_megabytes }} MB; it is scaled down and stored without
+  metadata.</p>
+{% if maps %}
+<div class="map-list">
+  {% for map in maps %}
+  {% set image = map_image_url(family, map.key) %}
+  <section class="map-entry">
+    <div class="map-art{% if image %} has-image{% else %} tone-{{ map.key|tone }}{% endif %}">
+      {% if image %}<img src="{{ image }}" alt="" loading="lazy">{% endif %}
+      <span>{{ map.label }}</span>
+    </div>
+    <p class="muted">{{ map.key }}{% if map.game_type %} · {{ map.game_type }}{% endif %}</p>
+    <form method="post" enctype="multipart/form-data"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <input type="file" name="image" accept="image/jpeg,image/png,image/webp"
+             aria-label="Image for {{ map.label }}" required>
+      <button type="submit" class="small">{{ "Replace image" if image else "Upload image" }}</button>
+    </form>
+    {% if image %}
+    <form method="post"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image/delete">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <button type="submit" class="link">Remove image</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+<section class="card">
+  <p>No maps are known for this server yet.</p>
+</section>
+{% endif %}
+<p><a href="{{ root }}/servers/{{ server.id }}">Back to {{ server.name }}</a></p>
+{% endblock %}

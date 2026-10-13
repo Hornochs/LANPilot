@@ -1,0 +1,35 @@
+{# The part of a server's page that follows the server's state. #}
+{% from "_status.html" import badge %}
+<div id="server-live" hx-get="{{ root }}/servers/{{ state.server_id }}/live"
+     hx-trigger="sse:server-{{ state.server_id }}, sse:resync" hx-swap="outerHTML">
+  <h1>{{ state.name }} {{ badge(state) }}</h1>
+  {% if state.error %}
+  <p class="banner error">{{ state.error }}</p>
+  {% endif %}
+  {% if state.control_error %}
+  <p class="banner warning">Status works, but remote control does not: {{ state.control_error }}</p>
+  {% endif %}
+  <section class="card server-facts">
+    {% set current = state.status.map if state.status else none %}
+    {% set image = map_image_url(state.family, current.key) if current else none %}
+    <div class="map-art{% if image %} has-image{% else %} tone-{{ (current.key if current else state.name)|tone }}{% endif %}">
+      {% if image %}<img src="{{ image }}" alt="" loading="lazy">{% endif %}
+      <span>{{ current.label if current else "" }}</span>
+    </div>
+    <dl class="facts">
+      <dt>Game</dt><dd>{{ state.adapter_name }}</dd>
+      <dt>Address</dt><dd>{{ state.host }}:{{ state.port }}</dd>
+      {% if state.status %}
+      <dt>Server name</dt><dd>{{ state.status.name }}</dd>
+      <dt>Map</dt><dd>{{ current.label if current else "unknown" }}{% if state.status.game_type %} <span class="muted">({{ state.status.game_type }})</span>{% endif %}</dd>
+      <dt>Players</dt><dd>{{ state.status.players }}/{{ state.status.max_players }}</dd>
+      {% for name, value in state.status.load.items() %}
+      <dt>{{ name }}</dt><dd>{{ "%.1f"|format(value) }}</dd>
+      {% endfor %}
+      {% endif %}
+      {% if state.last_seen_at %}
+      <dt>Last answer</dt><dd>{{ state.last_seen_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</dd>
+      {% endif %}
+    </dl>
+  </section>
+</div>

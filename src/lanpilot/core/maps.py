@@ -13,10 +13,12 @@ from collections.abc import Iterable, Sequence
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lanpilot.core import catalog
 from lanpilot.core.adapters import MapRef
 from lanpilot.db.models import ServerMap
 
 SOURCE_PROTOCOL = "protocol"
+SOURCE_MANUAL = "manual"  # added by an administrator, e.g. a track outside the playlist
 MAX_MAPS = 5000
 MAX_KEY_LENGTH = 200
 MAX_NAME_LENGTH = 200
@@ -54,9 +56,30 @@ def _clean(reported: Iterable[MapRef]) -> list[MapRef]:
     return list(cleaned.values())
 
 
-async def replace_reported(db: AsyncSession, server_id: int, reported: Iterable[MapRef]) -> int:
-    """Replace the maps a server reported earlier with a new report. Does not commit."""
-    maps = _clean(reported)
+async def replace_reported(
+    db: AsyncSession, server_id: int, reported: Iterable[MapRef], adapter_id: str
+) -> int:
+    """Replace the maps a server reported earlier with a new report. Does not commit.
+
+    Maps the server reports without a name get the catalogue's name for that game.
+    """
+    names = catalog.load()
+    manual = set(
+        (
+            await db.execute(
+                select(ServerMap.key, ServerMap.game_type).where(
+                    ServerMap.server_id == server_id, ServerMap.source == SOURCE_MANUAL
+                )
+            )
+        ).all()
+    )
+    # A map added by hand stays one, also once the server lists it (e.g. after it was
+    # inserted into the playlist).
+    maps = [
+        names.named(adapter_id, item)
+        for item in _clean(reported)
+        if (item.key, item.game_type or "") not in manual
+    ]
     await db.execute(
         delete(ServerMap).where(
             ServerMap.server_id == server_id, ServerMap.source == SOURCE_PROTOCOL
@@ -75,6 +98,33 @@ async def replace_reported(db: AsyncSession, server_id: int, reported: Iterable[
         )
     await db.flush()
     return len(maps)
+
+
+async def find_map(db: AsyncSession, server_id: int, key: str) -> ServerMap | None:
+    query = select(ServerMap).where(ServerMap.server_id == server_id, ServerMap.key == key)
+    return (await db.execute(query)).scalars().first()
+
+
+async def add_manual(db: AsyncSession, server_id: int, ref: MapRef, adapter_id: str) -> ServerMap:
+    """Store a map an administrator added. Raises ``ValueError`` if it is not storable or
+    already in the list. Does not commit."""
+    cleaned = _clean([ref])
+    if not cleaned:
+        raise ValueError("This map name cannot be stored.")
+    item = catalog.load().named(adapter_id, cleaned[0])
+    if await find_map(db, server_id, item.key) is not None:
+        raise ValueError("This map is already in the list.")
+    row = ServerMap(
+        server_id=server_id,
+        key=item.key,
+        name=item.name,
+        game_type=item.game_type or "",
+        source=SOURCE_MANUAL,
+        extra=json.dumps(dict(item.extra), sort_keys=True),
+    )
+    db.add(row)
+    await db.flush()
+    return row
 
 
 async def list_maps(db: AsyncSession, server_id: int) -> Sequence[ServerMap]:

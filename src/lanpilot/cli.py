@@ -1,8 +1,4 @@
-"""Command line entry point.
-
-Further subcommands (``images``) are added together with the features they control; see
-docs/ROADMAP.md.
-"""
+"""Command line entry point."""
 
 from __future__ import annotations
 
@@ -125,16 +121,22 @@ def _read_password(args: argparse.Namespace) -> str:
     return password
 
 
-def _with_database(args: argparse.Namespace, work: Callable[[AsyncSession], Awaitable[int]]) -> int:
-    """Run ``work`` in a database session, with the schema brought up to date first."""
+def _prepare_database(settings: Settings) -> None:
+    """Bring the schema up to date, or refuse if that is switched off and it is not."""
     from lanpilot.db import migrate
-    from lanpilot.db.engine import create_engine, create_sessionmaker
 
-    settings = _settings(args)
     if settings.auto_migrate:
         migrate.upgrade(settings.database_path)
     elif migrate.current_revision(settings.database_path) != migrate.head_revision():
         raise CommandError("the database schema is not current; run 'lanpilot db upgrade'")
+
+
+def _with_database(args: argparse.Namespace, work: Callable[[AsyncSession], Awaitable[int]]) -> int:
+    """Run ``work`` in a database session, with the schema brought up to date first."""
+    from lanpilot.db.engine import create_engine, create_sessionmaker
+
+    settings = _settings(args)
+    _prepare_database(settings)
 
     async def run() -> int:
         engine = create_engine(settings.database_path)
@@ -230,6 +232,72 @@ def _cmd_secret_generate_key(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_images_prefetch(args: argparse.Namespace) -> int:
+    """Look online for the images of every stored map that has none (before a LAN party)."""
+    from collections import Counter
+
+    from lanpilot.core import image_lookup, maps, servers
+    from lanpilot.core.adapters.registry import load_registry
+    from lanpilot.core.map_images import MapImageIndex
+    from lanpilot.db.engine import create_engine, create_sessionmaker
+
+    settings = _settings(args)
+    _configure_logging(settings)
+    if not settings.images.online:
+        raise CommandError("looking for images online is switched off (images.online)")
+    _prepare_database(settings)
+
+    async def run() -> int:
+        engine = create_engine(settings.database_path)
+        sessionmaker = create_sessionmaker(engine)
+        registry = load_registry()
+        index = MapImageIndex()
+        lookup = image_lookup.ImageLookup(
+            settings.images,
+            index=index,
+            sessionmaker=sessionmaker,
+            data_dir=settings.data_dir,
+            registry=registry,
+        )
+        outcomes: Counter[image_lookup.Outcome] = Counter()
+        try:
+            async with sessionmaker() as db:
+                await index.load(db)
+                work = []
+                for server in await servers.list_servers(db):
+                    adapter = registry.get(server.adapter_id)
+                    if adapter is None or (args.server is not None and server.id != args.server):
+                        continue
+                    for row in await maps.list_maps(db, server.id):
+                        ref = maps.to_ref(row)
+                        work.append(
+                            image_lookup.Wanted(
+                                adapter.id,
+                                adapter.image_lookup,
+                                ref,
+                                image_lookup.Reach.MISSING,
+                            )
+                        )
+            async with lookup.open_fetcher() as fetcher:
+                for number, wanted in enumerate(work, start=1):
+                    outcome = await lookup.lookup(fetcher, wanted)
+                    outcomes[outcome] += 1
+                    if outcome is not image_lookup.Outcome.SKIPPED:
+                        print(f"[{number}/{len(work)}] {wanted.ref.key}: {outcome.value}")
+                        await asyncio.sleep(image_lookup.PAUSE_SECONDS)
+        finally:
+            await engine.dispose()
+        print(
+            f"{outcomes[image_lookup.Outcome.FOUND]} found, "
+            f"{outcomes[image_lookup.Outcome.NOT_FOUND]} not found, "
+            f"{outcomes[image_lookup.Outcome.FAILED]} could not be checked, "
+            f"{outcomes[image_lookup.Outcome.SKIPPED]} skipped (image present or removed)"
+        )
+        return 0
+
+    return asyncio.run(run())
+
+
 def _cmd_config_show(args: argparse.Namespace) -> int:
     # mode="json" renders SecretStr values as asterisks.
     print(json.dumps(_settings(args).model_dump(mode="json"), indent=2))
@@ -291,6 +359,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="write the key to FILE (mode 600) instead of printing it",
     )
     secret_generate.set_defaults(handler=_cmd_secret_generate_key)
+
+    images = commands.add_parser("images", help="manage map images")
+    images_commands = images.add_subparsers(
+        title="images commands", metavar="COMMAND", required=True
+    )
+    images_prefetch = images_commands.add_parser(
+        "prefetch", help="look online for the images of all known maps that have none"
+    )
+    images_prefetch.add_argument(
+        "--server", type=int, metavar="ID", help="only the maps of the server with this id"
+    )
+    images_prefetch.set_defaults(handler=_cmd_images_prefetch)
 
     config = commands.add_parser("config", help="inspect the configuration")
     config_commands = config.add_subparsers(

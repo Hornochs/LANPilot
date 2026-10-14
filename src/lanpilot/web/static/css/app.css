@@ -306,3 +306,13 @@ table.compact th, table.compact td { padding: 0.3rem 0.5rem; font-size: 0.85rem;
 .map-entry .map-art { margin-bottom: 0.6rem; border-radius: 0.3rem; overflow: hidden; }
 .map-entry form { margin-top: 0.5rem; }
 .map-entry input[type="file"] { width: 100%; color: var(--muted); font-size: 0.85rem; }
+
+/* Player list (server page) and console output. */
+.player-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem 1rem; }
+.player-actions form { margin: 0; }
+.player-actions details form { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+pre.console-output {
+  max-height: 32rem; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  font-size: 0.85rem; background: var(--bg); border: 1px solid var(--border); padding: 0.75rem;
+  border-radius: 6px;
+}

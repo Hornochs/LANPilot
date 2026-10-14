@@ -4,10 +4,9 @@ This document describes how LANPilot is built. It is the reference to read befor
 the code, and it is updated in every change that alters structure, interfaces or the data
 model.
 
-> **Implementation state:** phases 0 and 1 are complete (see [ROADMAP.md](ROADMAP.md)): the
-> whole core exists, with a simulated demo server as the only game. Sections about real
-> games, online image sources and the LAN scan are still the **target design**; each section
-> carries a state marker that is changed to "implemented" together with the code.
+> **Implementation state:** phases 0–2 are complete, phase 3 (Trackmania) except TM2/TM2020,
+> and phase 4 (Unreal Tournament) (see [ROADMAP.md](ROADMAP.md)). Sections about later phases are still the **target design**;
+> each section carries a state marker.
 
 ## Overview
 
@@ -47,7 +46,7 @@ _State: decided; web, database and configuration parts in use since step 1.1._
 | Live updates | Server-sent events | one-way status stream is enough |
 | Status queries | `opengsq` | MIT, covers nearly all games |
 | Crypto | `argon2-cffi`, `cryptography` | password hashing, credential encryption |
-| HTTP client | `httpx` | WebAdmin transport, image fetching |
+| HTTP client | `aiohttp` (already required by `opengsq`) | image fetching; WebAdmin transport later |
 | Images | `Pillow` | re-encoding of fetched and uploaded images |
 
 GPL-licensed libraries are not used (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
@@ -85,14 +84,21 @@ src/lanpilot/
     servers.py ✔            create/update/delete servers, credential storage, probe()
     runtime.py ✔            ServerManager: adapter instances, polling, serialised calls
     actions.py ✔            Actions: the only path that changes a game server; audit
-    maps.py ✔               stored map lists
+    maps.py ✔               stored map lists (names filled in from the catalogue)
+    catalog.py ✔            stock map catalogue: display names per game
     map_images.py ✔         image processing, cache directory, MapImageIndex
+    image_sources.py ✔      Fetcher (the only outbound HTTP), Steam Workshop, GameBanana,
+                            GameTracker
+    image_lookup.py ✔       ImageLookup: source chain, remembered misses, background queue
     events.py ✔             EventBus for live updates
     secrets.py ✔            key loading, SecretBox (AES-256-GCM)
     redaction.py ✔          keeps known secrets out of the log
   games/demo.py ✔           simulated server
   testing/contract.py ✔     check_adapter() for adapter authors
   testing/goldsrc.py ✔      simulator of a GoldSrc server (status query and RCON)
+  testing/source.py ✔       simulator of CS:Source, CS:GO and CS2 servers (query, Source RCON)
+  testing/gbxremote.py ✔    simulator of TrackMania Forever and Sunrise servers (GBXRemote 2)
+  testing/uweb.py ✔         simulators of the UT99/UT2004 WebAdmin + GameSpy query, and UT3
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -106,10 +112,23 @@ src/lanpilot/
     migrate.py ✔   upgrade(), current_revision(), head_revision(), pre-migration backup
     migrations/ ✔  Alembic environment and versions/ (shipped inside the package)
     transports/goldsrc_rcon.py ✔  RCON over UDP for GoldSrc servers
-    transports/ (planned)        source_rcon, q3_rcon, gbxremote, uweb
+    transports/source_rcon.py ✔   RCON over TCP for Source and Source 2 servers
+    transports/gbxremote.py ✔     GBXRemote 2 (XML-RPC over TCP) for Trackmania
+    transports/uweb.py ✔          WebAdmin of Unreal servers: HTTP Basic auth, form parsing
+    transports/ (planned)        q3_rcon
+  games/counterstrike/common.py ✔   status query, map name pattern, stats parser
   games/counterstrike/goldsrc.py ✔  Counter-Strike 1.6
-  games/ (planned)  further counterstrike/, trackmania/, unreal/, quake3/, monitor_only
-  maps/ (planned)   catalog/ (stock maps as YAML), images/ (provider chain, cache)
+  games/counterstrike/source.py ✔   CS:Source, CS:GO, CS2 (one base class, three adapters)
+  games/trackmania/common.py ✔      ChallengeAdapter: what the "challenge" generation shares
+  games/trackmania/forever.py ✔     TrackMania Nations/United Forever
+  games/trackmania/sunrise.py ✔     TrackMania Original, Sunrise (eXtreme), Nations ESWC
+  games/unreal/common.py ✔          GameSpy status, map name, game class and URL option rules
+  games/unreal/webadmin.py ✔        WebAdminAdapter: what UT99 and UT2004 share
+  games/unreal/ut2004.py ✔, ut99.py ✔   Unreal Tournament 2004 and UT99
+  games/unreal/ut3.py ✔             Unreal Tournament 3 (status and control over its WebAdmin)
+  games/ (planned)  quake3/, monitor_only
+  catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
+                    Unreal Archive image index (package data)
   scan/ (planned)   on-demand LAN scan
   testing/ (planned) simulators for the other protocols
 ```
@@ -130,7 +149,7 @@ releases it.
 |---|---|
 | `id` | stable identifier stored with every server (`[a-z][a-z0-9_]{1,31}`) |
 | `name` | display name, e.g. "Counter-Strike 1.6" |
-| `family` | group of related games sharing maps and image sources, e.g. `counterstrike` |
+| `family` | group of related games, e.g. `counterstrike`; names the catalogue file (images are per game, not per family) |
 | `capabilities` | `frozenset[Capability]`; the user interface shows controls only for these |
 | `connection_schema` | subclass of `ConnectionSettings` describing how to reach the server |
 
@@ -143,6 +162,7 @@ releases it.
 | `PLAYERS` | `list_players() -> Sequence[Player]` |
 | `KICK`, `BAN` | `kick(player, reason)`, `ban(player, reason)` |
 | `CONSOLE` | `console(command) -> str` |
+| `MANUAL_MAPS` | `look_up_map(key) -> MapRef`: confirm a map the server has but does not list |
 | `LOAD_STATS` | no method: promises that `query()` fills `ServerStatus.load` |
 | `DISCOVER` | classmethod `discover(networks) -> Sequence[DiscoveredServer]` |
 
@@ -153,8 +173,10 @@ declared capabilities and implemented methods disagree in either direction, so
 
 **Data types** (frozen dataclasses): `MapRef(key, name, game_type, extra)` where `key` is
 what is sent back to the server and `extra` carries image lookup ids such as `uid` or
-`workshop_id`; `Player(id, name, score, ping, team)`; `ServerStatus(name, players,
-max_players, map, game_type, password_protected, load)`.
+`workshop_id`; `Player(id, name, score, ping, team, bot, can_kick, can_ban)` where `id` is
+what `kick()`/`ban()` need and `can_kick`/`can_ban` are false for entries the protocol cannot
+remove (bots on UT99 and UT3, bots and players without a reported address for an IP ban);
+`ServerStatus(name, players, max_players, map, game_type, password_protected, load)`.
 
 **Errors** (all derive from `AdapterError`; messages are shown to operators and must not
 contain secrets): `ServerUnreachableError`, `AuthenticationError`, `CommandRejectedError`,
@@ -201,23 +223,38 @@ Maps are stored per server in `server_maps` with a source marker:
 
 - `protocol` – reported by the server (`maps *`, `GetChallengeList`, WebAdmin dropdown),
 - `catalog` – stock maps bundled with LANPilot for games that cannot list maps,
-- `manual` – entered by an administrator.
+- `manual` – added by an administrator (games with `MANUAL_MAPS`).
 
 The list is refreshed on demand and cached, so the searchable dropdown is instant. A map
 change is only accepted for a map that is in this list.
 
+**Maps added by hand** (implemented with step 3.2). On the "Maps of …" page
+(`/admin/servers/{id}/maps`) an administrator enters a map key; `Actions.add_map()` (role
+admin, audited as `server.add_map`) has the adapter confirm it with `look_up_map()` and
+stores what the server answered (`maps.add_manual()`, source `manual`). A refresh of the
+reported maps replaces only `protocol` rows and skips reported maps that exist as `manual`
+rows, so an added map stays one entry, also once the server lists it. Removing an entry
+(`server.remove_map`) only touches LANPilot's list, never the server's. `change_map()` must be
+able to switch to every map `look_up_map()` returned.
+
 ## Protocols
 
 _State: GoldSrc RCON and the Counter-Strike 1.6 adapter are implemented and verified against
-a real server (steps 2.1, 2.2); the rest is planned (phases 2–4, 7)._
+a real server (steps 2.1, 2.2). Source RCON and the CS:Source, CS:GO and CS2 adapters are
+implemented and verified against real servers (step 2.3). GBXRemote and the TrackMania
+Forever adapter are implemented and verified against a TMNF server (steps 3.1, 3.2). The rest
+is planned (phases 3–4, 7). Player lists, kick, ban and the console (phase 5) are implemented
+for all of them except player management on CS2; see the game documents for what was
+measured._
 
 | Protocol | Games | Implementation | State |
 |---|---|---|---|
-| Status query | all | `opengsq` | used by `cs16` |
+| Status query | all | `opengsq` | used by `cs16`, `css`, `csgo`, `cs2` |
 | GoldSrc RCON (UDP) | Counter-Strike 1.6 | `core/transports/goldsrc_rcon.py` | ✔ |
-| Source RCON (TCP) | CS:Source, CS:GO, CS2 | `opengsq.rcon_protocols.source_rcon` | planned |
-| GBXRemote / XML-RPC (TCP 5000) | Trackmania | own transport, encoding via `xmlrpc.client` | planned |
-| UWeb WebAdmin (HTTP) | UT99, UT2003/2004, UT3 | own transport with HTTP client and HTML parsing | planned |
+| Source RCON (TCP) | CS:Source, CS:GO, CS2 | `core/transports/source_rcon.py` | ✔ |
+| GBXRemote / XML-RPC (TCP 5000) | Trackmania | `core/transports/gbxremote.py`, encoding via `xmlrpc.client` | ✔ (TMNF measured) |
+| UWeb WebAdmin (HTTP) | UT99, UT2004, UT3 | `core/transports/uweb.py` (aiohttp, `html.parser`) | ✔ |
+| GameSpy query (UDP) | UT99, UT2004 | `opengsq` `GameSpy1` | used by `ut99`, `ut2004` |
 | Quake 3 RCON (UDP) | Call of Duty 1/4/5, Quake 3, Jedi Knight | own transport | planned |
 
 **Layers.** A *transport* (`core/transports/`) speaks one protocol and knows nothing about
@@ -237,6 +274,93 @@ by the next ones:
   directly before sending.
 - Expensive or log-spamming extras (here: `stats`) are fetched at a slower pace than the
   status, inside `query()`, and never make the status fail.
+
+**Source RCON** (`core/transports/source_rcon.py`). `opengsq` has a Source RCON client, but
+it waits for a packet with the end marker's id, and CS2 puts that id on the command's output
+too (all answers to packets that arrived together carry the last id), so it returns empty
+text on CS2. The own transport sends the command and an empty end marker together and
+collects every answer carrying either id until the empty answer with the marker's id that
+follows at least one other answer; packets with other ids are skipped. Lines of the server
+log, which CS:GO adds to every answer (the marker's included), are ignored for that check
+and removed from the text. It keeps one TCP connection per adapter, logs in on first use,
+opens a new connection after 60 s without a command and after any error; when a kept
+connection turns out to be closed before any answer arrived (CS:GO closes them on every map
+change), it sends the command once more on a new connection. It bounds packet size (64 KiB), answer size (1 MiB) and command
+length. Adapters hold the transport and release it in `close()`.
+
+**GBXRemote** (`core/transports/gbxremote.py`). One TCP connection per `GbxRemote`; on
+connect it checks the greeting `GBXRemote 2` and calls `Authenticate`, unless it was created
+without a login (Sunrise answers its status methods without one; TrackMania Forever answers
+nothing without a login, so its status needs the password too). Calls carry handles from
+`0x80000001`; frames with other handles (callbacks, abandoned calls) are skipped, at most 100
+in a row. Answers are limited to 8 MB before `xmlrpc.client` parses them. Faults become
+`GbxFaultError` (a `CommandRejectedError` with the server's text, cut to 200 printable
+characters) and leave the connection usable; "Password incorrect." becomes an
+`AuthenticationError` and stops further logins. `multicall()` batches calls through
+`system.multicall`. A kept connection found closed before any answer is opened again and the
+call repeated once, as for Source RCON.
+
+**Trackmania, challenge generation** (`games/trackmania/common.py`). `ChallengeAdapter`
+holds everything; `tmforever` (`forever.py`) and `tmsunrise` (`sunrise.py`) set
+`status_needs_login` (Sunrise reads the status on a second connection without login, so a
+wrong password does not look like "offline"), `soft_restart_method` (`RestartChallenge`,
+`ChallengeRestart`), `check_method` (Forever only) and `image_lookup`. The map key is the
+track's `FileName`; the display name has its formatting codes removed (`plain()`); `UId` and
+environment go into `MapRef.extra`. A change is `ChooseNextChallenge` + `NextChallenge`
+(which reorders the playlist; there is no other way), for a track added by hand preceded
+by `InsertChallenge`; the soft restart `RestartChallenge`,
+the hard restart a change to the current track. "Track unknown.", "Change in progress." and
+"Permission denied." become operator messages. Players come from `GetPlayerList` (Forever
+asks for struct version 1) with scores from `GetCurrentRanking`; kick and ban are `Kick` and
+`Ban` by login (Forever passes the reason as the player's message, Sunrise takes none), and
+"Login unknown." means the player has left. A ban lasts until the server restarts.
+
+**UWeb** (`core/transports/uweb.py`). `UWebAdmin` sends every request with HTTP Basic
+authentication (ISO-8859-1), never follows redirects, limits pages to 2 MB and keeps the
+session cookie (UT3 opens a day-long session for every request without it). 401 becomes an
+`AuthenticationError` and stops further requests; adapters call `refuse()` when a WebAdmin
+answers with its login form instead (UT3). `parse()` turns a page into a `Page`: selects
+(by name, else id) with their options, inputs, checked checkboxes and radio buttons,
+definition lists, and tables (rows of cells with their text and inputs, a `colspan` cell
+followed by empty cells so rows line up with the header). `table(page, *headers)` finds a
+table by its header texts; `text_lines(html, element_id)` gives the text of a page or of one
+element, with `<br>` as line breaks. Nothing of the page is ever executed or rendered.
+
+**Unreal Tournament** (`games/unreal/`). Maps belong to game types: the map list holds every
+installed map per game type the WebAdmin offers, with `game_type` = the game type's name and
+`extra["game_class"]` = its class; layouts (`?LinkSetup=`) are the only URL options accepted
+from a list. A change loads map and game type together; only the hard restart exists.
+`WebAdminAdapter` (UT99, UT2004) reads the status from the GameSpy query and differs per game
+in how it travels (`server_restart` form vs. `SwitchGameTypeAndMap`) and reloads; `ut3` reads
+status, lists and changes through Epic's UT3 WebAdmin. After a map list was loaded, the
+runtime polls once more at once, because adapters learn game type names from it.
+Players: UT99 and UT2004 read the table on `current_players`, where each row has a kick and a
+ban checkbox named after the player id, and remove a player by posting that page with the box
+ticked; only boxes *before* the name cell are used, because UT99 does not escape names. UT3
+lists everyone from the status page's scoreboard (with a bot flag) and the human players with
+their key from `current/players`, where a kick or IP ban is a form post with that key. A kick
+is checked against the page the server answers with. Console: UT99 and UT2004 post the
+command to `current_console`; the answer lands in the WebAdmin's message log
+(`current_console_log`), and the adapter returns the lines the log gained (`new_lines()`,
+which copes with the log being a window over the last messages). UT3's `/console` answers on
+the same page.
+
+**Counter-Strike on Source** (`games/counterstrike/source.py`). `SourceCounterStrikeAdapter`
+holds everything; `css`, `csgo` and `cs2` are small subclasses that set `id`, `name`,
+capabilities (`LOAD_STATS` only for Source 1, CS2 prints nothing for `stats`) and the
+`maps *` format (`PENDING:   (fs) <name>` on Source 1, bare names on CS2). CS2 adds workshop maps from `ds_workshop_listmaps` as `MapRef`s with
+`extra = {"workshop": "1"}` (they win over the same name from `maps *`); `change_map()` sends
+`ds_workshop_changelevel` for them. A change that CS2 refuses because it is still loading
+a map raises `CommandRejectedError`. A hard
+restart is `changelevel` to the current map, because `restart` is a cheat command on CS2.
+`common.py` holds what all Counter-Strike adapters share, including the Counter-Strike 1.6
+one, among it `RconPlayerControl`: players from `status` (`parse_status()` per engine), kick
+by user id (`kick #<id>` on GoldSrc, `kickid <id>` on Source), ban by IP address (`addip 0
+<ip>`, the kick, `writeip`) because LAN servers give every player the same Steam ID. A kick
+message is reduced to letters, digits and a few punctuation marks (`safe_message()`) before it
+becomes part of the command; user ids must be ASCII digits. `css` and `csgo` mix it in
+(`Source1PlayerControl`); `cs2` does not, its `status` format is unmeasured. All four have
+the console: the command goes to RCON as it is.
 
 Research results for the games not yet implemented, including what is unverified, are in
 [research/remote-control-protocols.md](research/remote-control-protocols.md).
@@ -291,6 +415,10 @@ Section `[polling]`:
 | `interval_seconds` | how often each server is asked for its status | `10` |
 | `timeout_seconds` | how long LANPilot waits for an answer | `8` |
 
+Section `[images]` (step 2.4): `online` (`true`), `sources` (comma list of
+`steam_workshop`, `gamebanana`, `gametracker`, in the order they are asked; unknown names
+are rejected), `retry_days` (`7`). See "Map images".
+
 Section `[auth]`:
 
 | Key | Meaning | Default |
@@ -322,7 +450,7 @@ Derived behaviour (implemented in `web/middleware.py` and `auth/sessions.py`):
 
 ## Data model
 
-_State: all tables below are implemented (migrations 0001–0005)._
+_State: all tables below are implemented (migrations 0001–0007)._
 
 | Table | Content |
 |---|---|
@@ -330,7 +458,8 @@ _State: all tables below are implemented (migrations 0001–0005)._
 | `sessions` | SHA-256 of the session token, user, CSRF token, created/last seen/expires, client IP and user agent |
 | `servers` | name (unique), adapter id, host, port, `settings` (JSON of the other non-secret connection values), `credentials` (encrypted secrets or NULL), `enabled` |
 | `server_maps` | server (cascade delete), `key`, `name`, `game_type` ("" if none), `source`, `extra` (JSON: track UId, workshop id); unique per server, key and game type |
-| `map_images` | `family`, `map_key` (lower-case; unique together), `filename` (random, unique), `provider`, `source_url`, `width`, `height` |
+| `map_images` | `game` (adapter id), `map_key` (lower-case; unique together), `filename` (random, unique), `provider` (`upload` or a source id), `source_url`, `width`, `height` |
+| `map_image_misses` | `game`, `map_key` (unique together), `reason` (`not_found`, `removed`), `checked_at` |
 | `audit_log` | time, actor id and copied actor name, action, target type and id, detail (JSON), client IP, success flag |
 | `app_settings` | key/value settings changed at runtime |
 
@@ -353,7 +482,7 @@ repository root lets `alembic revision --autogenerate` find the migrations.
 
 ## Command line
 
-_State: implemented as listed; an `images` command is planned._
+_State: implemented as listed._
 
 | Command | Purpose |
 |---|---|
@@ -365,6 +494,7 @@ _State: implemented as listed; an `images` command is planned._
 | `lanpilot db current` | show the schema revision; exit code 1 if it is not the newest |
 | `lanpilot secret generate-key [--output FILE]` | print a new encryption key, or write it to FILE with mode 600; never overwrites |
 | `lanpilot config show` | print the effective configuration with secrets masked |
+| `lanpilot images prefetch [--server ID]` | look online for the images of all stored maps that have none; prints what was found |
 
 `--config FILE` selects the configuration file. Configuration errors exit with code 2 and a
 one-line message, other command errors with code 1. Password prompts read from the terminal;
@@ -490,10 +620,25 @@ console command. Actions use their own database session; a failure can be rolled
 without invalidating the objects the web request holds. `Actor` carries plain values for the
 same reason.
 
+Players: `list_players()` reads the list under the server's lock (not audited, as it changes
+nothing) and cleans it (`clean_players()`: at most 256 entries, printable names and teams of
+at most 64 characters, entries without a usable or unique id dropped). `kick()` (operator,
+`KICK`) and `ban()` (administrator, `BAN`) take the player's id and an optional reason; inside
+the lock they list the players again and act only on someone who is there now and whose entry
+allows it, because ids can be reused. The audit entry records id, name and reason. `console()`
+(administrator, `CONSOLE`) refuses with 403 unless `enable_console` is set, accepts one
+printable line of at most 500 characters, audits the command (first 200 characters) and
+returns at most 64 KB of the answer.
+
 **Routes** (`web/routes_servers.py`): `GET /servers/{id}` (any signed-in user),
 `POST /servers/{id}/map`, `/restart`, `/maps/refresh` (operator, CSRF-protected). On
 success they redirect back with a notice; on failure they re-render the page with the
-message and the fitting status code. `GET /admin/audit` shows the newest 200 audit entries.
+message and the fitting status code. `GET /servers/{id}/players` is the player list fragment
+(`_players.html`, refetched on `sse:server-<id>`); `POST /servers/{id}/players/kick`
+(operator) and `/players/ban` (administrator) act on it; the list shows only the buttons the
+user's role, the adapter and the player's entry allow. `GET`/`POST /servers/{id}/console`
+(administrator) is the console page (`console.html`); the answer is shown escaped in a
+`<pre>`. `GET /admin/audit` shows the newest 200 audit entries.
 
 **Events** (`core/events.py`, `web/routes_events.py`). `EventBus` fans out `Event(kind,
 server_id)` to subscribers through bounded queues; a subscriber that falls behind gets one
@@ -542,11 +687,15 @@ Until map images exist (step 1.7) cards show a coloured placeholder with the map
 ## Map images
 
 _State: storage, delivery, upload and display implemented (step 1.7, `core/map_images.py`,
-`web/routes_map_images.py`). Online providers follow with the game phases._
+`web/routes_map_images.py`); online sources for Counter-Strike and the stock map catalogue
+implemented (step 2.4, `core/image_sources.py`, `core/image_lookup.py`, `core/catalog.py`);
+TrackMania Exchange for Trackmania (step 3.4). Unreal Archive follows with phase 4._
 
-An image belongs to a **game family and a map key** (table `map_images`, key stored
-lower-case), not to one server: every server of that family with a map of that name shows
-it.
+An image belongs to a **game and a map key** (table `map_images`: adapter id and
+lower-case key), not to one server: every server of that game with a map of that name
+shows it. Games of one family do not share images, because their maps look different
+(`de_dust2` in CS 1.6 and in CS2); this changed in migration 0007, which kept the images it
+could attribute to a game and dropped the others.
 
 - **Processing** (`process()`): only JPEG, PNG and WebP are accepted, at most 10 MB and 40
   megapixels (checked before decoding, so a small file cannot expand into a huge image). The
@@ -556,9 +705,9 @@ it.
 - **Storage**: `<data_dir>/map-images/<random>.webp`, directory mode 700, files mode 600.
   File names are random and generated by LANPilot; no path is ever built from a map name or
   an upload's file name. Replacing an image writes a new file and deletes the old one.
-- **Lookup**: `MapImageIndex` (`app.state.map_images`) keeps (family, key) → file name in
+- **Lookup**: `MapImageIndex` (`app.state.map_images`) keeps (game, key) → file name in
   memory, loaded at start and updated on every change, so rendering cards needs no query.
-  Templates call `map_image_url(family, key)`.
+  Templates call `map_image_url(adapter_id, key)`.
 - **Delivery**: `GET /map-images/<file>` for signed-in users. Only names that match the
   generated pattern and are in the index are served. Because the name changes with the
   image, responses are cached for a year (`private, immutable`).
@@ -569,17 +718,68 @@ it.
 - **Display**: `_card.html` and `_server_live.html` show the image of the current map, or the
   coloured placeholder with the map name when there is none.
 
-Planned provider chain per game family (first hit is stored through the same `store()`):
+**Online sources** (`core/image_sources.py`). `Fetcher` is the only code that talks to the
+internet: HTTPS only, to the hosts of the configured sources only, redirects are never
+followed, JSON answers are limited to 2 MB and images to 10 MB, 15 s per request, no proxy
+from the environment, a `User-Agent` naming LANPilot. HTTP 404 and anything odd count as
+"not here"; network errors, 429 and 5xx raise `FetchError` ("ask again later"). A source
+(`ImageSource.find()`) turns a map into the URL of a candidate image and knows nothing about
+games: adapters declare the identifiers a source needs in `GameAdapter.image_lookup`.
 
-1. image uploaded by an administrator,
-2. game-specific sources – Trackmania: TMX by track UId; Unreal Tournament: an index built
-   from the public-domain metadata of Unreal Archive; Counter-Strike: Steam Workshop by id,
-   then GameBanana, then GameTracker,
-3. the placeholder.
+| Source | Lookup | Identifier from the adapter |
+|---|---|---|
+| `steam_workshop` | `GetPublishedFileDetails` for `MapRef.extra["workshop_id"]`, app id must match | `steam_app` |
+| `gamebanana` | API search, only an upload in "Maps" of that game named exactly like the map; skipped for stock maps | `gamebanana` (game id) |
+| `gametracker` | fixed thumbnail URL `…/160x120/<slug>/<map>.jpg` | `gametracker` (slug) |
+| `tmx` | `/api/tracks?uid=…` on each listed site; screenshot if `HasImages`, else thumbnail if `HasThumbnail` | `tmx` (comma-separated TMX sites) |
+| `unreal_archive` | the bundled index `catalog/unreal-archive.json.gz` (no request); then the image | `unreal_archive` (the game's name in the archive) |
 
-Images are **not** shipped in the repository or the packages. A `lanpilot images prefetch`
-command will load all images for the installed maps in advance. Details and verified
-endpoints: [research/map-image-sources.md](research/map-image-sources.md).
+Values from answers are checked before use (GameBanana's image must lie under its own image
+host with a plain file name; a TMX image URL is only built from the id TMX returned for
+exactly that UId, because TMX answers unknown ids with a placeholder picture); map keys and slugs go into URLs only if they match
+`[A-Za-z0-9_.-]{1,64}`.
+
+**Lookup** (`core/image_lookup.py`, `app.state.image_lookup`). `ImageLookup.lookup()` asks
+the sources in the configured order and stores the first image that can be fetched and
+processed, through `MapImageIndex.store()` with the source's id as `provider` and the image
+URL as `source_url`. A lookup without result is remembered in `map_image_misses`
+(`not_found`); removing an image remembers `removed`. "Not found" is forgotten whenever
+LANPilot starts, so an update that brings a new source gets its chance at once. How hard to try depends on who asks:
+
+| Who asks (`Reach`) | `not_found` | `removed` | after a network error |
+|---|---|---|---|
+| the poll, for each server's current map (`AUTOMATIC`) | skip for `retry_days` (and not queued again for an hour) | skip | skip for 10 min |
+| "look for all missing images", `lanpilot images prefetch` (`MISSING`) | ask again | skip | ask |
+| "look online" for one map (`ONE`) | ask again | ask again | ask |
+
+`ServerManager.on_map` reports the current map after every poll; `want()` queues a lookup
+unless there is an image or one is queued already. One background task works through the
+queue with a pause of 0.5 s between maps, and calls `manager.announce()` after a find, so
+open pages show the image. While idle it reads the index again every minute, which picks
+up images stored by `lanpilot images prefetch` in another process. With `images.online`
+off nothing is queued and no task runs.
+
+**Catalogue** (`core/catalog.py`, `catalog/*.toml`). Display names of stock maps per
+adapter id (`de_dust2 = "Dust II"`), loaded once per process and validated. `maps.replace_reported()`
+fills in a name for every map the server reports without one, and the poll does the same for
+the current map, so cards say "Dust II" and the picker "Dust II (de_dust2)". The catalogue
+never adds maps a server did not report; games whose protocol cannot list maps will use it
+for that when they are added (planned with Call of Duty).
+
+**Unreal Archive index.** `scripts/build_unreal_index.py` reads the archive's public-domain
+metadata (one YAML file per upload, from a sparse clone of `unreal-archive-data`) and writes
+game → lower-case map file name → first screenshot URL and title, gzip-compressed JSON (about
+0.7 MB for 16 000 UT99, 5 000 UT2004 and 1 200 UT3 maps). An original upload wins over a
+variation, then the earliest; map packs are left out because their screenshots are not tied
+to a map. The index is regenerated by hand and committed; its revision is stored inside.
+
+Images are **not** shipped in the repository or the packages. `lanpilot images prefetch`
+loads all images for the stored maps in advance. Details and verified endpoints:
+[research/map-image-sources.md](research/map-image-sources.md).
+
+**Orphaned files.** At start-up LANPilot deletes image files that no database row refers to
+and that are older than an hour (the prefetch command may have written a file it has not
+committed yet).
 
 ## Security
 
@@ -610,9 +810,10 @@ _State: planned; each mechanism lands with the step named in brackets._
 - **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 11 MB with 413 before
   anything reads them, and requests with a body but without `Content-Length` with 411.
 - **Uploads** (1.7 ✔) – images are never stored as received; see "Map images".
-- **Outbound requests** (with the first online image provider) – image fetching only to a
-  fixed list of hosts, no redirects into private networks, size limit; the fetched data goes
-  through the same re-encoding as uploads.
+- **Outbound requests** (2.4 ✔, `core/image_sources.py`) – HTTPS only, to the hosts of the
+  configured image sources only, redirects never followed, no proxy from the environment,
+  size and time limits; values from answers are checked before use, and every image goes
+  through the same re-encoding as uploads. `images.online = false` switches it off.
 - **Operation** (1.8) – binds to `127.0.0.1` by default, TLS through a reverse proxy,
   dedicated system user, hardened systemd unit.
 - **Supply chain** (0.4, 1.8) – pinned dependencies with hashes, Dependabot, `pip-audit`,

@@ -16,7 +16,7 @@ implements the game.
 | Protocol | Usable library | Decision |
 |---|---|---|
 | Status queries | `opengsq` (MIT, async) [verified] | use it |
-| Source RCON | `opengsq.rcon_protocols.source_rcon` (MIT, async) [verified] | use it |
+| Source RCON | `opengsq.rcon_protocols.source_rcon` (MIT, async) [verified] | not used: returns empty answers on CS2 (measured, see `games/counter-strike.md`); own transport |
 | Source RCON | `rcon` on PyPI (GPL-3.0) [verified] | not usable (license) |
 | GoldSrc RCON | none found | own transport, about 100 lines |
 | GBXRemote | PyPlanet (GPL-3.0) [verified]; `trackmania-nations-forever-client` (largely untested by its own README) [verified] | own transport, about 150–200 lines |
@@ -52,9 +52,9 @@ Sources: <https://rconed.sourceforge.net/xref/net/sourceforge/rconed/Rcon.html>,
   after the command and collect bodies until its id comes back. [verified]
 - Commands [background]: `maps *`, `changelevel <map>`, `mp_restartgame 1` (soft),
   `changelevel <current map>` (hard), `status`, `kickid <userid>`, `stats`.
-- **CS2** [unverified]: whether `maps *` still works; `host_workshop_map <id>`,
-  `ds_workshop_changelevel <name>`, `ds_workshop_listmaps`. Forum reports from 2023–24 describe
-  RCON problems on LAN dedicated servers; these may be outdated.
+- **CS2**: measured on 2026-10-14; the results are in
+  [games/counter-strike.md](../games/counter-strike.md). `maps *` works but lists many
+  non-maps, `stats` prints nothing, answers carry wrong ids.
 
 Sources: <https://developer.valvesoftware.com/wiki/Source_RCON_Protocol> (only excerpts were
 reachable), <https://rubydoc.info/gems/rconrb/Rcon/Client>,
@@ -62,13 +62,16 @@ reachable), <https://rubydoc.info/gems/rconrb/Rcon/Client>,
 
 ## Trackmania (GBXRemote / XML-RPC)
 
+- TrackMania Forever was measured on 2026-10-14; the results are in
+  [games/trackmania.md](../games/trackmania.md). The points below remain for the other
+  versions.
 - TCP, default port 5000. On connect the server sends a 4-byte length (11) and the protocol
   name `GBXRemote 1` or `GBXRemote 2`. [verified via secondary source]
 - GBXRemote 2: every call and response is prefixed by two unsigned 32-bit integers, length
   and handle. GBXRemote 1 has only the length. The payload is an XML-RPC `methodCall`. [verified
   via secondary source]
-- The client chooses the handle; server callbacks carry a handle with the high bit set.
-  [background]
+- The client chooses the handle; calls use handles with the high bit set (`0x80000001` …),
+  callbacks lower ones. [verified for calls on TMNF]
 - `Authenticate(login, password)` with login `SuperAdmin`, `Admin` or `User`. [background]
 - A running server lists its own methods through `system.listMethods`. The dedicated server
   download also ships a `ListMethods.html`. [background]
@@ -90,8 +93,9 @@ Method names are [verified] from a published method list; parameters are not.
   playlist; `InsertChallenge`/`AddChallenge` take a path relative to the tracks directory.
   LANPilot therefore combines the playlist with manually maintained entries.
 - Map info contains a `UId` that can be used for TMX lookups. [background]
-- TrackMania Original, Sunrise, Nations ESWC: whether any remote control exists is
-  [unverified].
+- TrackMania Original, Sunrise and Nations ESWC share one dedicated server binary with
+  GBXRemote 2 remote control; Sunrise eXtreme and Nations ESWC were measured on 2026-10-14
+  (see [games/trackmania.md](../games/trackmania.md)).
 
 Sources: <https://github.com/ManiaDotNet/ServerController>,
 <https://github.com/ManiaDotNet/ServerController/blob/master/RPC-Method-List.md>,
@@ -109,10 +113,9 @@ The WebAdmin is an HTTP server built into the game server. Passwords travel unen
   the game include `Map`, `RestartMap`, `Switch <url>`, `Kick`, `KickBan`. [verified]
 - **UT3:** `http://host:port/ServerAdmin`; with `bHttpAuth=False` a login form is used, with
   `bHttpAuth=True` HTTP basic auth. [verified via secondary source]
-- **[unverified] for all versions:** the exact page URLs (`current_game`, `current_console`,
-  `current_restart`), form field names (`MapSelect`, `GameTypeSelect`, …), whether the map
-  dropdown lists every installed map of a game type, and whether the OldUnreal 469 patch adds
-  anything. **These are measured in roadmap step 4.1 before any code is written.**
+- UT99, UT2004 and UT3 were measured on 2026-10-14: page URLs, form fields, map lists and
+  authentication are in [games/unreal-tournament.md](../games/unreal-tournament.md). The
+  map dropdown of `current_game` lists only the rotation; `defaults_maps` lists all maps.
 - A known old UT2004 bug: empty map dropdown and "Invalid map index". [verified]
 - Alternative for UT2004: the MIT-licensed mutator "RestAdmin" adds an HTTP/JSON API
   (<https://git.fuxle.net/fuxle/UT2004REST>). It requires installing a mutator on the server,

@@ -24,6 +24,7 @@ are rejected, so a typing error does not go unnoticed. Restart the service after
 | `log_level` | `debug`, `info`, `warning` or `error` | `info` |
 | `auto_migrate` | bring the database to the current schema when the service starts | `true` |
 | `enable_demo_adapter` | offer a simulated game server for trying LANPilot out | `false` |
+| `enable_console` | let administrators send raw console commands to game servers (each one is recorded in the audit log) | `false` |
 
 Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 `lanpilot secret generate-key --output <file>`; the packages do this at installation.
@@ -64,6 +65,34 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 | `timeout_seconds` | how long LANPilot waits for an answer | `8` |
 
 Servers that do not answer are asked less often, up to six times the interval.
+
+### `[images]`
+
+| Key | Meaning | Default |
+|---|---|---|
+| `online` | look for map images on the internet | `true` |
+| `sources` | which sources to ask, in this order | `["steam_workshop", "gamebanana", "gametracker", "tmx", "unreal_archive"]` |
+| `retry_days` | after no source had an image, wait this long before asking again | `7` |
+
+With `online` on, LANPilot looks for an image of the current map of every server by
+itself. Administrators can ask for all missing images of a server on its map image page,
+and `lanpilot images prefetch` does the same for every server from the command line, for
+example before a LAN party without internet. Found images are stored in the data
+directory and shown from there; the internet is only needed while looking.
+
+| Source | What it has | Used for |
+|---|---|---|
+| `steam_workshop` | the preview image of a Steam Workshop item | maps whose server reports the workshop id |
+| `gamebanana` | screenshots of community maps | custom maps whose name matches an upload exactly |
+| `gametracker` | 160×120 thumbnails of stock and popular maps | other Counter-Strike maps |
+| `tmx` | TrackMania Exchange screenshots (320×240) or thumbnails | Trackmania tracks, found by their unique id |
+| `unreal_archive` | screenshots of maps uploaded to Unreal Archive | Unreal Tournament maps, looked up in an index shipped with LANPilot; mostly community maps, few stock maps |
+
+GameBanana is not asked for stock maps, because it holds remakes, not the originals. The
+terms of use of GameBanana and GameTracker have not been confirmed; leave them out of
+`sources` if that matters to you. Requests go only to the hosts of the configured sources,
+over HTTPS, without following redirects; every image is decoded and encoded again before it
+is stored. An image an administrator removes is not fetched again automatically.
 
 ## Examples
 

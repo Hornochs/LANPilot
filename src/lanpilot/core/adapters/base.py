@@ -35,6 +35,7 @@ class Capability(StrEnum):
     KICK = "kick"  # kick()
     BAN = "ban"  # ban()
     CONSOLE = "console"  # console()
+    MANUAL_MAPS = "manual_maps"  # look_up_map(): maps the server has but does not list
     LOAD_STATS = "load_stats"  # query() fills ServerStatus.load
     DISCOVER = "discover"  # discover()
 
@@ -94,6 +95,10 @@ class Player:
     score: int | None = None
     ping: int | None = None
     team: str | None = None
+    bot: bool = False
+    # False where the protocol offers no way for this entry (e.g. bots on UT99's WebAdmin).
+    can_kick: bool = True
+    can_ban: bool = True
 
 
 @dataclass(frozen=True)
@@ -156,6 +161,7 @@ _CAPABILITY_METHODS: dict[Capability, str] = {
     Capability.KICK: "kick",
     Capability.BAN: "ban",
     Capability.CONSOLE: "console",
+    Capability.MANUAL_MAPS: "look_up_map",
     Capability.DISCOVER: "discover",
 }
 
@@ -167,10 +173,14 @@ class GameAdapter(ABC):
     id: ClassVar[str]
     #: Name shown to users, e.g. "Counter-Strike 1.6".
     name: ClassVar[str]
-    #: Group of related games sharing maps and image sources, e.g. "counterstrike".
+    #: Group of related games, e.g. "counterstrike"; names the catalogue file. Map images
+    #: are not shared within a family: they belong to one game (``id``).
     family: ClassVar[str]
     capabilities: ClassVar[frozenset[Capability]]
     connection_schema: ClassVar[type[ConnectionSettings]]
+    #: Identifiers online image sources need for this game, by source: e.g.
+    #: ``{"gametracker": "css", "gamebanana": "2", "steam_app": "730"}``. Optional.
+    image_lookup: ClassVar[Mapping[str, str]] = {}
 
     def __init__(self, connection: ConnectionSettings) -> None:
         if not isinstance(connection, self.connection_schema):
@@ -209,6 +219,12 @@ class GameAdapter(ABC):
 
     async def ban(self, player: Player, reason: str = "") -> None:
         raise UnsupportedError(f"{self.name} cannot ban players")
+
+    async def look_up_map(self, key: str) -> MapRef:
+        """Check that the server has a map it does not list (a track outside the playlist)
+        and return it. Raise ``CommandRejectedError`` if it has none of that name.
+        ``change_map()`` must be able to switch to every map returned here."""
+        raise UnsupportedError(f"{self.name} cannot add maps by hand")
 
     async def console(self, command: str) -> str:
         """Run a raw console command and return the server's answer. Administrators only."""

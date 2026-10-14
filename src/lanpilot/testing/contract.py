@@ -34,6 +34,7 @@ async def _refuses(adapter: GameAdapter, capability: Capability) -> None:
         Capability.KICK: lambda: adapter.kick(nobody),
         Capability.BAN: lambda: adapter.ban(nobody),
         Capability.CONSOLE: lambda: adapter.console("status"),
+        Capability.MANUAL_MAPS: lambda: adapter.look_up_map("no_such_map"),
     }
     if capability not in calls:
         return

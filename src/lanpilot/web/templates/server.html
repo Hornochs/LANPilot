@@ -7,6 +7,9 @@
 {% endif %}
 <div hx-ext="sse" sse-connect="{{ root }}/events">
   {% include "_server_live.html" %}
+  {% if state.can("players") %}
+  {% include "_players.html" %}
+  {% endif %}
 </div>
 
 {% if can_operate and state.can("map_change") %}
@@ -20,7 +23,8 @@
       {% for game_type, rows in maps.items() %}
       {% if game_type %}<optgroup label="{{ game_type }}">{% endif %}
       {% for row in rows %}
-      <option value="{{ row.id }}"{% if state.status and state.status.map and state.status.map.key == row.key %} selected{% endif %}>{{ row.label }}</option>
+      {% set current = state.status.map if state.status else none %}
+      <option value="{{ row.id }}"{% if current and current.key|lower == row.key|lower and (not row.game_type or not state.status.game_type or row.game_type == state.status.game_type) %} selected{% endif %}>{{ row.label }}{% if row.name and row.name not in row.key %} ({{ row.key }}){% endif %}</option>
       {% endfor %}
       {% if game_type %}</optgroup>{% endif %}
       {% endfor %}
@@ -67,8 +71,11 @@
 <p>
   <a href="{{ root }}/">Back to all servers</a>
   {% if auth.is_admin %}
-  · <a href="{{ root }}/admin/servers/{{ state.server_id }}/maps">Map images</a>
+  · <a href="{{ root }}/admin/servers/{{ state.server_id }}/maps">Maps and images</a>
   · <a href="{{ root }}/admin/servers/{{ state.server_id }}/edit">Edit server</a>
+  {% if state.can("console") %}
+  · <a href="{{ root }}/servers/{{ state.server_id }}/console">Console</a>
+  {% endif %}
   {% endif %}
 </p>
 {% endblock %}

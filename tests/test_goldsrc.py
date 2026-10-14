@@ -20,11 +20,13 @@ from lanpilot.core.adapters import (
 from lanpilot.core.adapters.registry import load_registry
 from lanpilot.core.adapters.schema import describe_fields
 from lanpilot.core.transports.goldsrc_rcon import GoldSrcRcon, assemble, printed_text
+from lanpilot.games.counterstrike.common import safe_message
 from lanpilot.games.counterstrike.goldsrc import (
     CounterStrike16Adapter,
     CounterStrike16Connection,
     parse_maps,
     parse_stats,
+    parse_status,
 )
 from lanpilot.testing.contract import check_adapter
 from lanpilot.testing.goldsrc import GoldSrcSimulator
@@ -262,6 +264,60 @@ async def test_unreachable_server(server: GoldSrcSimulator) -> None:
         await game.query()
 
 
+# --- players and console -------------------------------------------------------------------
+
+
+def test_status_players_are_parsed() -> None:
+    answer = (
+        "hostname:  LAN\n"
+        "#      name userid uniqueid frag time ping loss adr\n"
+        '# 1    "Ada" 12 STEAM_0:1:23   5 01:23   25    0 10.0.0.5:27005\n'
+        '# 2 "say "x" 13 BOT" 13 STEAM_ID_LAN  -2 1:01:23   40    1 10.0.0.6:27005\n'
+        '# 3 "Bot01" 14 BOT   0 00:10    0    0\n'
+        '# 4 "HLTV" 15 HLTV hltv:2/128 delay:30 00:10 10.0.0.9:27020\n'
+        "3 users\n"
+    )
+
+    players = parse_status(answer)
+
+    assert [(p.id, p.name, p.score, p.ping, p.bot, p.can_ban) for p, _ in players] == [
+        ("12", "Ada", 5, 25, False, True),
+        ("13", 'say "x" 13 BOT', -2, 40, False, True),
+        ("14", "Bot01", 0, 0, True, False),
+    ]
+    assert [address for _, address in players] == ["10.0.0.5", "10.0.0.6", None]
+
+
+@pytest.mark.parametrize(
+    ("reason", "sent"),
+    [("afk", "afk"), ('a";quit\n', "aquit"), ("  two   words ", "two words"), ("x" * 80, "x" * 64)],
+)
+def test_kick_messages_cannot_change_the_command(reason: str, sent: str) -> None:
+    assert safe_message(reason) == sent
+
+
+async def test_players_kick_ban_and_console(server: GoldSrcSimulator) -> None:
+    game = adapter(server)
+
+    players = await game.list_players()
+    assert [(p.id, p.name, p.score, p.bot) for p in players] == [
+        ("2", "Ada", 7, False),
+        ("3", "Bot01", 2, True),
+        ("4", "Player 3", 0, False),
+    ]
+    await game.kick(players[1], "bye; quit")
+    await game.ban(players[0], "cheating")
+    with pytest.raises(CommandRejectedError, match="IP address"):
+        await game.ban(players[1])  # gone, and bots have no address anyway
+
+    commands = server.player_commands
+    assert commands.kicks == [(3, "bye quit"), (2, "cheating")]
+    assert (commands.banned, commands.saved) == (["10.0.0.5"], 1)
+    assert [p.name for p in commands.roster] == ["Player 3"]
+    assert "kick #3 bye quit" in server.commands
+    assert await game.console("echo hello") == "hello \n"
+
+
 # --- through the web interface -------------------------------------------------------------
 
 
@@ -321,11 +377,11 @@ def test_counter_strike_server_in_the_web_interface(
     assert query("SELECT count(*) FROM server_maps") == [(6,)]
 
     card = client.get(f"/servers/{server_id}/card").text
-    assert "Counter-Strike 1.6" in card and "de_dust2" in card and "online" in card
+    assert "Counter-Strike 1.6" in card and "Dust II" in card and "online" in card  # catalogue name
 
     [(office,)] = query("SELECT id FROM server_maps WHERE key = 'cs_office'")
     assert post(f"/servers/{server_id}/map", map_id=str(office))[0] == 303
-    assert "cs_office" in client.get(f"/servers/{server_id}/card").text
+    assert ">Office<" in client.get(f"/servers/{server_id}/card").text
     assert background_server.current_map == "cs_office"
 
     assert post(f"/servers/{server_id}/restart", mode="soft")[0] == 303

@@ -140,6 +140,27 @@ What to take from it:
   needs timeouts where its protocol has no end marker.
 - LANPilot keeps one adapter instance per server and calls it from one task at a time. An
   adapter may therefore keep a connection open; release it in `close()`.
+- **Map images** are looked up online with the identifiers the adapter declares in the
+  optional class attribute `image_lookup`, e.g. `{"gametracker": "css", "gamebanana": "2",
+  "steam_app": "730"}` (GameTracker's game slug, GameBanana's game id, Steam app id) or
+  `{"tmx": "tmnf.exchange"}` (TrackMania Exchange sites). A map whose `MapRef.extra` carries
+  a `workshop_id` is looked up in the Steam Workshop, one with a `uid` on TMX.
+- **Maps the server does not list** (e.g. Trackmania tracks outside the playlist): declare
+  `Capability.MANUAL_MAPS` and implement `look_up_map(key)`, which asks the server whether
+  it has that map and returns it as a `MapRef`. Administrators can then add such maps on
+  the server's "Maps" page; `change_map()` must cope with them.
+- **Players** (`Capability.PLAYERS`, `KICK`, `BAN`): `list_players()` returns `Player`
+  entries whose `id` is what `kick()` and `ban()` need, unique on the server. Mark bots with
+  `bot=True` and set `can_kick`/`can_ban` to `False` for entries the protocol cannot remove;
+  the interface then shows no button for them. LANPilot lists the players again right before
+  a kick or ban and passes the fresh entry. The `reason` is free text from an operator:
+  leave it out or reduce it to harmless characters before it goes into a command.
+- **Console** (`Capability.CONSOLE`): `console(command)` sends one line as it is and returns
+  the server's answer. Only administrators can use it, and only when the console is switched
+  on in the configuration.
+- **Stock map names** for the map picker can be added to the catalogue in
+  `src/lanpilot/catalog/<family>.toml`: a table named after the adapter id with
+  `map_key = "Display name"` lines.
 
 ## Testing it
 

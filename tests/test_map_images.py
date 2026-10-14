@@ -50,10 +50,10 @@ def test_upload_is_reencoded_stored_privately_and_shown(
     status, _ = upload(site, server_id, map_id(query, server_id, "dm_foundry"), picture())
 
     assert status == 303
-    [(family, key, filename, provider, width, height)] = query(
-        "SELECT family, map_key, filename, provider, width, height FROM map_images"
+    [(game, key, filename, provider, width, height)] = query(
+        "SELECT game, map_key, filename, provider, width, height FROM map_images"
     )
-    assert (family, key, provider, width, height) == ("demo", "dm_foundry", "upload", 64, 48)
+    assert (game, key, provider, width, height) == ("demo", "dm_foundry", "upload", 64, 48)
     stored = images_dir(settings) / filename
     assert stat.S_IMODE(stored.stat().st_mode) == 0o600
     assert stat.S_IMODE(stored.parent.stat().st_mode) == 0o700

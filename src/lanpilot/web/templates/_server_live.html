@@ -11,7 +11,7 @@
   {% endif %}
   <section class="card server-facts">
     {% set current = state.status.map if state.status else none %}
-    {% set image = map_image_url(state.family, current.key) if current else none %}
+    {% set image = map_image_url(state.adapter_id, current.key) if current else none %}
     <div class="map-art{% if image %} has-image{% else %} tone-{{ (current.key if current else state.name)|tone }}{% endif %}">
       {% if image %}<img src="{{ image }}" alt="" loading="lazy">{% endif %}
       <span>{{ current.label if current else "" }}</span>

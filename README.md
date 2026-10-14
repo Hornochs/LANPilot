@@ -5,9 +5,12 @@ server on one dashboard, change the map, restart a match and manage players with
 into each machine.
 
 > **Status: early development.** The core is in place: accounts, server management, live
-> dashboard, map changes and restarts, map images and distribution packages. The first game
-> works: **Counter-Strike 1.6**. Other Counter-Strike versions, Trackmania and Unreal
-> Tournament come next. Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
+> dashboard, map changes and restarts, player list with kick and ban, an optional console for
+> administrators, map images (uploaded or found online) and distribution packages. Working
+> games: **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
+> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, and **Unreal Tournament 99, 2004
+> and 3** (player management not yet on CS2). The on-demand LAN scan comes next.
+> Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## What LANPilot will do
 
@@ -38,9 +41,10 @@ into each machine.
 | Game | Remote protocol | State |
 |---|---|---|
 | Counter-Strike 1.6 | GoldSrc RCON (UDP) | **supported** ([details](docs/games/counter-strike.md)) |
-| Counter-Strike: Source, CS:GO, CS2 | Source RCON (TCP) | planned, high priority |
-| TrackMania Nations/United Forever, TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | planned, high priority |
-| Unreal Tournament 99, 2003, 2004, 3 | UWeb WebAdmin (HTTP) | planned, high priority |
+| Counter-Strike: Source, CS:GO, CS2 | Source RCON (TCP) | **supported** ([details](docs/games/counter-strike.md)) |
+| TrackMania Nations/United Forever, TrackMania Original, Sunrise (eXtreme), Nations ESWC | GBXRemote / XML-RPC | **supported** ([details](docs/games/trackmania.md)) |
+| TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | planned, high priority |
+| Unreal Tournament 99, 2004, 3 | WebAdmin (HTTP) + GameSpy query | **supported** ([details](docs/games/unreal-tournament.md)) |
 | Call of Duty 1/4/5, Quake 3, Jedi Knight | Quake 3 RCON (UDP) | planned |
 | Battlefield 2, Renegade X, ElDewrito | game-specific | planned |
 | Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | planned |

@@ -34,6 +34,12 @@ NOTICES = {
     "maps_refreshed": "The map list was read from the server again.",
     "image_saved": "The map image has been saved.",
     "image_removed": "The map image has been removed.",
+    "player_kicked": "The player was kicked.",
+    "player_banned": "The player was banned.",
+    "map_added": "The map was added to the list.",
+    "map_removed": "The map was removed from the list. The server's own list is unchanged.",
+    "images_requested": "LANPilot is looking for images online. They appear as they are found;"
+    " reload this page in a moment.",
 }
 
 # autoescape is on for every template, whatever its file extension.
@@ -67,8 +73,8 @@ def render(
     server = request.app.state.settings.server
     images = request.app.state.map_images
 
-    def map_image_url(family: str, map_key: str) -> str | None:
-        filename = images.filename(family, map_key)
+    def map_image_url(game: str, map_key: str) -> str | None:
+        filename = images.filename(game, map_key)
         return f"{server.root_path}/map-images/{filename}" if filename else None
 
     values: dict[str, Any] = {

@@ -393,7 +393,7 @@ async def test_reported_maps_are_filtered_before_storing(
             server = await servers.create_server(
                 db, box, DemoAdapter, servers.ServerInput("S", {"password": "demo"})
             )
-            count = await maps.replace_reported(db, server.id, reported)
+            count = await maps.replace_reported(db, server.id, reported, "demo")
             await db.commit()
             stored = await maps.list_maps(db, server.id)
     finally:

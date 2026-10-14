@@ -15,10 +15,11 @@ from starlette.staticfiles import StaticFiles
 from lanpilot import __version__
 from lanpilot.auth.throttle import LoginThrottle
 from lanpilot.config import Settings
-from lanpilot.core import map_images, secrets
+from lanpilot.core import image_lookup, map_images, secrets
 from lanpilot.core.actions import Actions
 from lanpilot.core.adapters.registry import load_registry
 from lanpilot.core.events import EventBus
+from lanpilot.core.image_lookup import ImageLookup
 from lanpilot.core.redaction import redactor
 from lanpilot.core.runtime import ServerManager
 from lanpilot.db.engine import create_engine, create_sessionmaker
@@ -118,10 +119,27 @@ def create_app(settings: Settings) -> FastAPI:
         app.state.engine = engine
         app.state.sessionmaker = sessionmaker
         app.state.manager = manager
-        app.state.actions = Actions(manager, sessionmaker)
+        app.state.actions = Actions(manager, sessionmaker, console_enabled=settings.enable_console)
+        lookup = ImageLookup(
+            settings.images,
+            index=app.state.map_images,
+            sessionmaker=sessionmaker,
+            data_dir=settings.data_dir,
+            registry=app.state.registry,
+            on_found=manager.announce,
+        )
+        app.state.image_lookup = lookup
+        manager.on_map = lookup.want
         try:
             async with sessionmaker() as db:
                 await app.state.map_images.load(db)
+                await image_lookup.forget_not_found(db)
+            orphans = map_images.sweep(
+                settings.data_dir / map_images.DIRECTORY_NAME, app.state.map_images
+            )
+            if orphans:
+                logger.info("deleted %d map image files no longer in use", orphans)
+            lookup.start()
             await manager.start()
         except Exception:
             # E.g. the schema is missing: serve anyway, so /healthz can report the problem.
@@ -130,6 +148,7 @@ def create_app(settings: Settings) -> FastAPI:
             yield
         finally:
             await manager.stop()
+            await lookup.stop()
             await engine.dispose()
 
     server = settings.server

@@ -138,12 +138,38 @@ class PollingSettings(BaseModel):
     timeout_seconds: float = Field(default=8, ge=1, le=60)
 
 
+# Online sources of map images, in the order they are asked (lanpilot.core.image_sources).
+IMAGE_SOURCES = ("steam_workshop", "gamebanana", "gametracker", "tmx", "unreal_archive")
+
+
+class ImageSettings(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    # Look for map images on the internet at all. Off for LAN parties without internet.
+    online: bool = True
+    # Which sources to ask, in this order.
+    sources: CommaList = Field(default_factory=lambda: list(IMAGE_SOURCES))
+    # After no source had an image, wait this long before asking again.
+    retry_days: int = Field(default=7, ge=1, le=365)
+
+    @field_validator("sources")
+    @classmethod
+    def _check_sources(cls, value: list[str]) -> list[str]:
+        unknown = [name for name in value if name not in IMAGE_SOURCES]
+        if unknown:
+            raise ValueError(
+                f"unknown source(s) {', '.join(unknown)}; known: {', '.join(IMAGE_SOURCES)}"
+            )
+        return list(dict.fromkeys(value))
+
+
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     server: ServerSettings
     auth: AuthSettings = Field(default_factory=AuthSettings)
     polling: PollingSettings = Field(default_factory=PollingSettings)
+    images: ImageSettings = Field(default_factory=ImageSettings)
     data_dir: Path = Path("/var/lib/lanpilot")
     secret_key: SecretStr | None = None
     secret_key_file: Path | None = None
@@ -151,6 +177,8 @@ class Settings(BaseModel):
     auto_migrate: bool = True
     # Offers a simulated game server for trying LANPilot out; not meant for production.
     enable_demo_adapter: bool = False
+    # Lets administrators send raw console commands to game servers.
+    enable_console: bool = False
 
     @property
     def database_path(self) -> Path:

@@ -31,3 +31,8 @@ package to a version and to the npm registry's integrity hash.
 
 Map preview images are not distributed with LANPilot. They are fetched at runtime from the
 sources an administrator enables and stay the property of their respective owners.
+
+| Path | Origin | License |
+|---|---|---|
+| `src/lanpilot/catalog/unreal-archive.json.gz` | index (map file name → first screenshot URL and title) built by `scripts/build_unreal_index.py` from the metadata in [unreal-archive-data](https://github.com/unreal-archive/unreal-archive-data); the revision is stored in the file | Unlicense (public domain) |
+| `src/lanpilot/catalog/counterstrike.toml` | stock map names, written for LANPilot | MIT, like LANPilot |

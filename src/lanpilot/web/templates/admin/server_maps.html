@@ -1,23 +1,56 @@
 {% extends "base.html" %}
-{% block title %}Map images of {{ server.name }} – LANPilot{% endblock %}
+{% block title %}Maps of {{ server.name }} – LANPilot{% endblock %}
 {% block content %}
-<h1>Map images of {{ server.name }}</h1>
+<h1>Maps of {{ server.name }}</h1>
 {% if error %}
 <p class="banner error" role="alert">{{ error }}</p>
 {% endif %}
+{% if manual_maps %}
+<section class="card">
+  <h2>Add a map the server does not list</h2>
+  <p class="muted">For a track file that is on the server but not in its playlist. Enter its
+    path relative to the server's Tracks directory; LANPilot asks the server whether it has
+    it. Changing to it puts it into the playlist.</p>
+  <form method="post" action="{{ root }}/admin/servers/{{ server.id }}/maps/manual">
+    <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+    <label for="manual-key">File name</label>
+    <input id="manual-key" name="key" type="text" required maxlength="200"
+           placeholder="Challenges/My Challenges/Fun.Challenge.Gbx">
+    <button type="submit">Add map</button>
+  </form>
+</section>
+{% endif %}
+<h2>Images</h2>
 <p class="muted">An image is used for every server of this game that has a map with the same
   name. JPEG, PNG or WebP, up to {{ max_megabytes }} MB; it is scaled down and stored without
   metadata.</p>
+{% if online %}
+<p class="muted">LANPilot looks for an image of the current map online by itself. Images it
+  finds keep a note of their source. An image you remove is not fetched again automatically.</p>
+{% if maps %}
+<form method="post" action="{{ root }}/admin/servers/{{ server.id }}/maps/fetch-images">
+  <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+  <button type="submit">Look for all missing images online</button>
+</form>
+{% endif %}
+{% else %}
+<p class="muted">Looking for images online is switched off.</p>
+{% endif %}
 {% if maps %}
 <div class="map-list">
   {% for map in maps %}
-  {% set image = map_image_url(family, map.key) %}
+  {% set image = map_image_url(game, map.key) %}
   <section class="map-entry">
     <div class="map-art{% if image %} has-image{% else %} tone-{{ map.key|tone }}{% endif %}">
       {% if image %}<img src="{{ image }}" alt="" loading="lazy">{% endif %}
       <span>{{ map.label }}</span>
     </div>
-    <p class="muted">{{ map.key }}{% if map.game_type %} · {{ map.game_type }}{% endif %}</p>
+    {% set lower = map.key|lower %}
+    <p class="muted">{{ map.key }}{% if map.game_type %} · {{ map.game_type }}{% endif %}
+      {%- if map.source == manual_source %} · added by hand{% endif %}
+      {%- if image and providers.get(lower) %} · image from {{ providers[lower] }}
+      {%- elif not image and misses.get(lower) %} · {{ "image removed" if misses[lower].reason == "removed" else "nothing found online" }}
+      {%- endif %}</p>
     <form method="post" enctype="multipart/form-data"
           action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image">
       <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
@@ -25,6 +58,20 @@
              aria-label="Image for {{ map.label }}" required>
       <button type="submit" class="small">{{ "Replace image" if image else "Upload image" }}</button>
     </form>
+    {% if online and not image %}
+    <form method="post"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image/fetch">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <button type="submit" class="link">Look online</button>
+    </form>
+    {% endif %}
+    {% if map.source == manual_source %}
+    <form method="post"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/manual/delete">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <button type="submit" class="link">Remove from the list</button>
+    </form>
+    {% endif %}
     {% if image %}
     <form method="post"
           action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image/delete">

@@ -112,13 +112,13 @@ class ServerMap(Base):
 
 
 class MapImage(Base):
-    """Preview image of a map, shared by all servers of the same game family."""
+    """Preview image of a map, shared by all servers of the same game."""
 
     __tablename__ = "map_images"
-    __table_args__ = (UniqueConstraint("family", "map_key"),)
+    __table_args__ = (UniqueConstraint("game", "map_key"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    family: Mapped[str] = mapped_column(String(32))
+    game: Mapped[str] = mapped_column(String(32))  # adapter id
     map_key: Mapped[str] = mapped_column(String(200))  # lower-case
     # File in the image cache directory; the name is random and chosen by LANPilot.
     filename: Mapped[str] = mapped_column(String(64), unique=True)
@@ -127,3 +127,17 @@ class MapImage(Base):
     width: Mapped[int]
     height: Mapped[int]
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
+
+
+class MapImageMiss(Base):
+    """A map for which no online image is wanted right now: the sources had none, or an
+    administrator removed the one they had. Lookups skip it until ``checked_at`` is old."""
+
+    __tablename__ = "map_image_misses"
+    __table_args__ = (UniqueConstraint("game", "map_key"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    game: Mapped[str] = mapped_column(String(32))  # adapter id
+    map_key: Mapped[str] = mapped_column(String(200))  # lower-case
+    reason: Mapped[str] = mapped_column(String(16))  # "not_found" or "removed"
+    checked_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

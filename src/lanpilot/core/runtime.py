@@ -18,12 +18,13 @@ from typing import TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from lanpilot.core import maps, servers
+from lanpilot.core import catalog, maps, servers
 from lanpilot.core.adapters import (
     AdapterError,
     AuthenticationError,
     Capability,
     GameAdapter,
+    MapRef,
     ServerStatus,
 )
 from lanpilot.core.adapters.registry import AdapterRegistry
@@ -50,7 +51,6 @@ class ServerState:
     name: str
     adapter_id: str
     adapter_name: str
-    family: str
     host: str
     port: int
     enabled: bool
@@ -105,6 +105,8 @@ class ServerManager:
         self._interval = interval
         self._timeout = timeout
         self._runtimes: dict[int, ServerRuntime] = {}
+        #: Called with (adapter id, map) for the current map after every successful poll.
+        self.on_map: Callable[[str, MapRef], object] | None = None
 
     # --- lifecycle ---------------------------------------------------------------------
 
@@ -137,7 +139,6 @@ class ServerManager:
             name=server.name,
             adapter_id=server.adapter_id,
             adapter_name=adapter_class.name if adapter_class else server.adapter_id,
-            family=adapter_class.family if adapter_class else "",
             host=server.host,
             port=server.port,
             enabled=server.enabled,
@@ -276,6 +277,11 @@ class ServerManager:
             error = INTERNAL_ERROR
         else:
             runtime.failures = 0
+            if status.map is not None:
+                current = catalog.load().named(previous.adapter_id, status.map)
+                status = replace(status, map=current)
+                if self.on_map is not None:
+                    self.on_map(previous.adapter_id, current)
             runtime.state = replace(
                 previous, online=True, status=status, error=None, checked_at=now, last_seen_at=now
             )
@@ -300,7 +306,7 @@ class ServerManager:
             async with runtime.lock, asyncio.timeout(self._timeout):
                 reported = await adapter.list_maps()
             async with self._sessionmaker() as db:
-                await maps.replace_reported(db, server_id, reported)
+                await maps.replace_reported(db, server_id, reported, runtime.state.adapter_id)
                 await db.commit()
         except AuthenticationError as exc:
             runtime.state = replace(runtime.state, control_error=str(exc))
@@ -315,6 +321,9 @@ class ServerManager:
             runtime.state = replace(runtime.state, control_error=INTERNAL_ERROR)
         else:
             runtime.state = replace(runtime.state, control_error=None)
+            # Adapters may learn from the map list (e.g. the names of game types); ask for
+            # the status again right away, so pages do not wait a whole interval for that.
+            runtime.wake.set()
 
     def _publish_if_changed(self, before: ServerState, after: ServerState) -> None:
         # checked_at changes with every poll; it alone is no news.

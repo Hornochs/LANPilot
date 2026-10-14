@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Console of {{ state.name }} – LANPilot{% endblock %}
+{% block content %}
+<h1>Console of {{ state.name }}</h1>
+{% if error %}
+<p class="banner error" role="alert">{{ error }}</p>
+{% endif %}
+{% if enabled %}
+<p class="muted">Commands are sent to the server as they are and recorded in the audit log,
+  together with who sent them. What the server answers is shown below.</p>
+<form method="post" action="{{ root }}/servers/{{ state.server_id }}/console" class="card">
+  <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+  <label for="command">Command</label>
+  <input id="command" name="command" type="text" maxlength="500" required autocomplete="off"
+         value="{{ command }}">
+  <button type="submit">Send</button>
+</form>
+{% if output is not none %}
+<section class="card">
+  <h2>Answer</h2>
+  <pre class="console-output">{{ output or "(no output)" }}</pre>
+</section>
+{% endif %}
+{% else %}
+<section class="card">
+  <p>The console is switched off. An administrator of the LANPilot installation can switch it
+    on with <code>enable_console = true</code> in the configuration.</p>
+</section>
+{% endif %}
+<p><a href="{{ root }}/servers/{{ state.server_id }}">Back to {{ state.name }}</a></p>
+{% endblock %}

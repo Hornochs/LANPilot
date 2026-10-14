@@ -17,6 +17,8 @@ import re
 import struct
 from types import TracebackType
 
+from lanpilot.testing.rcon_players import PlayerCommands, default_roster
+
 HEADER = b"\xff\xff\xff\xff"
 PRINT_LIMIT = 1395  # the real server flushes its print buffer at about this size
 FRAGMENT_SIZE = 1391
@@ -39,7 +41,8 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
         self.maps = list(maps)
         self.current_map = self.maps[0]
         self.hostname = hostname
-        self.players = players
+        #: Players, kicks and bans (``status``, ``kick``, ``addip``, ``writeip``).
+        self.player_commands = PlayerCommands(default_roster(players))
         self.max_players = max_players
         self.challenge = "283211007"
         #: Commands that passed the password check, in order.
@@ -53,6 +56,10 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
         self.restarts: list[str] = []
         self.port = 0
         self._transport: asyncio.DatagramTransport | None = None
+
+    @property
+    def players(self) -> int:
+        return len(self.player_commands.roster)
 
     # --- lifecycle ---------------------------------------------------------------------
 
@@ -139,8 +146,27 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
                 f"map     :  {self.current_map} at: 0 x, 0 y, 0 z\n"
                 f"players :  {self.players} active ({self.max_players} max)\n\n"
                 "#      name userid uniqueid frag time ping loss adr\n"
-                f"{self.players} users\n"
+                + "".join(
+                    # The engine's format: "#%2i %8s %i %s", " %3i", " %02i:%02i",
+                    # " %4i  %3i", " %s"; bots have no address.
+                    f"#{slot:2d} {chr(34) + player.name + chr(34):>8} {player.userid} "
+                    f"{player.uniqueid} {player.frags:3d} 01:23 {player.ping:4d}    0"
+                    + (f" {player.address}" if player.address else "")
+                    + "\n"
+                    for slot, player in enumerate(self.player_commands.roster, 1)
+                )
+                + f"{self.players} users\n"
             )
+        if name == "kick":
+            if argument.startswith("#"):
+                self.player_commands.kick(argument[1:].strip())
+            return ""  # also for an unknown user id (measured)
+        if name == "addip":
+            self.player_commands.add_ip(argument)
+            return ""
+        if name == "writeip":
+            self.player_commands.saved += 1
+            return "Writing listip.cfg.\n"
         if name == "stats":
             return (
                 "CPU   In    Out   Uptime  Users   FPS    Players\n"

@@ -8,6 +8,7 @@ something that exercises every capability and every error. Enabled with
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import shlex
 from collections.abc import Sequence
 from typing import Literal
@@ -37,6 +38,7 @@ MAPS = (
     MapRef("race_a01", "A01 Race", "Race"),
 )
 PLAYER_NAMES = ("Ada", "Grace", "Linus", "Margaret", "Dennis", "Barbara")
+BOT_INDEX = 3
 
 
 class DemoConnection(ConnectionSettings):
@@ -83,8 +85,16 @@ class DemoAdapter(GameAdapter):
         assert isinstance(connection, DemoConnection)  # noqa: S101 - checked by the base class
         self._settings = connection
         self._map = MAPS[0]
+        # The fourth player is a bot that cannot be kicked, as on some real servers.
         self._players = [
-            Player(id=str(index + 1), name=name, score=index * 3, ping=20 + index * 7)
+            Player(
+                id=str(index + 1),
+                name=name,
+                score=index * 3,
+                ping=20 + index * 7,
+                bot=index == BOT_INDEX,
+                can_kick=index != BOT_INDEX,
+            )
             for index, name in enumerate(PLAYER_NAMES[: connection.players])
         ]
         self.restarts: list[RestartMode] = []
@@ -123,10 +133,7 @@ class DemoAdapter(GameAdapter):
     async def restart(self, mode: RestartMode) -> None:
         await self._connect()
         self.restarts.append(mode)
-        self._players = [
-            Player(id=player.id, name=player.name, score=0, ping=player.ping)
-            for player in self._players
-        ]
+        self._players = [dataclasses.replace(player, score=0) for player in self._players]
 
     async def list_players(self) -> Sequence[Player]:
         await self._connect()

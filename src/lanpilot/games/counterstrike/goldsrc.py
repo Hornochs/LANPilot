@@ -6,12 +6,12 @@ RCON. Protocol facts and how they were measured: docs/games/counter-strike.md.
 
 from __future__ import annotations
 
+import dataclasses
 import re
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from typing import ClassVar
 
-from opengsq.protocols.source import Source
-from opengsq.responses.source import Visibility
 from pydantic import Field, SecretStr
 
 from lanpilot.core.adapters import (
@@ -21,20 +21,38 @@ from lanpilot.core.adapters import (
     ConnectionSettings,
     GameAdapter,
     MapRef,
-    ProtocolError,
+    Player,
     RestartMode,
     ServerStatus,
-    ServerUnreachableError,
 )
 from lanpilot.core.transports.goldsrc_rcon import GoldSrcRcon
+from lanpilot.games.counterstrike.common import (
+    MAP_NAME,
+    MAX_NAME_LENGTH,
+    STATS_INTERVAL_SECONDS,
+    RconPlayerControl,
+    ip_of,
+    parse_stats,
+    query_status,
+)
 
-# Map names as they occur in practice. Everything that goes into a console command is
-# checked against this, so a crafted name cannot carry a second command.
-MAP_NAME = re.compile(r"[A-Za-z0-9_-]{1,64}")
-QUERY_TIMEOUT_SECONDS = 3.0
-# "stats" needs RCON and shows up in the server's log, so it is not asked with every poll.
-STATS_INTERVAL_SECONDS = 60.0
-MAX_NAME_LENGTH = 100
+__all__ = [
+    "CounterStrike16Adapter",
+    "CounterStrike16Connection",
+    "parse_maps",
+    "parse_stats",
+    "parse_status",
+]
+
+# A player in the answer to "status" (the engine's format "#%2i %8s %i %s" and so on):
+# # 1 "Ada" 2 STEAM_0:1:23   5 01:23   25    0 10.0.0.5:27005
+# slot, quoted name, user id, unique id ("BOT" for bots), frags, time, ping, loss, address.
+# The name is matched greedily: whatever it contains, the line ends with the real fields.
+STATUS_PLAYER = re.compile(
+    r'#\s*\d+\s+"(?P<name>.*)"\s+(?P<userid>\d{1,9})\s+(?P<uniqueid>\S+)\s+'
+    r"(?P<frags>-?\d{1,9})\s+[\d:]+\s+(?P<ping>\d{1,6})\s+\d+(?:\s+(?P<address>\S+))?\s*",
+    re.ASCII,  # user ids go into commands: no other digits than 0-9
+)
 
 
 class CounterStrike16Connection(ConnectionSettings):
@@ -45,7 +63,7 @@ class CounterStrike16Connection(ConnectionSettings):
     )
 
 
-class CounterStrike16Adapter(GameAdapter):
+class CounterStrike16Adapter(RconPlayerControl, GameAdapter):
     id = "cs16"
     name = "Counter-Strike 1.6"
     family = "counterstrike"
@@ -57,9 +75,14 @@ class CounterStrike16Adapter(GameAdapter):
             Capability.RESTART_SOFT,
             Capability.RESTART_HARD,
             Capability.LOAD_STATS,
+            Capability.PLAYERS,
+            Capability.KICK,
+            Capability.BAN,
+            Capability.CONSOLE,
         }
     )
     connection_schema = CounterStrike16Connection
+    image_lookup: ClassVar[Mapping[str, str]] = {"gametracker": "cs", "gamebanana": "4254"}
 
     def __init__(self, connection: ConnectionSettings) -> None:
         super().__init__(connection)
@@ -78,22 +101,8 @@ class CounterStrike16Adapter(GameAdapter):
         return self._rcon_client
 
     async def query(self) -> ServerStatus:
-        try:
-            info = await Source(self._host, self._port, QUERY_TIMEOUT_SECONDS).get_info()
-        except (TimeoutError, OSError) as exc:
-            raise ServerUnreachableError("The server did not answer the status query.") from exc
-        except Exception as exc:
-            raise ProtocolError("The server's status answer could not be read.") from exc
-
-        current = str(info.map)
-        return ServerStatus(
-            name=str(info.name)[:MAX_NAME_LENGTH],
-            players=int(info.players),
-            max_players=int(info.max_players),
-            map=MapRef(current) if MAP_NAME.fullmatch(current) else None,
-            password_protected=info.visibility == Visibility.Private,
-            load=await self._current_load(),
-        )
+        status = await query_status(self._host, self._port)
+        return dataclasses.replace(status, load=await self._current_load())
 
     async def _current_load(self) -> dict[str, float]:
         now = time.monotonic()
@@ -122,6 +131,41 @@ class CounterStrike16Adapter(GameAdapter):
         # scores; "restart" loads the current map again.
         await self._rcon().execute("sv_restart 1" if mode is RestartMode.SOFT else "restart")
 
+    async def console(self, command: str) -> str:
+        return await self._rcon().execute(command)
+
+    async def _execute(self, command: str) -> str:
+        return await self._rcon().execute(command)
+
+    def _parse_status(self, answer: str) -> list[tuple[Player, str | None]]:
+        return parse_status(answer)
+
+    def _kick_command(self, user_id: str, message: str) -> str:
+        # "kick #<userid> <message>": the player sees "Kicked by Console : <message>".
+        return f"kick #{user_id} {message}".rstrip()
+
+
+def parse_status(answer: str) -> list[tuple[Player, str | None]]:
+    """Players and their IP addresses from the answer to ``status`` (HLTV proxies, which
+    have no frags, are left out)."""
+    players = []
+    for line in answer.splitlines():
+        match = STATUS_PLAYER.fullmatch(line.strip())
+        if match is None:
+            continue
+        bot = match["uniqueid"] == "BOT"
+        address = None if bot else ip_of(match["address"])
+        player = Player(
+            id=match["userid"],
+            name=match["name"][:MAX_NAME_LENGTH],
+            score=int(match["frags"]),
+            ping=int(match["ping"]),
+            bot=bot,
+            can_ban=address is not None,
+        )
+        players.append((player, address))
+    return players
+
 
 def parse_maps(listing: str) -> list[str]:
     """Map names from the answer to ``maps *``, without duplicates, in the server's order."""
@@ -131,18 +175,3 @@ def parse_maps(listing: str) -> list[str]:
         if dot and extension.lower() == "bsp" and MAP_NAME.fullmatch(name):
             names.setdefault(name)
     return list(names)
-
-
-def parse_stats(answer: str) -> dict[str, float]:
-    """CPU load and server frame rate from the answer to ``stats``."""
-    lines = [line.split() for line in answer.splitlines() if line.strip()]
-    if len(lines) < 2:
-        return {}
-    values = dict(zip((column.lower() for column in lines[0]), lines[1], strict=False))
-    load: dict[str, float] = {}
-    for column in ("cpu", "fps"):
-        try:
-            load[column] = float(values[column])
-        except (KeyError, ValueError):
-            continue
-    return load

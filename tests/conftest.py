@@ -60,6 +60,8 @@ def base_env(tmp_path: Path) -> dict[str, str]:
         "LANPILOT_SERVER__PUBLIC_URL": PUBLIC_URL,
         "LANPILOT_DATA_DIR": str(tmp_path / "data"),
         "LANPILOT_SECRET_KEY": SECRET_KEY,
+        # Tests never reach out to the internet; image lookups use a fake fetcher.
+        "LANPILOT_IMAGES__ONLINE": "false",
     }
 
 

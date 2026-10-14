@@ -6,35 +6,63 @@ as done, and [architecture.md](architecture.md) describes any structural change 
 
 ## Current status
 
-_Last updated: 2026-10-13_
+_Last updated: 2026-10-14_
 
 | Phase | State |
 |---|---|
 | 0 – Foundation | done |
 | 1 – Core and release pipeline | done |
-| 2 – Counter-Strike | in progress |
-| 3 – Trackmania | not started |
-| 4 – Unreal Tournament | not started |
-| 5 – Player management and console | not started |
+| 2 – Counter-Strike | done |
+| 3 – Trackmania | in progress |
+| 4 – Unreal Tournament | done |
+| 5 – Player management and console | done |
 | 6 – On-demand LAN scan | not started |
 | 7 – More games | not started |
 | 8 – Hardening and 1.0 | not started |
 
-**Done:** 0.1–0.5 and 1.1–1.9, which completes phases 0 and 1; 2.1 and 2.2.
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5 and 5.1–5.2, which completes phases 0, 1, 2, 4
+and 5; 3.1, 3.2, 3.4 and 3.5.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
 all seven distribution packages and ran the install, upgrade, reinstall and removal test for
 each of them successfully (2026-10-13, in a private fork). CodeQL and dependency review are
 skipped while the repository is private; they need a public repository.
 
-The Counter-Strike 1.6 adapter was run against a real server (HLDS build 10211): status,
-map list, map change, both restarts and a wrong password behaved as
-[games/counter-strike.md](games/counter-strike.md) describes.
+All four Counter-Strike adapters were run against real servers (HLDS build 10211, CS:Source
+11003710, CS:GO 1.38.8.1, CS2 1.41.9.0): status, map list, map change, both restarts and a
+wrong password behaved as [games/counter-strike.md](games/counter-strike.md) describes; CS2
+also with a workshop map. CS:Source, CS:GO and CS2 were also used through the web
+interface.
+
+Map images were found online on the development instance: the current map automatically,
+and 34 of the 38 stock CS:GO maps through "look for all missing images" (GameTracker); the
+Steam Workshop and GameBanana lookups were checked with a workshop map and two community
+maps.
+
+The TrackMania Forever adapter was run against a TMNF server (build 2011-02-21): status,
+track list, track change, both restarts, a change while loading and a wrong password behaved
+as [games/trackmania.md](games/trackmania.md) describes. The TrackMania Sunrise adapter was run against a Sunrise eXtreme server
+the same way.
+
+The Unreal Tournament adapters were run against real servers (UT99 v469, UT2004 build 3369,
+UT3 patch 5): status, map lists per game type, change of map and game type, level reload and
+a wrong password behaved as [games/unreal-tournament.md](games/unreal-tournament.md)
+describes; all three were also used through the web interface.
+
+Phase 5 could only partly be run against real servers, because none of the test servers had
+a human player and most of them start bots only when one joins. Measured: the consoles of
+CS 1.6, UT99, UT2004 and UT3; UT3's scoreboard with bots (listed, not kickable); the player
+lists of all three UT WebAdmins, TMNF and Sunrise when empty, and the answers of TMNF and
+Sunrise to kicking or banning a login that is not there. The player rows, kick and ban
+requests of the UT WebAdmins follow the games' own WebAdmin code and templates, those of
+CS:Source and CS:GO the known `status` formats; the details are in the game documents. CS2
+has the console but no player management: its `status` format has not been measured.
 
 **In progress:** –
 
-**Next:** 2.3 (Source RCON adapters; needs a CS:Source, CS:GO or CS2 test server) or 2.4
-(stock map catalogue and image providers).
+**Next:** phase 6 (on-demand LAN scan). 3.3 (TM2/TM2020) is postponed: no test servers.
+Player management should be checked with real players at the next LAN party (see
+[Open points](#open-points)).
 
 **Open questions:** see [Open points](#open-points).
 
@@ -107,34 +135,53 @@ map list, map change, both restarts and a wrong password behaved as
 - **2.1** ✔ GoldSrc RCON transport (challenge, split response packets) with a simulator.
 - **2.2** ✔ Counter-Strike 1.6 adapter: `maps *`, `changelevel`, `sv_restart`, `restart`,
   `status`, `stats`; verified against a real server; facts in `games/counter-strike.md`.
-- **2.3** Source RCON adapters: CS:Source, CS:GO, CS2, including workshop maps.
-- **2.4** Stock map catalogue; image providers Steam Workshop, GameBanana, GameTracker.
+- **2.3** ✔ Source RCON transport and adapters for CS:Source, CS:GO and CS2, including CS2
+  workshop maps; verified against real servers.
+- **2.4** ✔ Stock map catalogue (display names of the stock maps of all four games); online
+  image sources Steam Workshop, GameBanana and GameTracker with remembered misses,
+  automatic lookup of the current map, "look for all missing images" and
+  `lanpilot images prefetch`. Images belong to one game, not to a family of games.
+  Verified against the real services on the development instance.
 
 ### Phase 3 – Trackmania (high priority, v0.3)
 
-- **3.1** GBXRemote 2 transport (length and handle framing, callbacks) with a simulator;
-  method list checked against a real server.
-- **3.2** TMNF/TMUF adapter (`GetChallengeList`, `ChooseNextChallenge` + `NextChallenge`,
-  `RestartChallenge`). Map list: playlist from the protocol plus manually maintained tracks
-  (`InsertChallenge`).
+- **3.1** ✔ GBXRemote 2 transport (length and handle framing, callbacks skipped, multicall)
+  with a simulator; the methods used were checked against `system.listMethods` of a real
+  server.
+- **3.2** ✔ TMNF/TMUF adapter (`GetChallengeList`, `ChooseNextChallenge` + `NextChallenge`,
+  `RestartChallenge`), verified against a TMNF server. Map list: the playlist from the
+  protocol plus tracks outside the playlist that administrators add by hand (confirmed by
+  the server, loaded with `InsertChallenge`).
 - **3.3** TM2/TM2020 adapter (`GetMapList`, `JumpToMapIdent`, `RestartMap`).
-- **3.4** Image provider TMX by track UId.
-- **3.5** TrackMania Original/Sunrise/Nations ESWC: find out whether remote control exists;
-  otherwise monitoring only.
+- **3.4** ✔ Image source TrackMania Exchange by track UId (TMNF and TMUF sites); 59 of the
+  60 Nations tracks found on the development instance.
+- **3.5** ✔ TrackMania Original, Sunrise and Nations ESWC share one dedicated server binary
+  with GBXRemote 2 remote control: `tmsunrise` adapter, verified against Sunrise eXtreme and
+  Nations ESWC (status without login, own restart method); Original not tested separately.
 
 ### Phase 4 – Unreal Tournament (high priority, v0.4)
 
-- **4.1** **Measure first:** WebAdmin forms and authentication on real UT99 and UT2004
-  servers; recorded pages become test fixtures; facts in `games/unreal-tournament.md`.
-- **4.2** UWeb transport (basic auth or form login, HTML parsing) with a simulator.
-- **4.3** UT99 and UT2004 adapters; map list from the WebAdmin dropdown per game type.
-- **4.4** UT2003 and UT3 adapters.
-- **4.5** Image provider Unreal Archive, including the script that builds the index.
+- **4.1** ✔ **Measure first:** WebAdmin forms and authentication on real UT99, UT2004 and UT3
+  servers; facts in `games/unreal-tournament.md`, reproduced by the simulators.
+- **4.2** ✔ UWeb transport (HTTP Basic auth, tolerant HTML form parsing, session cookie kept)
+  with simulators.
+- **4.3** ✔ UT99 and UT2004 adapters: status from the GameSpy query, map list per game type
+  from the WebAdmin, change of map and game type together, level reload; verified against
+  real servers.
+- **4.4** ✔ UT3 adapter (status from the WebAdmin, as UT3's LAN beacon cannot be used;
+  verified against a real server). UT2003 was dropped by decision (2026-10-14).
+- **4.5** ✔ Image source Unreal Archive: `scripts/build_unreal_index.py` builds the shipped
+  index from the archive's public-domain metadata; images are fetched on demand.
 
 ### Phase 5 – Player management and console (v0.5)
 
-- **5.1** Player list, kick and ban for the three priority families.
-- **5.2** Raw console for `admin` only, audited, with a global switch.
+- **5.1** ✔ Player list, kick and ban for the three priority families: CS 1.6, CS:Source and
+  CS:GO over RCON (`status`, kick by user id, ban by IP address), TrackMania Forever and
+  Sunrise over XML-RPC (by login), UT99, UT2004 and UT3 over the WebAdmin. Kick for
+  operators, ban for administrators; both audited. Players the game cannot remove (such as
+  bots on UT99 and UT3) are listed without buttons. Not CS2 (see the current status).
+- **5.2** ✔ Raw console for `admin` only, audited, switched off unless `enable_console` is
+  set: RCON games (all four Counter-Strike adapters) and the three UT WebAdmins.
 
 ### Phase 6 – On-demand LAN scan (v0.6)
 
@@ -158,9 +205,17 @@ map list, map change, both restarts and a wrong password behaved as
 
 ## Open points
 
-- CS2/CS:GO: needs a test server; behaviour of `maps *` and the workshop commands is
-  unverified.
-- Unreal WebAdmin: form fields and authentication are unverified until step 4.1.
-- TrackMania Original/Sunrise/ESWC: unknown whether any remote control exists.
+- CS2: the test server hung twice while the workshop map `bhop_water` was loaded; the
+  cause is probably that map. The idle limit of RCON connections is unmeasured.
+- CS:GO workshop maps (`workshop/<id>/<name>`) are not supported yet.
+- UT3: the status needs the WebAdmin password; its LAN beacon (UDP 14001) only answers
+  queries sent from that port.
+- Unreal Tournament stock maps have no online image source (Unreal Archive holds community
+  maps); they need uploaded images.
+- TrackMania Original: covered by `tmsunrise` (same server binary), not tested separately.
+- Player management with real players: kick and ban have not been run against a server
+  with human players (none of the test servers had any). To check at the next LAN party,
+  per game: the player list, a kick, a ban and that the ban holds after a reconnect.
+- CS2 player management: needs the `status` format of a CS2 server with players.
 - GameTracker and GameBanana: terms of use not confirmed; these image sources are therefore
   low priority and can be disabled individually.

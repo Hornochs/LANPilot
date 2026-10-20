@@ -12,7 +12,7 @@ from lanpilot import audit
 from lanpilot.auth import sessions, users
 from lanpilot.auth.throttle import LoginThrottle
 from lanpilot.i18n import M
-from lanpilot.web.deps import AppSettings, CsrfProtected, DbSession, OptionalAuth, client_ip
+from lanpilot.web.deps import AppSettings, DbSession, OptionalAuth, client_ip, csrf_protect
 from lanpilot.web.templating import render
 
 router = APIRouter()
@@ -135,12 +135,16 @@ async def login(
     return response
 
 
-@router.post("/logout", dependencies=[CsrfProtected])
+@router.post("/logout")
 async def logout(
     request: Request, db: DbSession, settings: AppSettings, auth: OptionalAuth
 ) -> Response:
     spec = sessions.cookie_spec(settings.server)
+    # A session that has already ended is simply forgotten: the cookie is cleared and the
+    # browser lands on the sign-in page instead of an error. A live session needs its CSRF
+    # token, so no other site can sign a user out.
     if auth is not None:
+        await csrf_protect(request, auth)
         await sessions.end(db, auth.session)
         audit.record(db, action="logout", actor=auth.user, ip=client_ip(request))
         await db.commit()

@@ -575,7 +575,9 @@ interactive API documentation (`/docs`, `/openapi.json`) is disabled.
 
 _State: implemented (step 1.2)._
 
-**Request pipeline**, outermost first: `SecurityHeadersMiddleware` → `HostCheckMiddleware` →
+**Request pipeline**, outermost first: `RootPathMiddleware` (sets the sub-path of
+`public_url` as the routing's root path; FastAPI's own argument for it is deprecated) →
+`SecurityHeadersMiddleware` → `HostCheckMiddleware` →
 `OriginCheckMiddleware` → `BodyLimitMiddleware` → routing → dependencies (`optional_auth` → `require_auth` →
 `require_role` → `csrf_protect`) → handler.
 
@@ -601,6 +603,8 @@ _State: implemented (step 1.2)._
   state-changing route; the origin check is the second, independent layer.
 - **Not signed in**: GET requests are redirected to `/login?next=…`; other methods and HTMX
   requests get 401. `next` is only honoured if it is a path inside LANPilot (`safe_next`).
+  `POST /logout` with a session that has already ended clears the cookie and redirects to
+  the sign-in page; with a live session it needs the CSRF token.
 - **User management rules** (`auth/users.py`): the last active administrator cannot be
   demoted, disabled or deleted; nobody can delete their own account; changing one's own
   password needs the current one; an administrator resetting someone's password, disabling

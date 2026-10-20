@@ -106,6 +106,8 @@ checked against their hashes when the package is built (`packaging/requirements.
 updated through Dependabot pull requests). Frontend libraries are vendored and pinned by
 integrity hash. GitHub Actions are pinned by commit, workflows have minimal permissions,
 releases carry checksums and a build provenance attestation. No GPL-licensed code is used.
+FastAPI's OpenTelemetry hooks stay inactive: no OpenTelemetry SDK or exporter is installed,
+so nothing is reported anywhere.
 
 ### The LANPilot host
 

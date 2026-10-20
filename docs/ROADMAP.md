@@ -247,7 +247,5 @@ Player management should be checked with real players at the next LAN party (see
   with human players (none of the test servers had any). To check at the next LAN party,
   per game: the player list, a kick, a ban and that the ban holds after a reconnect.
 - CS2 player management: needs the `status` format of a CS2 server with players.
-- FastAPI 0.153 deprecates the `root_path` argument LANPilot passes for sub-path setups; it
-  still works, the warning shows in the tests.
 - GameTracker and GameBanana: terms of use not confirmed; these image sources are therefore
   low priority and can be disabled individually.

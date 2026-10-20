@@ -89,6 +89,12 @@ copy of the database next to it before every schema change
 Install the newer package the same way. Configuration, key and data are kept, the service
 is restarted, and the database is brought to the new schema on start.
 
+If a new version ships a changed example `lanpilot.toml` and you have edited yours, apt asks
+which one to keep: answer **N** (keep yours) and compare with the new one later, which dpkg
+stores as `lanpilot.toml.dpkg-dist`. dnf and pacman keep yours without asking and store the
+new one as `lanpilot.toml.rpmnew` or `lanpilot.toml.pacnew`. For unattended upgrades with
+apt, pass `-o Dpkg::Options::=--force-confold`.
+
 After upgrading the **distribution** to a new release, install the LANPilot package for
 that release: the old one was built for the previous Python version.
 

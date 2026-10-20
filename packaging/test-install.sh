@@ -20,7 +20,10 @@ fail() {
 
 install_package() {
     case "$FORMAT" in
-        deb) apt-get install -y --no-install-recommends "$1" ;;
+        # The test edits lanpilot.toml; when a newer package ships a changed one, dpkg asks
+        # which to keep. Keep the edited one, as an administrator would.
+        deb) apt-get install -y --no-install-recommends \
+            -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold "$1" ;;
         rpm) dnf install -y "$1" ;;
         archlinux) pacman -U --noconfirm "$1" ;;
         *) fail "unknown format $FORMAT" ;;

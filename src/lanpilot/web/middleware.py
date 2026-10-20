@@ -149,6 +149,21 @@ class BodyLimitMiddleware:
         await response(scope, receive, send)
 
 
+class RootPathMiddleware:
+    """Tells the routing the sub-path LANPilot is served from (``public_url``'s path), so it
+    works whether or not the reverse proxy strips it. FastAPI's own ``root_path`` argument
+    did the same and is deprecated."""
+
+    def __init__(self, app: ASGIApp, *, root_path: str) -> None:
+        self.app = app
+        self.root_path = root_path
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if self.root_path and scope["type"] in ("http", "websocket"):
+            scope["root_path"] = self.root_path
+        await self.app(scope, receive, send)
+
+
 class SecurityHeadersMiddleware:
     def __init__(self, app: ASGIApp, *, static_prefix: str) -> None:
         self.app = app

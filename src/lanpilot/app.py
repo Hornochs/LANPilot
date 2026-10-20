@@ -42,6 +42,7 @@ from lanpilot.web.middleware import (
     BodyLimitMiddleware,
     HostCheckMiddleware,
     OriginCheckMiddleware,
+    RootPathMiddleware,
     SecurityHeadersMiddleware,
 )
 from lanpilot.web.templating import STATIC_DIR, render
@@ -159,7 +160,6 @@ def create_app(settings: Settings) -> FastAPI:
         title="LANPilot",
         version=__version__,
         lifespan=lifespan,
-        root_path=server.root_path,
         # No interactive API documentation: LANPilot has no public API.
         docs_url=None,
         redoc_url=None,
@@ -174,7 +174,8 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.scanner = Scanner(app.state.registry, settings.scan)
     app.state.event_streams = routes_events.StreamLimit()
 
-    # Middleware added last runs first: headers wrap everything, then the host check, then
+    # Middleware added last runs first: the root path is set for everything, headers wrap
+    # everything else, then the host check, then
     # the origin check (which relies on the Host header having been validated), then the
     # body size limit.
     app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_BODY_BYTES)
@@ -185,6 +186,7 @@ def create_app(settings: Settings) -> FastAPI:
         root_path=server.root_path,
     )
     app.add_middleware(SecurityHeadersMiddleware, static_prefix=server.root_path + "/static/")
+    app.add_middleware(RootPathMiddleware, root_path=server.root_path)
 
     app.add_exception_handler(NotAuthenticatedError, _not_authenticated)
     app.add_exception_handler(ForbiddenError, _forbidden)

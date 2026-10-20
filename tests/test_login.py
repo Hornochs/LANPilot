@@ -21,7 +21,6 @@ def test_pages_redirect_to_login_when_signed_out(client: TestClient) -> None:
 
 def test_unsafe_requests_get_401_instead_of_a_redirect(client: TestClient) -> None:
     assert client.post("/account/password", data={}).status_code == 401
-    assert client.post("/logout").status_code == 401
     assert client.get("/", headers={"HX-Request": "true"}).status_code == 401
 
 
@@ -297,3 +296,21 @@ def test_audit_log_holds_names_only_and_bounded_failures(
     assert names[-1] == "alice"
     reasons = [d for (d,) in query("SELECT detail FROM audit_log WHERE action = 'login'")]
     assert sum("throttled" in reason for reason in reasons) == 1
+
+
+def test_logout_with_an_ended_session_clears_the_cookie(
+    client: TestClient, make_user: UserFactory
+) -> None:
+    client.cookies.set(COOKIE, "an-ended-session")
+    response = client.post("/logout")
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?notice=signed_out"
+    assert f'{COOKIE}=""' in response.headers["set-cookie"]
+
+    # A live session still needs its token, so another site cannot sign a user out.
+    make_user("alice")
+    sign_in(client, "alice")
+    assert client.post("/logout").status_code == 403
+    assert client.get("/account").status_code == 200
+    assert client.post("/logout", data={"csrf_token": csrf_token(client)}).status_code == 303
+    assert client.get("/account").status_code == 303

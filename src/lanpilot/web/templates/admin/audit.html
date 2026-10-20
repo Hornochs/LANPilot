@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Audit log") }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Audit log") }}</h1>
+<section class="card scroll">
+  {% if rows %}
+  <table class="compact">
+    <thead>
+      <tr><th>{{ _("Time (UTC)") }}</th><th>{{ _("Who") }}</th><th>{{ _("Action") }}</th><th>{{ _("Target") }}</th><th>{{ _("Result") }}</th><th>{{ _("Details") }}</th><th>{{ _("From") }}</th></tr>
+    </thead>
+    <tbody>
+      {% for entry, detail in rows %}
+      <tr>
+        <td>{{ entry.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+        <td>{{ entry.actor_name }}</td>
+        <td>{{ entry.action }}</td>
+        <td>{% if entry.target_type %}{{ entry.target_type }} {{ entry.target_id }}{% endif %}</td>
+        <td>{% if entry.success %}{{ _("ok") }}{% else %}<span class="bad">{{ _("failed") }}</span>{% endif %}</td>
+        <td>{{ detail }}</td>
+        <td>{{ entry.ip or "" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">{{ _("Showing the newest %(num)d entries at most.", num=page_size) }}</p>
+  {% else %}
+  <p>{{ _("Nothing has been recorded yet.") }}</p>
+  {% endif %}
+</section>
+{% endblock %}

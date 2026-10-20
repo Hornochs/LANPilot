@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Console of %(name)s", name=state.name) }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Console of %(name)s", name=state.name) }}</h1>
+{% if error %}
+<p class="banner error" role="alert">{{ error | tr }}</p>
+{% endif %}
+{% if enabled %}
+<p class="muted">{{ _("Commands are sent to the server as they are and recorded in the audit log, together with who sent them. What the server answers is shown below.") }}</p>
+<form method="post" action="{{ root }}/servers/{{ state.server_id }}/console" class="card">
+  <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+  <label for="command">{{ _("Command") }}</label>
+  <input id="command" name="command" type="text" maxlength="500" required autocomplete="off"
+         value="{{ command }}">
+  <button type="submit">{{ _("Send") }}</button>
+</form>
+{% if output is not none %}
+<section class="card">
+  <h2>{{ _("Answer") }}</h2>
+  <pre class="console-output">{{ output or _("(no output)") }}</pre>
+</section>
+{% endif %}
+{% else %}
+<section class="card">
+  <p>{{ _("The console is switched off. An administrator of the LANPilot installation can switch it on with %(setting)s in the configuration.", setting="enable_console = true") }}</p>
+</section>
+{% endif %}
+<p><a href="{{ root }}/servers/{{ state.server_id }}">{{ _("Back to %(name)s", name=state.name) }}</a></p>
+{% endblock %}

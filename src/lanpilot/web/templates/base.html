@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="{{ language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LANPilot{% endblock %}</title>
+  <link rel="icon" href="data:,">
+  {% if auth %}
+  <meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false,"selfRequestsOnly":true}'>
+  <link rel="stylesheet" href="{{ root }}/static/vendor/tom-select/tom-select.min.css">
+  {% endif %}
+  <link rel="stylesheet" href="{{ root }}/static/css/app.css">
+  {% if auth %}
+  <script src="{{ root }}/static/vendor/htmx/htmx.min.js" defer></script>
+  <script src="{{ root }}/static/vendor/htmx-ext-sse/sse.min.js" defer></script>
+  <script src="{{ root }}/static/vendor/tom-select/tom-select.base.min.js" defer></script>
+  <script src="{{ root }}/static/js/app.js" defer></script>
+  {% endif %}
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ root }}/">LANPilot</a>
+    {% if auth %}
+    <nav>
+      <a href="{{ root }}/">{{ _("Servers") }}</a>
+      {% if auth.is_admin %}
+      <a href="{{ root }}/admin/servers">{{ _("Server setup") }}</a>
+      <a href="{{ root }}/admin/users">{{ _("Users") }}</a>
+      <a href="{{ root }}/admin/audit">{{ _("Audit log") }}</a>
+      {% endif %}
+      <a href="{{ root }}/account">{{ auth.user.username }}</a>
+      <form method="post" action="{{ root }}/logout" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+        <button type="submit" class="link">{{ _("Sign out") }}</button>
+      </form>
+    </nav>
+    {% endif %}
+  </header>
+  {% if insecure_transport %}
+  <p class="banner warning">
+    {{ _("This LANPilot is not reached over HTTPS. Passwords and session cookies travel unencrypted.") }}
+  </p>
+  {% endif %}
+  <main>
+    {% if notice %}
+    <p class="banner success">{{ notice | tr }}</p>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if auth %}
+  <footer>LANPilot {{ version }}</footer>
+  {% endif %}
+</body>
+</html>

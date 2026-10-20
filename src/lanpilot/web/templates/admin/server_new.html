@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Add a server") }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Add a server") }}</h1>
+<section class="card narrow">
+  <h2>{{ _("Which game?") }}</h2>
+  {% if adapters %}
+  <ul class="choices">
+    {% for adapter in adapters %}
+    <li><a href="{{ root }}/admin/servers/new?adapter={{ adapter.id }}">{{ adapter.name }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>{{ _("No game adapters are installed.") }}</p>
+  {% endif %}
+</section>
+<p><a href="{{ root }}/admin/servers">{{ _("Back to server setup") }}</a></p>
+{% endblock %}

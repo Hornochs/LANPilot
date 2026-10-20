@@ -1,0 +1,54 @@
+<section class="card" id="players-{{ state.server_id }}"
+         hx-get="{{ root }}/servers/{{ state.server_id }}/players"
+         hx-trigger="sse:server-{{ state.server_id }}" hx-swap="outerHTML">
+  <h2>{{ _("Players") }}</h2>
+  {% if players_error %}
+  <p class="muted">{{ players_error | tr }}</p>
+  {% elif players is none %}
+  <p class="muted">{{ _("The player list is shown while the server is online.") }}</p>
+  {% elif not players %}
+  <p class="muted">{{ _("Nobody is playing.") }}</p>
+  {% else %}
+  {% set can_kick = auth.is_operator and state.can("kick") %}
+  {% set can_ban = auth.is_admin and state.can("ban") %}
+  <table class="player-list">
+    <thead>
+      <tr><th>{{ _("Name") }}</th><th>{{ _("Score") }}</th><th>{{ _("Ping") }}</th><th>{{ _("Team") }}</th>
+        {% if can_kick or can_ban %}<th></th>{% endif %}</tr>
+    </thead>
+    <tbody>
+      {% for player in players %}
+      <tr>
+        <td>{{ player.name }}{% if player.bot %} <span class="muted">{{ _("(bot)") }}</span>{% endif %}</td>
+        <td>{{ player.score if player.score is not none else "" }}</td>
+        <td>{{ player.ping if player.ping is not none else "" }}</td>
+        <td>{{ player.team or "" }}</td>
+        {% if can_kick or can_ban %}
+        <td><div class="player-actions">
+          {% if can_kick and player.can_kick %}
+          <form method="post" action="{{ root }}/servers/{{ state.server_id }}/players/kick">
+            <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+            <input type="hidden" name="player_id" value="{{ player.id }}">
+            <button type="submit" class="small">{{ _("Kick") }}</button>
+          </form>
+          {% endif %}
+          {% if can_ban and player.can_ban %}
+          <details class="inline">
+            <summary>{{ _("Ban") }}</summary>
+            <form method="post" action="{{ root }}/servers/{{ state.server_id }}/players/ban">
+              <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+              <input type="hidden" name="player_id" value="{{ player.id }}">
+              <input type="text" name="reason" maxlength="100" placeholder="{{ _("Reason (optional)") }}"
+                     aria-label="{{ _("Reason for banning %(name)s", name=player.name) }}">
+              <button type="submit" class="small danger">{{ _("Ban %(name)s", name=player.name) }}</button>
+            </form>
+          </details>
+          {% endif %}
+        </div></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</section>

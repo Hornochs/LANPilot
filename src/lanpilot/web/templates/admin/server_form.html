@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Edit %(name)s", name=server.name) if server else _("Add a server") }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Edit %(name)s", name=server.name) if server else _("Add a server") }}</h1>
+{% if error %}
+<p class="banner error" role="alert">{{ error | tr }}</p>
+{% endif %}
+{% if prefilled %}
+<p class="banner warning" role="status">{{ _("The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there.") }}</p>
+{% endif %}
+<section class="card narrow">
+  <form method="post" action="{{ root }}/admin/servers/{{ server.id ~ "/edit" if server else "new" }}">
+    <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+    {% if not server %}
+    <input type="hidden" name="adapter" value="{{ adapter.id }}">
+    {% endif %}
+    <p class="muted">{{ _("Game: %(name)s", name=adapter.name) }}</p>
+
+    <label for="name">{{ _("Name") }}</label>
+    <input id="name" name="name" type="text" value="{{ name }}" maxlength="100" required>
+    <p class="help">{{ _("Shown on the dashboard.") }}</p>
+
+    <h2>{{ _("Connection") }}</h2>
+    {% for spec in specs %}
+    {% set field_id = prefix ~ spec.name %}
+    {% set problem = field_errors.get(spec.name) %}
+    {% if spec.kind == "checkbox" %}
+    <label class="check">
+      <input id="{{ field_id }}" name="{{ field_id }}" type="checkbox" value="1"{% if values[spec.name] %} checked{% endif %}>
+      {{ spec.label | tr }}
+    </label>
+    {% else %}
+    <label for="{{ field_id }}">{{ spec.label | tr }}</label>
+    {% if spec.kind == "select" %}
+    <select id="{{ field_id }}" name="{{ field_id }}">
+      {% for choice in spec.choices %}
+      <option value="{{ choice }}"{% if choice == values[spec.name] %} selected{% endif %}>{{ choice }}</option>
+      {% endfor %}
+    </select>
+    {% elif spec.kind == "password" %}
+    <input id="{{ field_id }}" name="{{ field_id }}" type="password" autocomplete="new-password"
+           {% if server %}placeholder="{{ _("unchanged") }}"{% elif spec.required %}required{% endif %}
+           {% if problem %}aria-invalid="true"{% endif %}>
+    {% elif spec.kind == "number" %}
+    <input id="{{ field_id }}" name="{{ field_id }}" type="number" value="{{ values[spec.name] }}"
+           {% if spec.minimum is not none %}min="{{ spec.minimum }}"{% endif %}
+           {% if spec.maximum is not none %}max="{{ spec.maximum }}"{% endif %}
+           {% if spec.required %}required{% endif %} {% if problem %}aria-invalid="true"{% endif %}>
+    {% else %}
+    <input id="{{ field_id }}" name="{{ field_id }}" type="text" value="{{ values[spec.name] }}"
+           {% if spec.max_length %}maxlength="{{ spec.max_length }}"{% endif %}
+           autocapitalize="none" spellcheck="false"
+           {% if spec.required %}required{% endif %} {% if problem %}aria-invalid="true"{% endif %}>
+    {% endif %}
+    {% endif %}
+    {% if problem %}
+    <p class="help problem">{{ problem | tr }}</p>
+    {% endif %}
+    {% if spec.help %}
+    <p class="help">{{ spec.help | tr }}</p>
+    {% endif %}
+    {% if spec.kind == "password" and server %}
+    <p class="help">{{ _("Leave empty to keep the stored value. It has to be entered again when host or port change.") }}</p>
+    {% endif %}
+    {% endfor %}
+
+    <h2>{{ _("Options") }}</h2>
+    <label class="check">
+      <input name="enabled" type="checkbox" value="1"{% if enabled %} checked{% endif %}>
+      {{ _("Enabled") }}
+    </label>
+    <p class="help">{{ _("Disabled servers stay configured but are not queried.") }}</p>
+
+    <button type="submit">{{ _("Save") if server else _("Add server") }}</button>
+    <a class="cancel" href="{{ root }}/admin/servers">{{ _("Cancel") }}</a>
+  </form>
+</section>
+{% endblock %}

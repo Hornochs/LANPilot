@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ title | tr }} – LANPilot{% endblock %}
+{% block content %}
+<section class="card narrow centered">
+  <h1>{{ title | tr }}</h1>
+  <p>{{ message | tr }}</p>
+  <p><a href="{{ root }}/">{{ _("Back to the start page") }}</a></p>
+</section>
+{% endblock %}

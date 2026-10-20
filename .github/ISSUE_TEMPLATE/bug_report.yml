@@ -1,0 +1,50 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security problems must **not** be reported here. See SECURITY.md.
+        Remove passwords, RCON passwords and tokens from everything you paste.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: LANPilot version
+      description: Output of `lanpilot --version`, or the commit hash
+    validations:
+      required: true
+  - type: input
+    id: install
+    attributes:
+      label: Installation method and operating system
+      placeholder: ".deb on Debian 13"
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game and server version (if a game server is involved)
+      placeholder: "Unreal Tournament 2004 v3369, Linux dedicated server"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: For example from `journalctl -u lanpilot`. Remove secrets first.
+      render: text

@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation at your LAN party where LANPilot falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope check
+      description: >
+        LANPilot is protocol-only: it does not use SSH or agents on game hosts. If your idea
+        needs host access, please say so, because it is outside the current scope.

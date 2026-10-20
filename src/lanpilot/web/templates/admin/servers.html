@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Server setup") }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Server setup") }}</h1>
+{% if probe %}
+<div class="banner {{ "success" if probe.ok else "error" }}" role="status">
+  <strong>{{ _("Connection test for %(name)s", name=probed.name) }}</strong>
+  <ul>
+    {% for line in probe.lines %}
+    <li>{{ line | tr }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+<section class="card scroll">
+  {% if rows %}
+  <table>
+    <thead>
+      <tr><th>{{ _("Name") }}</th><th>{{ _("Game") }}</th><th>{{ _("Address") }}</th><th>{{ _("Status") }}</th><th>{{ _("Actions") }}</th></tr>
+    </thead>
+    <tbody>
+      {% for server, adapter in rows %}
+      <tr>
+        <td>{{ server.name }}</td>
+        <td>{% if adapter %}{{ adapter.name }}{% else %}<span class="muted">{{ _("not installed (%(id)s)", id=server.adapter_id) }}</span>{% endif %}</td>
+        <td>{{ server.host }}:{{ server.port }}</td>
+        <td>{{ _("enabled") if server.enabled else _("disabled") }}</td>
+        <td class="actions">
+          {% if adapter %}
+          <a href="{{ root }}/admin/servers/{{ server.id }}/edit">{{ _("Edit") }}</a>
+          <a href="{{ root }}/admin/servers/{{ server.id }}/maps">{{ _("Map images") }}</a>
+          <form method="post" action="{{ root }}/admin/servers/{{ server.id }}/test" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+            <button type="submit" class="small">{{ _("Test connection") }}</button>
+          </form>
+          {% endif %}
+          <details>
+            <summary>{{ _("Delete") }}</summary>
+            <form method="post" action="{{ root }}/admin/servers/{{ server.id }}/delete">
+              <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+              <button type="submit" class="small danger">{{ _("Delete %(name)s for good", name=server.name) }}</button>
+            </form>
+          </details>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>{{ _("No game servers have been added yet.") }}</p>
+  {% endif %}
+</section>
+{% if can_add %}
+<p><a class="button" href="{{ root }}/admin/servers/new">{{ _("Add a server") }}</a>
+  <a href="{{ root }}/admin/scan">{{ _("Scan the network") }}</a></p>
+{% else %}
+<p class="muted">{{ _("No game adapters are installed, so no server can be added.") }}</p>
+{% endif %}
+{% endblock %}

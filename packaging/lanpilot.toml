@@ -1,0 +1,46 @@
+# LANPilot configuration.
+#
+# Every setting can also be given as an environment variable LANPILOT_<SECTION>__<KEY>
+# (for example in /etc/lanpilot/lanpilot.env). `lanpilot config show` prints what is in
+# effect. Restart the service after a change: systemctl restart lanpilot
+
+# Where the database and the map image cache live.
+data_dir = "/var/lib/lanpilot"
+
+# Key that encrypts the game servers' passwords. It was generated when the package was
+# installed. Keep a copy somewhere safe: without it the stored passwords are unreadable.
+secret_key_file = "/etc/lanpilot/secret.key"
+
+# Language of the user interface when neither the user nor the browser picks one: en or de.
+#default_language = "en"
+
+# Let administrators send raw console commands to game servers (recorded in the audit log).
+#enable_console = false
+
+[server]
+# REQUIRED. The address under which users reach LANPilot, exactly as they type it into the
+# browser. LANPilot accepts requests for this host only and refuses to start without it.
+#   public_url = "https://lanpilot.example.lan"      behind a reverse proxy with TLS
+#   public_url = "http://192.168.1.10:9030"          directly, without TLS (not recommended)
+#public_url = ""
+
+# Where LANPilot itself listens. Keep 127.0.0.1 behind a reverse proxy on the same host;
+# use 0.0.0.0 only if users connect directly.
+bind = "127.0.0.1"
+port = 9030
+
+# Further host names or IP addresses under which LANPilot may be reached.
+allowed_hosts = []
+
+# Reverse proxies whose X-Forwarded-For / X-Forwarded-Proto headers are trusted.
+# Use [] if there is no reverse proxy.
+trusted_proxies = ["127.0.0.1"]
+
+# On-demand LAN scan ("Server setup" -> "Scan the network"). Off while no network is given.
+[scan]
+#networks = ["192.168.1.0/24"]
+
+# Map images from the internet. Switch off for events without internet access, after
+# loading them with `lanpilot images prefetch`.
+[images]
+#online = true

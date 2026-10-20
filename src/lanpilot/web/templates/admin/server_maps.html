@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Maps of %(name)s", name=server.name) }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Maps of %(name)s", name=server.name) }}</h1>
+{% if error %}
+<p class="banner error" role="alert">{{ error | tr }}</p>
+{% endif %}
+{% if manual_maps %}
+<section class="card">
+  <h2>{{ _("Add a map the server does not list") }}</h2>
+  <p class="muted">{{ _("For a track file that is on the server but not in its playlist. Enter its path relative to the server's Tracks directory; LANPilot asks the server whether it has it. Changing to it puts it into the playlist.") }}</p>
+  <form method="post" action="{{ root }}/admin/servers/{{ server.id }}/maps/manual">
+    <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+    <label for="manual-key">{{ _("File name") }}</label>
+    <input id="manual-key" name="key" type="text" required maxlength="200"
+           placeholder="Challenges/My Challenges/Fun.Challenge.Gbx">
+    <button type="submit">{{ _("Add map") }}</button>
+  </form>
+</section>
+{% endif %}
+<h2>{{ _("Images") }}</h2>
+<p class="muted">{{ _("An image is used for every server of this game that has a map with the same name. JPEG, PNG or WebP, up to %(megabytes)s MB; it is scaled down and stored without metadata.", megabytes=max_megabytes) }}</p>
+{% if online %}
+<p class="muted">{{ _("LANPilot looks for an image of the current map online by itself. Images it finds keep a note of their source. An image you remove is not fetched again automatically.") }}</p>
+{% if maps %}
+<form method="post" action="{{ root }}/admin/servers/{{ server.id }}/maps/fetch-images">
+  <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+  <button type="submit">{{ _("Look for all missing images online") }}</button>
+</form>
+{% endif %}
+{% else %}
+<p class="muted">{{ _("Looking for images online is switched off.") }}</p>
+{% endif %}
+{% if maps %}
+<div class="map-list">
+  {% for map in maps %}
+  {% set image = map_image_url(game, map.key) %}
+  <section class="map-entry">
+    <div class="map-art{% if image %} has-image{% else %} tone-{{ map.key|tone }}{% endif %}">
+      {% if image %}<img src="{{ image }}" alt="" loading="lazy">{% endif %}
+      <span>{{ map.label }}</span>
+    </div>
+    {% set lower = map.key|lower %}
+    <p class="muted">{{ map.key }}{% if map.game_type %} · {{ map.game_type }}{% endif %}
+      {%- if map.source == manual_source %} · {{ _("added by hand") }}{% endif %}
+      {%- if image and providers.get(lower) %} · {{ _("image from %(provider)s", provider=providers[lower]) }}
+      {%- elif not image and misses.get(lower) %} · {{ _("image removed") if misses[lower].reason == "removed" else _("nothing found online") }}
+      {%- endif %}</p>
+    <form method="post" enctype="multipart/form-data"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <input type="file" name="image" accept="image/jpeg,image/png,image/webp"
+             aria-label="{{ _("Image for %(name)s", name=map.label) }}" required>
+      <button type="submit" class="small">{{ _("Replace image") if image else _("Upload image") }}</button>
+    </form>
+    {% if online and not image %}
+    <form method="post"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image/fetch">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <button type="submit" class="link">{{ _("Look online") }}</button>
+    </form>
+    {% endif %}
+    {% if map.source == manual_source %}
+    <form method="post"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/manual/delete">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <button type="submit" class="link">{{ _("Remove from the list") }}</button>
+    </form>
+    {% endif %}
+    {% if image %}
+    <form method="post"
+          action="{{ root }}/admin/servers/{{ server.id }}/maps/{{ map.id }}/image/delete">
+      <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+      <button type="submit" class="link">{{ _("Remove image") }}</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+<section class="card">
+  <p>{{ _("No maps are known for this server yet.") }}</p>
+</section>
+{% endif %}
+<p><a href="{{ root }}/servers/{{ server.id }}">{{ _("Back to %(name)s", name=server.name) }}</a></p>
+{% endblock %}

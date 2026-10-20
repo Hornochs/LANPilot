@@ -1,0 +1,31 @@
+{# One server as a dashboard card. Refetches itself when the server's state changes. #}
+{% from "_status.html" import badge %}
+<article class="server-card" id="server-{{ state.server_id }}"
+         hx-get="{{ root }}/servers/{{ state.server_id }}/card"
+         hx-trigger="sse:server-{{ state.server_id }}" hx-swap="outerHTML">
+  <a class="card-link" href="{{ root }}/servers/{{ state.server_id }}">
+    {% set current = state.status.map if state.status else none %}
+    {% set image = map_image_url(state.adapter_id, current.key) if current else none %}
+    <div class="map-art{% if image %} has-image{% else %} tone-{{ (current.key if current else state.name)|tone }}{% endif %}">
+      {% if image %}<img src="{{ image }}" alt="" loading="lazy">{% endif %}
+      <span>{{ current.label if current else "" }}</span>
+    </div>
+    <div class="card-body">
+      <h2>{{ state.name }}</h2>
+      <p class="card-meta">{{ state.adapter_name }} {{ badge(state) }}</p>
+      {% if state.status %}
+      <div class="players">
+        <progress value="{{ state.status.players }}" max="{{ [state.status.max_players, 1]|max }}"
+                  aria-label="{{ _("Players") }}"></progress>
+        <span>{{ state.status.players }}/{{ state.status.max_players }}</span>
+      </div>
+      {% if state.status.game_type %}<p class="muted">{{ state.status.game_type }}</p>{% endif %}
+      {% elif state.error %}
+      <p class="muted">{{ state.error | tr }}</p>
+      {% endif %}
+      {% if state.control_error %}
+      <p class="muted">{{ _("Remote control is not working.") }}</p>
+      {% endif %}
+    </div>
+  </a>
+</article>

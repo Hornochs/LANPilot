@@ -1,0 +1,67 @@
+# Template for nfpm (https://nfpm.goreleaser.com). packaging/build.sh fills in the
+# placeholders and writes the result next to the staged files.
+name: lanpilot
+arch: $ARCH
+platform: linux
+version: "$VERSION"
+version_schema: none
+release: "$RELEASE"
+section: net
+priority: optional
+maintainer: "LAN.party <gamie@lan.party>"
+vendor: lan-dot-party
+homepage: https://github.com/lan-dot-party/LANPilot
+license: MIT
+description: |-
+  Web interface for monitoring and remote-controlling game servers
+  LANPilot shows every game server of a LAN party on one dashboard and lets
+  operators change the map, restart a match and manage players. It talks to the
+  servers through their own remote protocols and needs no agent on the game hosts.
+
+depends:
+$DEPENDS
+
+contents:
+  # The application with all its Python dependencies, built for this distribution.
+  - src: $STAGING/opt/lanpilot/
+    dst: /opt/lanpilot/
+    type: tree
+  - src: packaging/lanpilot-wrapper.sh
+    dst: /usr/bin/lanpilot
+    file_info:
+      mode: 0755
+  - src: packaging/lanpilot.service
+    dst: /usr/lib/systemd/system/lanpilot.service
+    file_info:
+      mode: 0644
+  - src: packaging/lanpilot.sysusers
+    dst: /usr/lib/sysusers.d/lanpilot.conf
+    file_info:
+      mode: 0644
+  # Kept as the administrator edited it; a new default never overwrites it.
+  - src: packaging/lanpilot.toml
+    dst: /etc/lanpilot/lanpilot.toml
+    type: config|noreplace
+    file_info:
+      mode: 0640
+  - src: LICENSE
+    dst: /usr/share/doc/lanpilot/LICENSE
+  - src: NOTICE.md
+    dst: /usr/share/doc/lanpilot/NOTICE.md
+  - src: README.md
+    dst: /usr/share/doc/lanpilot/README.md
+  - src: CHANGELOG.md
+    dst: /usr/share/doc/lanpilot/CHANGELOG.md
+
+# The application code is part of the package, so the package manager replaces it on an
+# upgrade. The post-install script must still run on every upgrade: it restarts the
+# service, which would otherwise keep running the old code. deb and rpm run "postinstall"
+# on upgrades too; Arch needs it named separately.
+scripts:
+  postinstall: packaging/scripts/postinstall.sh
+  preremove: packaging/scripts/preremove.sh
+  postremove: packaging/scripts/postremove.sh
+
+archlinux:
+  scripts:
+    postupgrade: packaging/scripts/postinstall.sh

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Servers") }} – LANPilot{% endblock %}
+{% block content %}
+<h1>{{ _("Servers") }}</h1>
+<div hx-ext="sse" sse-connect="{{ root }}/events">
+  {% include "_grid.html" %}
+</div>
+{% endblock %}

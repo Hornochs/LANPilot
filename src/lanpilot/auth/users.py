@@ -7,7 +7,6 @@ catches it has nothing to roll back.
 
 from __future__ import annotations
 
-import asyncio
 import re
 from collections.abc import Sequence
 
@@ -60,7 +59,7 @@ async def create_user(db: AsyncSession, username: str, password: str, role: Role
 
     user = User(
         username=name,
-        password_hash=await asyncio.to_thread(passwords.hash_password, password),
+        password_hash=await passwords.in_worker(passwords.hash_password, password),
         role=role.value,
     )
     db.add(user)
@@ -75,13 +74,13 @@ async def authenticate(db: AsyncSession, username: str, password: str) -> User |
     except UserError:
         user = None
     if user is None or not user.is_active:
-        await asyncio.to_thread(passwords.verify_dummy, password)
+        await passwords.in_worker(passwords.verify_dummy, password)
         return None
-    if not await asyncio.to_thread(passwords.verify_password, user.password_hash, password):
+    if not await passwords.in_worker(passwords.verify_password, user.password_hash, password):
         return None
 
     if passwords.needs_rehash(user.password_hash):
-        user.password_hash = await asyncio.to_thread(passwords.hash_password, password)
+        user.password_hash = await passwords.in_worker(passwords.hash_password, password)
     user.last_login_at = utcnow()
     return user
 
@@ -107,7 +106,7 @@ async def set_password(db: AsyncSession, user: User, password: str) -> None:
         passwords.check_policy(password, user.username)
     except passwords.PasswordPolicyError as exc:
         raise UserError(str(exc)) from exc
-    user.password_hash = await asyncio.to_thread(passwords.hash_password, password)
+    user.password_hash = await passwords.in_worker(passwords.hash_password, password)
     await _end_sessions(db, user)
 
 

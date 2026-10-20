@@ -81,13 +81,29 @@ async def test_broadcast_collects_answers_from_inside_the_networks() -> None:
     assert replies == [discovery.Reply(b"here", "127.0.0.1", port)]
 
 
-def test_answers_from_outside_the_networks_and_beyond_the_limit_are_dropped() -> None:
-    collector = discovery._Collector(LOCAL)
+def test_answers_from_outside_the_networks_and_beyond_the_limits_are_dropped() -> None:
+    collector = discovery._Collector([IPv4Network("127.0.0.0/8")])
     collector.datagram_received(b"stray", ("10.0.0.1", 27015))
-    for _ in range(discovery.MAX_REPLIES + 5):
-        collector.datagram_received(b"ok", ("127.0.0.1", 27015))
+    for port in range(100):  # one host, many answers
+        collector.datagram_received(b"ok", ("127.0.0.1", port))
+    assert len(collector.replies) == discovery.MAX_REPLIES_PER_HOST
+    for number in range(discovery.MAX_REPLIES + 5):
+        collector.datagram_received(b"ok", (f"127.1.{number // 250}.{number % 250 + 1}", 1))
     assert len(collector.replies) == discovery.MAX_REPLIES
-    assert {reply.host for reply in collector.replies} == {"127.0.0.1"}
+    assert all(reply.host.startswith("127.") for reply in collector.replies)
+
+
+async def test_follow_ups_are_bounded_in_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(discovery, "FOLLOW_UP_SECONDS", 0.05)
+
+    async def slow() -> int:
+        await asyncio.sleep(10)
+        return 1
+
+    async def quick() -> int:
+        return 2
+
+    assert await discovery.gather_found([slow(), quick()]) == [2]
 
 
 async def test_broadcast_can_use_a_fixed_source_port() -> None:
@@ -360,6 +376,9 @@ def test_add_link_fills_in_the_form_but_never_a_password(
     assert 'value="10.20.30.5"' in page
     assert 'value="7790"' in page
     assert "stolen" not in page
+    assert "Check the host before you enter a password" in page
+    plain = client.get("/admin/servers/new", params={"adapter": "ut2004"}).text
+    assert "Check the host" not in plain
 
 
 # --- command line -----------------------------------------------------------------------

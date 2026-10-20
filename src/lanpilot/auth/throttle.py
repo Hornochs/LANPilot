@@ -36,6 +36,7 @@ class LoginThrottle:
         self._max_entries = max_entries
         self._clock = clock
         self._failures: dict[Key, deque[float]] = {}
+        self._refusals_reported: dict[str, float] = {}
 
     def _recent(self, key: Key) -> deque[float]:
         entries = self._failures.get(key)
@@ -63,15 +64,51 @@ class LoginThrottle:
         )
         return int(wait) + 1 if wait > 0 else 0
 
-    def record_failure(self, username: str, address: str) -> None:
+    def attempt(self, username: str, address: str) -> tuple[int, float | None]:
+        """Check and count an attempt in one step: ``(seconds to wait, None)`` if it is not
+        allowed now, else ``(0, mark)`` with the attempt already counted as a failure.
+
+        Counting before the password is checked keeps parallel requests from all passing
+        the check while the first ones are still being verified. Pass ``mark`` to
+        :meth:`record_success` if the password was right.
+        """
+        wait = self.retry_after(username, address)
+        if wait:
+            return wait, None
+        return 0, self.record_failure(username, address)
+
+    def report_refusal(self, address: str) -> bool:
+        """Whether a refused attempt from ``address`` should be written to the audit log:
+        the first one per window, so a client that keeps trying writes one entry."""
+        now = self._clock()
+        last = self._refusals_reported.get(address)
+        if last is not None and now - last < self._window:
+            return False
+        if len(self._refusals_reported) >= self._max_entries:
+            self._refusals_reported = {
+                key: when
+                for key, when in self._refusals_reported.items()
+                if now - when < self._window
+            }
+        self._refusals_reported[address] = now
+        return True
+
+    def record_failure(self, username: str, address: str) -> float:
         if len(self._failures) >= self._max_entries:
             self._evict()
         now = self._clock()
         for key in (("pair", username, address), ("address", address)):
             self._failures.setdefault(key, deque()).append(now)
+        return now
 
-    def record_success(self, username: str, address: str) -> None:
+    def record_success(self, username: str, address: str, mark: float | None = None) -> None:
+        """Forget the failures of this pair, and the attempt counted under ``mark``."""
         self._failures.pop(("pair", username, address), None)
+        entries = self._failures.get(("address", address))
+        if mark is not None and entries is not None and mark in entries:
+            entries.remove(mark)
+            if not entries:
+                del self._failures[("address", address)]
 
     def _evict(self) -> None:
         for key in list(self._failures):

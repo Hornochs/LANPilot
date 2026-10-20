@@ -102,3 +102,56 @@ def test_memory_stays_bounded() -> None:
         throttle.record_failure(f"user{index}", f"10.0.{index // 250}.{index % 250}")
 
     assert len(throttle._failures) <= 52
+
+
+def test_attempts_are_counted_before_the_password_is_checked() -> None:
+    clock = Clock()
+    throttle = LoginThrottle(max_failures=3, max_failures_per_address=10, clock=clock)
+    # Parallel requests: each one is counted at once, before any of them is verified.
+    outcomes = [throttle.attempt("admin", "10.0.0.1") for _ in range(5)]
+    assert all(wait == 0 for wait, _ in outcomes[:3])
+    assert all(wait > 0 and mark is None for wait, mark in outcomes[3:])
+
+
+def test_a_right_password_takes_back_its_attempt() -> None:
+    clock = Clock()
+    throttle = LoginThrottle(max_failures=3, max_failures_per_address=2, clock=clock)
+    for _ in range(5):
+        _, mark = throttle.attempt("admin", "10.0.0.1")
+        clock.now += 1
+        throttle.record_success("admin", "10.0.0.1", mark)
+    # Five successful sign-ins in a row never reach the per-address limit.
+    assert throttle.retry_after("admin", "10.0.0.1") == 0
+    assert throttle.retry_after("someone", "10.0.0.1") == 0
+
+
+def test_refusals_are_reported_once_per_window() -> None:
+    clock = Clock()
+    throttle = LoginThrottle(window_seconds=60, clock=clock)
+    assert throttle.report_refusal("10.0.0.1")
+    assert not throttle.report_refusal("10.0.0.1")
+    assert throttle.report_refusal("10.0.0.2")
+    clock.now += 61
+    assert throttle.report_refusal("10.0.0.1")
+
+
+async def test_hashing_runs_only_a_few_at_a_time() -> None:
+    import asyncio
+    import threading
+    import time
+
+    running = 0
+    peak = 0
+    lock = threading.Lock()
+
+    def work() -> None:
+        nonlocal running, peak
+        with lock:
+            running += 1
+            peak = max(peak, running)
+        time.sleep(0.02)
+        with lock:
+            running -= 1
+
+    await asyncio.gather(*(passwords.in_worker(work) for _ in range(20)))
+    assert peak <= passwords.MAX_PARALLEL

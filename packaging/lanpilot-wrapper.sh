@@ -7,6 +7,13 @@
 export LANPILOT_CONFIG="${LANPILOT_CONFIG:-/etc/lanpilot/lanpilot.toml}"
 
 if [ "$(id -u)" = "0" ]; then
-    exec runuser -u lanpilot -- /opt/lanpilot/bin/lanpilot "$@"
+    # A clean environment: nothing of root's (PYTHONPATH, PYTHONSTARTUP and the like) may
+    # change what runs as the service user. Settings come from the configuration file.
+    exec runuser -u lanpilot -- env -i \
+        PATH=/usr/sbin:/usr/bin:/sbin:/bin \
+        HOME=/var/lib/lanpilot \
+        LANG="${LANG:-C.UTF-8}" \
+        LANPILOT_CONFIG="$LANPILOT_CONFIG" \
+        /opt/lanpilot/bin/lanpilot "$@"
 fi
 exec /opt/lanpilot/bin/lanpilot "$@"

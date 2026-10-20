@@ -8,6 +8,16 @@ updates:
       dev-tools:
         patterns: ["ruff", "mypy", "pytest*", "build"]
 
+  # The hash-pinned runtime dependencies the distribution packages ship
+  # (packaging/requirements.txt, scripts/lock_requirements.py).
+  - package-ecosystem: pip
+    directory: /packaging
+    schedule:
+      interval: weekly
+    groups:
+      runtime:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

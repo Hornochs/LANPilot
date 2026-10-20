@@ -31,8 +31,13 @@ PREFIX="$STAGING/opt/lanpilot"
 
 # --- Python environment ---------------------------------------------------------------
 "$PYTHON" -m venv "$PREFIX"
-"$PREFIX/bin/python" -m pip install --quiet --upgrade pip
-"$PREFIX/bin/python" -m pip install --quiet "$WHEEL"
+# Exactly the reviewed dependencies: pinned versions, every file checked against its hash
+# (packaging/requirements.txt, written by scripts/lock_requirements.py). The wheel itself
+# adds nothing; pip check fails the build if the lock file misses a dependency.
+"$PREFIX/bin/python" -m pip install --quiet --require-hashes --no-deps \
+    -r packaging/requirements.txt
+"$PREFIX/bin/python" -m pip install --quiet --no-deps "$WHEEL"
+"$PREFIX/bin/python" -m pip check
 # Nothing installs into this environment after the build: ship neither pip nor the
 # activation scripts.
 "$PREFIX/bin/python" -m pip uninstall --quiet --yes pip

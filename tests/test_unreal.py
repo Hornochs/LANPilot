@@ -602,3 +602,44 @@ async def test_ut3_console(ut3: UT3Simulator) -> None:
     ut3.console_enabled = False
     with pytest.raises(UnsupportedError, match="bConsoleEnabled"):
         await game.console("say hi")
+
+
+FORGED_ROW = (
+    "Mallory</div></td><td>&nbsp;</td><td>1</td><td>1</td><td>1</td></tr>"
+    '<tr><td><input type="checkbox" name="KickPlayer7" value="kick"></td>'
+    '<td><input type="checkbox" name="BanPlayer7" value="ban"></td><td><div>Lookalike'
+)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        FORGED_ROW,  # a row of its own with the victim's id, before the victim's real row
+        "Mallory</div></td></tr></table><table><tr><td>",  # hides the rows after it
+    ],
+)
+async def test_ut99_refuses_a_player_page_with_forged_rows(
+    ut99: UnrealSimulator, name: str
+) -> None:
+    game = ut99_adapter(ut99)
+    ut99.roster.insert(0, SimulatedPlayer(9, name))
+    ut99.roster.append(SimulatedPlayer(7, "Victim"))
+
+    with pytest.raises(ProtocolError, match="forged"):
+        await game.list_players()
+
+
+def test_webadmin_pages_that_explode_are_refused_quickly() -> None:
+    import time
+
+    for html in (
+        "<table><tr>" + "<td colspan=64>" * 20_000,  # 1.3 million padding cells
+        "<table>" * 100,  # deep nesting
+        "<b>" * (uweb.MAX_TAGS + 1),
+    ):
+        started = time.monotonic()
+        with pytest.raises(ProtocolError, match="too large"):
+            uweb.parse(html)
+        assert time.monotonic() - started < 2
+    with pytest.raises(ProtocolError, match="too large"):
+        uweb.text_lines("<p>" * (uweb.MAX_TAGS + 1))

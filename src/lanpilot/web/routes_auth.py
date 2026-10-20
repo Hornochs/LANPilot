@@ -55,23 +55,32 @@ async def login(
     address = client_ip(request) or "unknown"
     # Throttle on what was typed, bounded so the counters cannot be flooded with long keys.
     typed_name = username.strip().lower()[:64]
+    # Only a possible user name goes into the audit log: people type passwords into the
+    # name field, and anything else would let anonymous clients write text into the log.
+    logged_name = (
+        typed_name
+        if users.USERNAME_PATTERN.fullmatch(typed_name)
+        else ("(empty)" if not typed_name else "(invalid name)")
+    )
     target = safe_next(next)
 
     def failed(message: str, status_code: int, headers: dict[str, str] | None = None) -> Response:
         context = {"next": target, "error": message, "username": username[:64]}
         return render(request, "login.html", context, status_code=status_code, headers=headers)
 
-    wait = throttle.retry_after(typed_name, address)
+    wait, mark = throttle.attempt(typed_name, address)
     if wait:
-        audit.record(
-            db,
-            action="login",
-            actor_name=typed_name or "(empty)",
-            detail={"reason": "throttled"},
-            ip=address,
-            success=False,
-        )
-        await db.commit()
+        if throttle.report_refusal(address):
+            audit.record(
+                db,
+                action="login",
+                actor_name=logged_name,
+                detail={"reason": "throttled"},
+                ip=address,
+                success=False,
+            )
+            await audit.prune_failed_logins(db)
+            await db.commit()
         minutes = max(1, round(wait / 60))
         return failed(
             f"Too many failed attempts. Try again in about {minutes} minute(s).",
@@ -81,19 +90,19 @@ async def login(
 
     user = await users.authenticate(db, username, password)
     if user is None:
-        throttle.record_failure(typed_name, address)
         audit.record(
             db,
             action="login",
-            actor_name=typed_name or "(empty)",
+            actor_name=logged_name,
             detail={"reason": "bad credentials"},
             ip=address,
             success=False,
         )
+        await audit.prune_failed_logins(db)
         await db.commit()
         return failed(BAD_CREDENTIALS, 401)
 
-    throttle.record_success(typed_name, address)
+    throttle.record_success(typed_name, address, mark)
     idle_timeout = timedelta(minutes=settings.auth.session_idle_minutes)
     await sessions.purge_expired(db, idle_timeout=idle_timeout)
 

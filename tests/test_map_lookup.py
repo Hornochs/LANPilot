@@ -608,6 +608,57 @@ def test_current_map_gets_an_image_automatically(
     assert [url for fetcher in fetchers for url in fetcher.requests] == [gametracker]
 
 
+def test_a_current_map_the_server_does_not_list_is_not_looked_up(
+    background_server: GoldSrcSimulator,  # noqa: F811 - fixture
+    make_client: ClientFactory,
+    make_user: UserFactory,
+    query: Query,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The status names the current map; a server that keeps reporting new names must not
+    # make LANPilot ask the image sources (and remember a miss) for each of them.
+    fetchers: list[FakeFetcher] = []
+
+    def fake_fetcher(hosts: frozenset[str]) -> FakeFetcher:
+        fetchers.append(FakeFetcher())
+        return fetchers[-1]
+
+    monkeypatch.setattr(image_sources, "Fetcher", fake_fetcher)
+    background_server.current_map = "fy_invented_1"
+    make_user("root", Role.ADMIN)
+    client: TestClient = make_client(
+        LANPILOT_IMAGES__ONLINE="true", LANPILOT_POLLING__INTERVAL_SECONDS="2"
+    )
+    sign_in(client, "root")
+    response = client.post(
+        "/admin/servers/new",
+        data={
+            "adapter": "cs16",
+            "name": "CS Arena",
+            "enabled": "1",
+            "c_host": "127.0.0.1",
+            "c_port": str(background_server.port),
+            "c_rcon_password": PASSWORD,
+            "csrf_token": csrf_token(client),
+        },
+    )
+    assert response.status_code == 303
+    [(server_id,)] = query("SELECT id FROM servers")
+
+    deadline = time.monotonic() + 10
+    while "fy_invented_1" not in client.get(f"/servers/{server_id}/card").text:
+        assert time.monotonic() < deadline, "the map did not show up"
+        time.sleep(0.1)
+    background_server.current_map = "fy_invented_2"
+    while "fy_invented_2" not in client.get(f"/servers/{server_id}/card").text:
+        assert time.monotonic() < deadline, "the map did not show up"
+        time.sleep(0.1)
+    time.sleep(0.5)
+
+    assert [url for fetcher in fetchers for url in fetcher.requests] == []
+    assert query("SELECT map_key FROM map_image_misses") == []
+
+
 def test_admin_page_offers_online_lookup(
     make_client: ClientFactory,
     make_user: UserFactory,

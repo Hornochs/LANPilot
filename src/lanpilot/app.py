@@ -171,6 +171,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.bus = EventBus()
     app.state.map_images = map_images.MapImageIndex()
     app.state.scanner = Scanner(app.state.registry, settings.scan)
+    app.state.event_streams = routes_events.StreamLimit()
 
     # Middleware added last runs first: headers wrap everything, then the host check, then
     # the origin check (which relies on the Host header having been validated), then the

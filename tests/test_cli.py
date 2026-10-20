@@ -178,3 +178,16 @@ def test_duplicate_user_is_rejected(
     assert main(["user", "create", "ADMIN", "--password-stdin"]) == 1
 
     assert "already exists" in capsys.readouterr().err
+
+
+def test_password_stdin_takes_crlf_lines_and_refuses_nothing(
+    env: dict[str, str], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    feed(monkeypatch, "")
+    assert main(["user", "create", "admin", "--password-stdin"]) == 1
+    assert "no password on standard input" in capsys.readouterr().err
+
+    feed(monkeypatch, "correct horse battery\r\n")
+    assert main(["user", "create", "admin", "--password-stdin"]) == 0
+    feed(monkeypatch, "correct horse battery\r\n")
+    assert main(["user", "set-password", "admin", "--password-stdin"]) == 0

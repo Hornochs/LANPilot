@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from datetime import timedelta
 from typing import Annotated
 
@@ -11,6 +10,7 @@ from starlette.responses import RedirectResponse, Response
 
 from lanpilot import audit
 from lanpilot.auth import passwords, sessions, users
+from lanpilot.auth.throttle import LoginThrottle
 from lanpilot.web.deps import AppSettings, CsrfProtected, DbSession, RequireAuth, client_ip
 from lanpilot.web.templating import render
 
@@ -47,7 +47,15 @@ async def change_password(
         return render(request, "account.html", {"error": message}, status_code=400)
 
     user = auth.user
-    if not await asyncio.to_thread(passwords.verify_password, user.password_hash, current_password):
+    throttle: LoginThrottle = request.app.state.login_throttle
+    # Its own key, so failed attempts here do not lock the sign-in, but the same limits.
+    key, address = f"{user.username} (password change)", client_ip(request) or "unknown"
+    wait, mark = throttle.attempt(key, address)
+    if wait:
+        return failed("Too many wrong passwords. Try again later.")
+    if not await passwords.in_worker(
+        passwords.verify_password, user.password_hash, current_password
+    ):
         audit.record(
             db,
             action="password.change",
@@ -58,6 +66,7 @@ async def change_password(
         )
         await db.commit()
         return failed("The current password is wrong.")
+    throttle.record_success(key, address, mark)
     if new_password != new_password_repeat:
         return failed("The two new passwords do not match.")
 

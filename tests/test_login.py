@@ -277,3 +277,23 @@ def test_roles_are_ordered() -> None:
     assert Role.OPERATOR.allows(Role.VIEWER)
     assert not Role.VIEWER.allows(Role.OPERATOR)
     assert not Role.OPERATOR.allows(Role.ADMIN)
+
+
+def test_audit_log_holds_names_only_and_bounded_failures(
+    client: TestClient, make_user: UserFactory, query: Query, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from lanpilot import audit
+
+    monkeypatch.setattr(audit, "MAX_FAILED_LOGINS", 3)
+    make_user("alice")
+    client.post("/login", data={"username": "my secret password!", "password": "x"})
+    client.post("/login", data={"username": "", "password": "x"})
+    for _ in range(10):  # throttled after five: one more entry, not five
+        client.post("/login", data={"username": "alice", "password": "wrong-password-1"})
+
+    names = [name for (name,) in query("SELECT actor_name FROM audit_log ORDER BY id")]
+    assert "my secret password!" not in names
+    assert len(names) <= 3
+    assert names[-1] == "alice"
+    reasons = [d for (d,) in query("SELECT detail FROM audit_log WHERE action = 'login'")]
+    assert sum("throttled" in reason for reason in reasons) == 1

@@ -85,6 +85,8 @@ class ServerRuntime:
     task: asyncio.Task[None] | None = None
     failures: int = 0
     maps_loaded: bool = False
+    #: The current map that was last checked for an image lookup.
+    announced_map: str | None = None
 
 
 class ServerManager:
@@ -278,21 +280,34 @@ class ServerManager:
         else:
             runtime.failures = 0
             if status.map is not None:
-                current = catalog.load().named(previous.adapter_id, status.map)
-                status = replace(status, map=current)
-                if self.on_map is not None:
-                    self.on_map(previous.adapter_id, current)
+                status = replace(status, map=catalog.load().named(previous.adapter_id, status.map))
             runtime.state = replace(
                 previous, online=True, status=status, error=None, checked_at=now, last_seen_at=now
             )
             if not runtime.maps_loaded:
                 await self._load_maps(runtime)
+            if status.map is not None:
+                await self._announce_map(runtime, status.map)
             self._publish_if_changed(previous, runtime.state)
             return
 
         runtime.failures += 1
         runtime.state = replace(previous, online=False, status=None, error=error, checked_at=now)
         self._publish_if_changed(previous, runtime.state)
+
+    async def _announce_map(self, runtime: ServerRuntime, current: MapRef) -> None:
+        """Report the current map for an image lookup, once per map change, and only a map
+        the catalogue knows or the server lists: the name comes from the server's status,
+        and a server that keeps reporting new names must not cause a lookup for each."""
+        if self.on_map is None or current.key == runtime.announced_map:
+            return
+        runtime.announced_map = current.key
+        adapter_id = runtime.state.adapter_id
+        if catalog.load().name(adapter_id, current.key) is None:
+            async with self._sessionmaker() as db:
+                if await maps.find_map(db, runtime.state.server_id, current.key) is None:
+                    return
+        self.on_map(adapter_id, current)
 
     async def _load_maps(self, runtime: ServerRuntime) -> None:
         """Fetch the map list once after a server first answers. This also reveals whether
@@ -321,6 +336,7 @@ class ServerManager:
             runtime.state = replace(runtime.state, control_error=INTERNAL_ERROR)
         else:
             runtime.state = replace(runtime.state, control_error=None)
+            runtime.announced_map = None  # the list changed: check the current map again
             # Adapters may learn from the map list (e.g. the names of game types); ask for
             # the status again right away, so pages do not wait a whole interval for that.
             runtime.wake.set()

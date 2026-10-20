@@ -27,7 +27,17 @@ sudo dnf install ./lanpilot-*.rpm          # Fedora, Rocky Linux
 sudo pacman -U lanpilot-*.pkg.tar.zst      # Arch Linux
 ```
 
-`SHA256SUMS` on the release page lists the checksums of all files.
+`SHA256SUMS` on the release page lists the checksums of all files. As it comes from the
+same page, it only shows that a download is complete. That a package was built by this
+project's release workflow from its source is shown by the build attestation, which the
+[GitHub CLI](https://cli.github.com/) checks before you install:
+
+```bash
+gh attestation verify lanpilot_*.deb --repo lan-dot-party/LANPilot
+```
+
+The Python packages inside are pinned to exact versions and checked against their hashes
+when the package is built (`packaging/requirements.txt`).
 
 ### First start
 

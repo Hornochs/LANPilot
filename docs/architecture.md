@@ -44,7 +44,7 @@ _State: decided; web, database and configuration parts in use since step 1.1._
 | Database | SQLite (WAL) via SQLAlchemy 2 async + Alembic | one process, few users, few writes |
 | Frontend | Jinja2 + HTMX (with its SSE extension) + Tom Select, vendored | no Node build |
 | Live updates | Server-sent events | one-way status stream is enough |
-| Status queries | `opengsq` | MIT, covers nearly all games |
+| Status queries | `opengsq` (A2S: own client) | MIT, covers nearly all games; its A2S parser inflates compressed answers without a limit |
 | Crypto | `argon2-cffi`, `cryptography` | password hashing, credential encryption |
 | HTTP client | `aiohttp` (already required by `opengsq`) | image fetching; WebAdmin transport later |
 | Images | `Pillow` | re-encoding of fetched and uploaded images |
@@ -115,6 +115,7 @@ src/lanpilot/
     engine.py ✔    async engine with SQLite pragmas, session factory
     migrate.py ✔   upgrade(), current_revision(), head_revision(), pre-migration backup
     migrations/ ✔  Alembic environment and versions/ (shipped inside the package)
+    transports/a2s.py ✔           the A2S_INFO status query (single datagram, bounded)
     transports/goldsrc_rcon.py ✔  RCON over UDP for GoldSrc servers
     transports/source_rcon.py ✔   RCON over TCP for Source and Source 2 servers
     transports/gbxremote.py ✔     GBXRemote 2 (XML-RPC over TCP) for Trackmania
@@ -257,7 +258,7 @@ measured._
 
 | Protocol | Games | Implementation | State |
 |---|---|---|---|
-| Status query | all | `opengsq` | used by `cs16`, `css`, `csgo`, `cs2` |
+| Status query | all | `opengsq`; A2S_INFO: `core/transports/a2s.py` | A2S used by `cs16`, `css`, `csgo`, `cs2` |
 | GoldSrc RCON (UDP) | Counter-Strike 1.6 | `core/transports/goldsrc_rcon.py` | ✔ |
 | Source RCON (TCP) | CS:Source, CS:GO, CS2 | `core/transports/source_rcon.py` | ✔ |
 | GBXRemote / XML-RPC (TCP 5000) | Trackmania | `core/transports/gbxremote.py`, encoding via `xmlrpc.client` | ✔ (TMNF measured) |
@@ -293,7 +294,7 @@ log, which CS:GO adds to every answer (the marker's included), are ignored for t
 and removed from the text. It keeps one TCP connection per adapter, logs in on first use,
 opens a new connection after 60 s without a command and after any error; when a kept
 connection turns out to be closed before any answer arrived (CS:GO closes them on every map
-change), it sends the command once more on a new connection. It bounds packet size (64 KiB), answer size (1 MiB) and command
+change), it sends the command once more on a new connection. It bounds packet size (64 KiB), answer size (1 MiB, every packet counted with its header), the packets one exchange reads (4096, skipped ones included) and command
 length. Adapters hold the transport and release it in `close()`.
 
 **GBXRemote** (`core/transports/gbxremote.py`). One TCP connection per `GbxRemote`; on
@@ -324,7 +325,8 @@ asks for struct version 1) with scores from `GetCurrentRanking`; kick and ban ar
 "Login unknown." means the player has left. A ban lasts until the server restarts.
 
 **UWeb** (`core/transports/uweb.py`). `UWebAdmin` sends every request with HTTP Basic
-authentication (ISO-8859-1), never follows redirects, limits pages to 2 MB and keeps the
+authentication (ISO-8859-1), never follows redirects, limits pages to 2 MB (and the parsers
+to 50 000 elements, 20 000 table cells with `colspan` padding, tables nested 16 deep) and keeps the
 session cookie (UT3 opens a day-long session for every request without it). 401 becomes an
 `AuthenticationError` and stops further requests; adapters call `refuse()` when a WebAdmin
 answers with its login form instead (UT3). `parse()` turns a page into a `Page`: selects
@@ -383,8 +385,9 @@ and how long to wait for broadcast answers, it finds servers of its game without
 and returns `DiscoveredServer`s. `core/discovery.py` holds what does not depend on a game:
 `broadcast()` sends datagrams to the directed broadcast address of every network (a /32
 network is its own address, which the tests use with 127.0.0.1) from one socket, optionally
-bound to a fixed and shared source port, and keeps at most 1024 answers, only from addresses
-inside the networks; `gather_found()` runs follow-up queries and drops failures; `clean_text()` reduces
+bound to a fixed and shared source port, and keeps at most 1024 answers, eight per host, only
+from addresses inside the networks; `gather_found()` runs follow-up queries, 32 at a time and
+five seconds each, and drops failures; `clean_text()` reduces
 server-supplied names to 64 printable characters. Packets and parsers come from opengsq.
 
 | Adapters | How they are found |
@@ -571,7 +574,11 @@ _State: implemented (step 1.2)._
   had is ended, and a new one is created.
 - **Throttle** (`auth/throttle.py`): 5 failures per (user name, client address) pair and 30
   per client address within 15 minutes; further attempts get 429 with `Retry-After`, even
-  with the right password. Counters are in memory and bounded.
+  with the right password. `attempt()` checks and counts in one step, before the password is
+  verified, so parallel requests cannot all pass; a right password takes its count back.
+  Counters are in memory and bounded. The current-password check of a password change uses
+  the same limits under its own key. Argon2 runs in worker threads, at most four at a time
+  (`passwords.in_worker()`).
 - **Sessions** (`auth/sessions.py`): the cookie holds a random token, the database only its
   SHA-256 hash. `load()` enforces the absolute and the idle limit and that the user is still
   active; `last_seen_at` is written at most once a minute.
@@ -591,8 +598,11 @@ _State: implemented (step 1.2)._
   anything and never commit; the route adds the audit entry and commits once.
 - **Passwords**: 10 to 256 characters, not equal to the user name. Argon2id with the
   library's default parameters; hashes are upgraded on login when the parameters change.
-- **Audit**: logins (including failed and throttled ones), logouts and every user change are
-  recorded. Entries never contain passwords.
+- **Audit**: logins (including failed ones; throttled ones once per address and window),
+  logouts and every user change are recorded. Entries never contain passwords: a typed name
+  that cannot be a user name is recorded as `(invalid name)`, console commands that look like
+  they set a password without their arguments (`audited_command()`). Failed logins are kept up
+  to 5000 entries (`audit.prune_failed_logins()`).
 
 **Templates** are rendered through `templating.render()`, which supplies `auth`, `root`,
 `insecure_transport`, `notice` and `version`. Autoescaping is on, undefined variables raise
@@ -698,7 +708,8 @@ server_id)` to subscribers through bounded queues; a subscriber that falls behin
 names `server-<id>`, `servers` and `resync` and **no payload**: pages react by fetching what
 they show through the normal routes, so nothing bypasses the access checks. The stream
 authenticates with short-lived database sessions (the request dependency would pin a
-connection for the stream's lifetime), re-checks the session every 15 s with the keepalive
+connection for the stream's lifetime), allows eight streams per session and 500 in all
+(`StreamLimit`), re-checks the session every 15 s with the keepalive
 and ends when it is gone. It sends `X-Accel-Buffering: no`.
 
 ## Frontend and live updates in the browser
@@ -804,7 +815,9 @@ LANPilot starts, so an update that brings a new source gets its chance at once. 
 | "look for all missing images", `lanpilot images prefetch` (`MISSING`) | ask again | skip | ask |
 | "look online" for one map (`ONE`) | ask again | ask again | ask |
 
-`ServerManager.on_map` reports the current map after every poll; `want()` queues a lookup
+`ServerManager.on_map` reports the current map when it changes, and only a map the catalogue
+knows or the server lists (the name comes from the server's status; a server inventing names
+must not cause a lookup for each); `want()` queues a lookup
 unless there is an image or one is queued already. One background task works through the
 queue with a pause of 0.5 s between maps, and calls `manager.announce()` after a find, so
 open pages show the image. While idle it reads the index again every minute, which picks
@@ -835,7 +848,8 @@ committed yet).
 
 ## Security
 
-_State: planned; each mechanism lands with the step named in brackets._
+_State: implemented; reviewed in step 8.1. The threat model, the residual risks and the
+findings of the review are in [security.md](security.md)._
 
 - **Authentication** (1.2 ✔) – Argon2id; no default password, the first admin is created with
   `lanpilot user create`. Login throttling per IP and per username, uniform error message.
@@ -888,7 +902,10 @@ a package with [nfpm](https://nfpm.goreleaser.com) from `packaging/nfpm.yaml.in`
 `fetch-nfpm.sh` downloads nfpm pinned by version and checksum.
 
 **The Python environment is inside the package.** `build.sh` creates a virtual environment,
-installs the wheel with all dependencies, removes pip and the activation scripts, rewrites
+installs the dependencies from `packaging/requirements.txt` with `--require-hashes` (exact
+versions and the hash of every file; written by `scripts/lock_requirements.py`, updated by
+Dependabot, one file for Python 3.11 to 3.14), then the wheel without dependencies, runs
+`pip check`, removes pip and the activation scripts, rewrites
 the scripts' interpreter path to `/opt/lanpilot` and recompiles the bytecode for that path.
 The package then needs no internet access to install. Because the environment contains
 compiled extensions for one Python version, each package depends on exactly that version

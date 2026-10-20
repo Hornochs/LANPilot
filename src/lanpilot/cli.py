@@ -7,6 +7,7 @@ import asyncio
 import getpass
 import json
 import logging
+import os
 import sys
 from collections.abc import Awaitable, Callable, Sequence
 from pathlib import Path
@@ -114,7 +115,10 @@ class CommandError(Exception):
 
 def _read_password(args: argparse.Namespace) -> str:
     if args.password_stdin:
-        return sys.stdin.readline().rstrip("\n")
+        line = sys.stdin.readline()
+        if not line:
+            raise CommandError("no password on standard input")
+        return line.rstrip("\r\n")
     password = getpass.getpass("Password: ")
     if getpass.getpass("Password again: ") != password:
         raise CommandError("the passwords do not match")
@@ -426,6 +430,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    # Whatever the commands create (database, backups, key, images) is for the owner only.
+    os.umask(0o077)
     parser = build_parser()
     args = parser.parse_args(argv)
     handler = getattr(args, "handler", None)

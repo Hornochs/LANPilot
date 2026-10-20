@@ -10,19 +10,15 @@ from collections.abc import Sequence
 from ipaddress import IPv4Network
 from typing import ClassVar
 
-from opengsq.protocols.source import Source
-from opengsq.responses.source import Visibility
-
 from lanpilot.core import discovery
 from lanpilot.core.adapters import (
     CommandRejectedError,
     DiscoveredServer,
     MapRef,
     Player,
-    ProtocolError,
     ServerStatus,
-    ServerUnreachableError,
 )
+from lanpilot.core.transports.a2s import ServerInfo, query_info
 
 # Map names as they occur in practice. Everything that goes into a console command is
 # checked against this, so a crafted name cannot carry a second command.
@@ -42,20 +38,13 @@ async def query_status(host: str, port: int) -> ServerStatus:
 
     A wrong remote-control password therefore never makes a server look offline.
     """
-    try:
-        info = await Source(host, port, QUERY_TIMEOUT_SECONDS).get_info()
-    except (TimeoutError, OSError) as exc:
-        raise ServerUnreachableError("The server did not answer the status query.") from exc
-    except Exception as exc:
-        raise ProtocolError("The server's status answer could not be read.") from exc
-
-    current = str(info.map)
+    info = await query_info(host, port, QUERY_TIMEOUT_SECONDS)
     return ServerStatus(
-        name=str(info.name)[:MAX_NAME_LENGTH],
-        players=int(info.players),
-        max_players=int(info.max_players),
-        map=MapRef(current) if MAP_NAME.fullmatch(current) else None,
-        password_protected=info.visibility == Visibility.Private,
+        name=info.name[:MAX_NAME_LENGTH],
+        players=info.players,
+        max_players=info.max_players,
+        map=MapRef(info.map) if MAP_NAME.fullmatch(info.map) else None,
+        password_protected=info.password,
     )
 
 
@@ -69,19 +58,18 @@ FIRST_CS2_VERSION = (1, 39)  # CS:GO ended with 1.38.x
 _scans: dict[tuple[tuple[IPv4Network, ...], float], asyncio.Task[list[DiscoveredServer]]] = {}
 
 
-def classify(info: object) -> str | None:
+def classify(info: ServerInfo) -> str | None:
     """The adapter id for a server's A2S_INFO answer, ``None`` for other games."""
-    app = int(getattr(info, "id", 0) or 0)
-    folder = str(getattr(info, "folder", "")).lower()
-    if app == APP_CS16 and folder == "cstrike":
-        return "cs16"
-    if app == APP_CSS:
+    folder = info.folder.lower()
+    if info.app_id in (APP_CS16, None) and folder == "cstrike":
+        return "cs16"  # None: the old GoldSrc layout, which names no app id
+    if info.app_id == APP_CSS:
         return "css"
-    if app != APP_CSGO:
+    if info.app_id != APP_CSGO:
         return None
-    if str(getattr(info, "game", "")) == "Counter-Strike 2":
+    if info.game == "Counter-Strike 2":
         return "cs2"
-    version = re.match(r"(\d{1,3})\.(\d{1,3})", str(getattr(info, "version", "")))
+    version = re.match(r"(\d{1,3})\.(\d{1,3})", info.version)
     if version and (int(version[1]), int(version[2])) >= FIRST_CS2_VERSION:
         return "cs2"
     return "csgo"
@@ -104,7 +92,7 @@ async def _find_servers(networks: Sequence[IPv4Network], wait: float) -> list[Di
     senders = {(r.host, r.port): None for r in replies if r.data.startswith(A2S_ANSWERS)}
 
     async def detail(host: str, port: int) -> DiscoveredServer | None:
-        info = await Source(host, port, QUERY_TIMEOUT_SECONDS).get_info()
+        info = await query_info(host, port, QUERY_TIMEOUT_SECONDS)
         adapter_id = classify(info)
         if adapter_id is None:
             return None

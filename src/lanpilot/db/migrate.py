@@ -22,6 +22,9 @@ from sqlalchemy import create_engine
 from lanpilot.db.engine import database_url
 
 SCRIPT_LOCATION = "lanpilot.db:migrations"
+# Backups made before migrations that are kept; they hold password hashes and the encrypted
+# server credentials, so older ones are deleted rather than collected.
+KEEP_BACKUPS = 5
 
 
 @dataclass(frozen=True)
@@ -72,7 +75,15 @@ def _backup(database: Path, revision: str | None) -> Path:
     # The backup API yields a consistent copy even while WAL frames are pending.
     with closing(sqlite3.connect(database)) as source, closing(sqlite3.connect(target)) as dest:
         source.backup(dest)
+    _prune_backups(database)
     return target
+
+
+def _prune_backups(database: Path) -> None:
+    # The time stamp in the name sorts chronologically.
+    backups = sorted(database.parent.glob(f"{database.name}.backup-*"), key=lambda path: path.name)
+    for old in backups[:-KEEP_BACKUPS]:
+        old.unlink(missing_ok=True)
 
 
 def upgrade(database: Path) -> MigrationResult:

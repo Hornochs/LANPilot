@@ -6,7 +6,6 @@ single host 127.0.0.1, where a "broadcast" is a plain datagram to that address.
 
 from collections.abc import Sequence
 from ipaddress import IPv4Network
-from types import SimpleNamespace
 
 import pytest
 
@@ -14,6 +13,7 @@ from lanpilot.config import ScanSettings
 from lanpilot.core.adapters import DiscoveredServer
 from lanpilot.core.adapters.registry import load_registry
 from lanpilot.core.scan import Scanner
+from lanpilot.core.transports.a2s import ServerInfo
 from lanpilot.games.counterstrike import common as cs
 from lanpilot.games.counterstrike.goldsrc import CounterStrike16Adapter
 from lanpilot.games.counterstrike.source import (
@@ -97,20 +97,39 @@ async def test_counter_strike_adapters_of_one_scan_share_one_broadcast(
 
 
 @pytest.mark.parametrize(
-    ("info", "expected"),
+    ("fields", "expected"),
     [
-        ({"id": 10, "folder": "cstrike"}, "cs16"),
-        ({"id": 10, "folder": "valve"}, None),  # Half-Life
-        ({"id": 240, "folder": "cstrike"}, "css"),
-        ({"id": 730, "game": "Counter-Strike 2", "version": "1.41.9.0"}, "cs2"),
-        ({"id": 730, "game": "Counter-Strike: Global Offensive", "version": "1.38.8.1"}, "csgo"),
-        ({"id": 730, "game": "", "version": "1.40.0.0"}, "cs2"),
-        ({"id": 730, "game": "", "version": "odd"}, "csgo"),
-        ({"id": 440, "folder": "tf"}, None),
+        ({"app_id": 10, "folder": "cstrike"}, "cs16"),
+        ({"app_id": None, "folder": "cstrike"}, "cs16"),  # the old GoldSrc layout
+        ({"app_id": 10, "folder": "valve"}, None),  # Half-Life
+        ({"app_id": 240, "folder": "cstrike"}, "css"),
+        ({"app_id": 730, "game": "Counter-Strike 2", "version": "1.41.9.0"}, "cs2"),
+        (
+            {"app_id": 730, "game": "Counter-Strike: Global Offensive", "version": "1.38.8.1"},
+            "csgo",
+        ),
+        ({"app_id": 730, "game": "", "version": "1.40.0.0"}, "cs2"),
+        ({"app_id": 730, "game": "", "version": "odd"}, "csgo"),
+        ({"app_id": 440, "folder": "tf"}, None),
     ],
 )
-def test_classify(info: dict[str, object], expected: str | None) -> None:
-    assert cs.classify(SimpleNamespace(**info)) == expected
+def test_classify(fields: dict[str, object], expected: str | None) -> None:
+    info = ServerInfo(
+        **{
+            "name": "x",
+            "map": "de_dust2",
+            "folder": "csgo",
+            "game": "",
+            "players": 0,
+            "max_players": 10,
+            "bots": 0,
+            "password": False,
+            "version": "",
+            "protocol": 17,
+            **fields,
+        }  # type: ignore[arg-type]
+    )
+    assert cs.classify(info) == expected
 
 
 # --- Trackmania -------------------------------------------------------------------------

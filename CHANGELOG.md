@@ -83,3 +83,22 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Encryption of game server credentials with a key outside the database
   (`secret_key` / `secret_key_file`, `lanpilot secret generate-key`); known secrets are
   redacted from the log.
+
+### Security
+
+- Security review with a threat model (`docs/security.md`). Fixed with it: the Counter-Strike
+  status query uses an own A2S client that refuses compressed and split answers (the library
+  used before inflated them without a limit, so one forged datagram could exhaust memory);
+  the login throttle can no longer be bypassed with parallel requests, and password hashing
+  runs at most four at a time; failed logins in the audit log are bounded; UT99 player pages
+  with forged rows are refused; WebAdmin pages, Source RCON answers and GameSpy queries are
+  bounded in size and time; LAN scan answers and follow-up queries are bounded per host; map
+  images are looked up only for maps a server lists; console commands that set passwords
+  are audited without their arguments; the current-password check of a password change is
+  throttled; at most eight live-update streams per session.
+- The packages install their Python dependencies from a hash-pinned lock file
+  (`packaging/requirements.txt`); the installation guide explains how to verify a release's
+  build attestation.
+- The key file is written atomically; at most five database backups are kept; the
+  `lanpilot` command run by root switches to the service user with a clean environment; a
+  server form pre-filled from a link asks to check the host before a password is entered.

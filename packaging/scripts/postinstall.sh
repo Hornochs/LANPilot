@@ -27,6 +27,10 @@ fi
 # Encryption key for the game servers' passwords. Created once; an existing key is never
 # replaced, because the stored passwords can only be read with it.
 first_install=no
+# An empty file is what an interrupted earlier run may have left; it holds no key.
+if [ -e "$KEY_FILE" ] && [ ! -s "$KEY_FILE" ]; then
+    rm -f "$KEY_FILE"
+fi
 if [ ! -e "$KEY_FILE" ]; then
     first_install=yes
     # No bytecode files: nothing may be written into /opt/lanpilot outside the package.

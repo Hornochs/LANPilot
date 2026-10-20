@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import errno
 import json
 import os
 import secrets
@@ -70,10 +71,23 @@ def load_key(settings: Settings) -> bytes:
 
 
 def write_key_file(path: Path) -> None:
-    """Create a new key file readable by its owner only. Refuses to overwrite a key."""
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(descriptor, "w") as handle:
-        handle.write(generate_key() + "\n")
+    """Create a new key file readable by its owner only. Refuses to overwrite a key.
+
+    The key is written to a temporary file first and linked into place when it is complete,
+    so an interrupted run never leaves an empty or partial key behind.
+    """
+    if path.exists():
+        raise FileExistsError(errno.EEXIST, "a key file exists already", str(path))
+    temporary = path.with_name(f".{path.name}.{secrets.token_hex(8)}")
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(descriptor, "w") as handle:
+            handle.write(generate_key() + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.link(temporary, path)  # fails if a key appeared meanwhile; never replaces one
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 class SecretBox:

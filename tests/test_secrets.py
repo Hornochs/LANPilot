@@ -198,3 +198,22 @@ def test_redacting_formatter_covers_messages_arguments_and_tracebacks() -> None:
     assert "hunter2-rcon" not in output
     assert output.count(PLACEHOLDER) >= 2
     assert "ConnectionError" in output
+
+
+def test_key_file_is_written_completely_or_not_at_all(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    key_file = tmp_path / "secret.key"
+
+    def broken_fsync(descriptor: int) -> None:
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr("lanpilot.core.secrets.os.fsync", broken_fsync)
+    with pytest.raises(OSError):
+        secrets.write_key_file(key_file)
+    assert list(tmp_path.iterdir()) == []  # neither a partial key nor a temporary file
+
+    monkeypatch.undo()
+    secrets.write_key_file(key_file)
+    assert [path.name for path in tmp_path.iterdir()] == ["secret.key"]
+    assert stat.S_IMODE(key_file.stat().st_mode) == 0o600

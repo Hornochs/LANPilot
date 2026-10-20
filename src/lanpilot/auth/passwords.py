@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import secrets
+import weakref
+from collections.abc import Callable
 from functools import cache
+from typing import Any, TypeVar
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
@@ -13,6 +17,7 @@ MIN_LENGTH = 10
 MAX_LENGTH = 256
 
 _hasher = PasswordHasher()
+T = TypeVar("T")
 
 
 class PasswordPolicyError(ValueError):
@@ -26,6 +31,23 @@ def check_policy(password: str, username: str | None = None) -> None:
         raise PasswordPolicyError(f"The password must have at most {MAX_LENGTH} characters.")
     if username is not None and password.casefold() == username.casefold():
         raise PasswordPolicyError("The password must differ from the user name.")
+
+
+# Argon2 needs 64 MiB per hash; without a limit, a burst of logins could take gigabytes.
+MAX_PARALLEL = 4
+_slots: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Semaphore] = (
+    weakref.WeakKeyDictionary()
+)
+
+
+async def in_worker(function: Callable[..., T], *args: Any) -> T:
+    """Run a hashing function in a thread, at most ``MAX_PARALLEL`` at a time."""
+    loop = asyncio.get_running_loop()
+    slot = _slots.get(loop)
+    if slot is None:
+        slot = _slots[loop] = asyncio.Semaphore(MAX_PARALLEL)
+    async with slot:
+        return await asyncio.to_thread(function, *args)
 
 
 def hash_password(password: str) -> str:

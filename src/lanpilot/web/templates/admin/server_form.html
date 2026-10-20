@@ -5,6 +5,11 @@
 {% if error %}
 <p class="banner error" role="alert">{{ error }}</p>
 {% endif %}
+{% if prefilled %}
+<p class="banner warning" role="status">The connection was filled in from a link, for
+  example from the network scan. Check the host before you enter a password: it is sent
+  there.</p>
+{% endif %}
 <section class="card narrow">
   <form method="post" action="{{ root }}/admin/servers/{{ server.id ~ "/edit" if server else "new" }}">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">

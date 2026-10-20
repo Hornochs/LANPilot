@@ -18,10 +18,10 @@ _Last updated: 2026-10-20_
 | 5 – Player management and console | done |
 | 6 – On-demand LAN scan | done |
 | 7 – More games | not started |
-| 8 – Hardening and 1.0 | not started |
+| 8 – Hardening and 1.0 | in progress |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2 and 6.1–6.2, which completes phases
-0, 1, 2, 4, 5 and 6; 3.1, 3.2, 3.4 and 3.5.
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2 and 8.1, which completes
+phases 0, 1, 2, 4, 5 and 6; 3.1, 3.2, 3.4 and 3.5.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
 all seven distribution packages and ran the install, upgrade, reinstall and removal test for
@@ -65,9 +65,14 @@ the same host), each with name and game type; "add" opened the form pre-filled. 
 takes about 2 s (the broadcast wait). What was measured is in
 the game documents ("LAN discovery").
 
-**In progress:** –
+The security review (8.1) and its fixes are summed up in [security.md](security.md); the
+A2S client that replaced opengsq's was checked against CS2 and CS 1.6, the package with the
+hash-pinned dependencies was built and inspected locally.
 
-**Next:** phase 7 (more games). 3.3 (TM2/TM2020) is postponed: no test servers.
+**In progress:** phase 8 (8.2 next).
+
+**Next:** 8.2, 8.3; phase 7 (more games) when test servers exist. 3.3 (TM2/TM2020) is
+postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
 
@@ -211,7 +216,8 @@ Player management should be checked with real players at the next LAN party (see
 
 ### Phase 8 – Hardening and 1.0
 
-- **8.1** Security review, threat model in `security.md`.
+- **8.1** ✔ Security review (web and authentication, protocols, packaging and operation),
+  threat model and residual risks in [security.md](security.md); every finding fixed.
 - **8.2** Package upgrade tests.
 - **8.3** German user interface in addition to English, documentation complete, release 1.0.
 
@@ -231,5 +237,7 @@ Player management should be checked with real players at the next LAN party (see
   with human players (none of the test servers had any). To check at the next LAN party,
   per game: the player list, a kick, a ban and that the ban holds after a reconnect.
 - CS2 player management: needs the `status` format of a CS2 server with players.
+- FastAPI 0.153 deprecates the `root_path` argument LANPilot passes for sub-path setups; it
+  still works, the warning shows in the tests.
 - GameTracker and GameBanana: terms of use not confirmed; these image sources are therefore
   low priority and can be disabled individually.

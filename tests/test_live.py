@@ -605,3 +605,14 @@ def test_pages_use_no_inline_scripts_styles_or_handlers(site: TestClient, query:
         assert "<style" not in page, path
         assert not re.search(r'\sstyle="', page), path
         assert not re.search(r"\son[a-z]+=", page), path
+
+
+def test_open_streams_are_limited_per_session() -> None:
+    from lanpilot.web.routes_events import MAX_STREAMS_PER_SESSION, StreamLimit
+
+    limit = StreamLimit()
+    assert all(limit.acquire("a") for _ in range(MAX_STREAMS_PER_SESSION))
+    assert not limit.acquire("a")
+    assert limit.acquire("b")  # another session is not affected
+    limit.release("a")
+    assert limit.acquire("a")

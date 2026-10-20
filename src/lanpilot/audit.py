@@ -5,11 +5,15 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lanpilot.db.models import AuditEntry, User
 
 CLI_ACTOR = "(command line)"
+# Failed logins are kept up to this number; older ones are deleted, so anonymous clients
+# cannot fill the disk or push the other entries out of sight.
+MAX_FAILED_LOGINS = 5000
 
 
 def record(
@@ -39,3 +43,16 @@ def record(
             success=success,
         )
     )
+
+
+async def prune_failed_logins(db: AsyncSession, keep: int | None = None) -> None:
+    """Delete all but the newest ``keep`` (default ``MAX_FAILED_LOGINS``) failed logins, in
+    the caller's transaction."""
+    keep = MAX_FAILED_LOGINS if keep is None else keep
+    failed = (
+        select(AuditEntry.id)
+        .where(AuditEntry.action == "login", AuditEntry.success.is_(False))
+        .order_by(AuditEntry.id.desc())
+        .offset(keep)
+    )
+    await db.execute(delete(AuditEntry).where(AuditEntry.id.in_(failed)))

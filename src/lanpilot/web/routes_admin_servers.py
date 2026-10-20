@@ -102,6 +102,7 @@ def _form_page(
     enabled: bool,
     values: dict[str, Any],
     error: servers.ServerError | None = None,
+    prefilled: bool = False,
 ) -> Response:
     specs = describe_fields(adapter.connection_schema)
     context = {
@@ -114,6 +115,7 @@ def _form_page(
         "values": _display_values(specs, values),
         "error": str(error) if error else None,
         "field_errors": error.fields if error else {},
+        "prefilled": prefilled,
     }
     return render(request, "admin/server_form.html", context, status_code=400 if error else 200)
 
@@ -182,13 +184,15 @@ async def new_server(request: Request, adapter: str | None = None) -> Response:
         return render(request, "admin/server_new.html", {"adapters": _offered_adapters(request)})
     chosen = _offered_adapter(request, adapter)
     name = request.query_params.get("name", "")
+    values = _prefill(request, describe_fields(chosen.connection_schema))
     return _form_page(
         request,
         chosen,
         server=None,
         name=name[:100] if name.isprintable() else "",
         enabled=True,
-        values=_prefill(request, describe_fields(chosen.connection_schema)),
+        values=values,
+        prefilled=bool(values),
     )
 
 

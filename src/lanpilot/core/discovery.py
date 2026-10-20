@@ -28,6 +28,11 @@ T = TypeVar("T")
 
 # Upper bounds for one broadcast: a LAN party has a few dozen servers, not thousands.
 MAX_REPLIES = 1024
+# Answers kept per host: one host sending many must not crowd out the others.
+MAX_REPLIES_PER_HOST = 8
+# Follow-up queries to the servers that answered: how many at once, and how long each.
+FOLLOW_UP_CONCURRENCY = 32
+FOLLOW_UP_SECONDS = 5.0
 MAX_TEXT_LENGTH = 64
 
 
@@ -68,11 +73,17 @@ class _Collector(asyncio.DatagramProtocol):
     def __init__(self, networks: Sequence[IPv4Network]) -> None:
         self.networks = networks
         self.replies: list[Reply] = []
+        self._per_host: dict[str, int] = {}
 
     def datagram_received(self, data: bytes, addr: tuple[str | int, int]) -> None:
         host, port = str(addr[0]), int(addr[1])
-        if len(self.replies) < MAX_REPLIES and inside(host, self.networks):
-            self.replies.append(Reply(data, host, port))
+        if len(self.replies) >= MAX_REPLIES or not inside(host, self.networks):
+            return
+        count = self._per_host.get(host, 0)
+        if count >= MAX_REPLIES_PER_HOST:
+            return
+        self._per_host[host] = count + 1
+        self.replies.append(Reply(data, host, port))
 
     def error_received(self, exc: Exception) -> None:
         # ICMP "port unreachable" for a unicast target; nothing to do.
@@ -122,8 +133,15 @@ async def broadcast(
 
 
 async def gather_found(probes: Iterable[Awaitable[T | None]]) -> list[T]:
-    """Run follow-up queries concurrently; failures and ``None`` results are dropped."""
-    results = await asyncio.gather(*probes, return_exceptions=True)
+    """Run follow-up queries, a limited number at a time and each within
+    ``FOLLOW_UP_SECONDS``; failures, timeouts and ``None`` results are dropped."""
+    limit = asyncio.Semaphore(FOLLOW_UP_CONCURRENCY)
+
+    async def bounded(probe: Awaitable[T | None]) -> T | None:
+        async with limit, asyncio.timeout(FOLLOW_UP_SECONDS):
+            return await probe
+
+    results = await asyncio.gather(*(bounded(probe) for probe in probes), return_exceptions=True)
     found: list[T] = []
     for result in results:
         if isinstance(result, BaseException):

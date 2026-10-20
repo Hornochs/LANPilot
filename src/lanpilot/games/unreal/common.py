@@ -3,6 +3,7 @@ map names, game types and URL options. Protocol facts: docs/games/unreal-tournam
 
 from __future__ import annotations
 
+import asyncio
 import re
 from collections.abc import Mapping
 
@@ -46,7 +47,9 @@ async def query_status(
     to the name users know ("DeathMatch").
     """
     try:
-        status = await GameSpy1(host, port, QUERY_TIMEOUT_SECONDS).get_status()
+        # opengsq's timeout is per packet; a server that keeps sending would extend it.
+        async with asyncio.timeout(QUERY_TIMEOUT_SECONDS):
+            status = await GameSpy1(host, port, QUERY_TIMEOUT_SECONDS).get_status()
     except (TimeoutError, OSError) as exc:
         raise ServerUnreachableError("The server did not answer the status query.") from exc
     except Exception as exc:

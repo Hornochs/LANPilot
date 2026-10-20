@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 
@@ -60,6 +61,20 @@ class Actor:
     username: str
     role: Role
     ip: str | None = None
+
+
+# Console commands that set a password: only the command's name goes into the audit log,
+# e.g. "rcon_password", "sv_password", "SetServerPassword" or "set ... AdminPassword".
+SECRET_IN_COMMAND = re.compile(r"pass(word|wd)?|secret|key", re.IGNORECASE)
+
+
+def audited_command(command: str) -> str:
+    """The command as the audit log keeps it: at most 200 characters, and for a command
+    that may carry a password only its first word."""
+    if SECRET_IN_COMMAND.search(command):
+        words = command.split(maxsplit=1)
+        return f"{words[0][:64] if words else ''} (arguments not recorded)"
+    return command[:200]
 
 
 class Actions:
@@ -323,7 +338,7 @@ class Actions:
                 action="server.console",
                 required_role=Role.ADMIN,
                 capability=Capability.CONSOLE,
-                detail={"command": command[:200]},
+                detail={"command": audited_command(command)},
                 operation=operation,
                 db=db,
             )

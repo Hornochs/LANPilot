@@ -31,6 +31,11 @@ from lanpilot.core.adapters import (
 )
 
 MAX_PAGE_BYTES = 2 * 1024 * 1024
+# What a WebAdmin page may contain. Real pages have a few thousand elements; the bounds keep
+# a hostile page from costing gigabytes and minutes (a <td colspan=64> per few bytes did).
+MAX_TAGS = 50_000
+MAX_CELLS = 20_000  # table cells, colspan padding included
+MAX_TABLE_DEPTH = 16
 ENCODING = "iso-8859-1"
 
 
@@ -68,15 +73,43 @@ class Page:
     # table around it). A cell spanning several columns is followed by empty cells, so the
     # cells of every row line up with the header row.
     tables: list[list[list[Cell]]] = field(default_factory=list)
+    #: The name of every input of the page, in order (duplicates kept).
+    input_names: list[str] = field(default_factory=list)
 
     def options(self, name: str) -> list[Option]:
         return self.selects.get(name, [])
 
 
-class _FormParser(HTMLParser):
+class _TooComplexError(Exception):
+    pass
+
+
+class _BoundedParser(HTMLParser):
+    """Counts elements and stops a page that has too many."""
+
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
+        self._tags = 0
+
+    def _count_tag(self) -> None:
+        self._tags += 1
+        if self._tags > MAX_TAGS:
+            raise _TooComplexError
+
+
+def _feed(parser: HTMLParser, html: str) -> None:
+    try:
+        parser.feed(html)
+        parser.close()
+    except _TooComplexError as exc:
+        raise ProtocolError("The WebAdmin's page is too large to read.") from exc
+
+
+class _FormParser(_BoundedParser):
+    def __init__(self) -> None:
+        super().__init__()
         self.page = Page()
+        self._cells = 0
         self._select: str | None = None
         self._option: dict[str, str | None] | None = None
         self._label: list[str] = []
@@ -87,6 +120,7 @@ class _FormParser(HTMLParser):
         self._tables: list[_Table] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self._count_tag()
         values = dict(attrs)
         if tag == "select":
             self._finish_option()
@@ -101,6 +135,8 @@ class _FormParser(HTMLParser):
         elif tag == "dd":
             self._detail = []
         elif tag == "table":
+            if len(self._tables) >= MAX_TABLE_DEPTH:
+                raise _TooComplexError
             self._tables.append(_Table())
         elif tag == "tr" and self._tables:
             self._tables[-1].finish_row()
@@ -115,8 +151,12 @@ class _FormParser(HTMLParser):
             except ValueError:
                 span = 1
             table.cell, table.span, table.text = Cell(), min(max(span, 1), 64), []
+            self._cells += table.span
+            if self._cells > MAX_CELLS:
+                raise _TooComplexError
         elif tag == "input" and values.get("name"):
             name, value = values["name"] or "", values.get("value") or ""
+            self.page.input_names.append(name)
             if self._tables and self._tables[-1].cell is not None:
                 self._tables[-1].cell.inputs[name] = value
             if (values.get("type") or "").lower() in ("checkbox", "radio"):
@@ -199,26 +239,35 @@ class _Table:
 
 def parse(html: str) -> Page:
     parser = _FormParser()
-    parser.feed(html)
-    parser.close()
+    _feed(parser, html)
     parser._finish_option()
     while parser._tables:  # tables left open at the end of the page
         parser._finish_table()
     return parser.page
 
 
-def table(page: Page, *headers: str) -> tuple[dict[str, int], list[list[Cell]]]:
+def find_table(page: Page, *headers: str) -> tuple[dict[str, int], list[list[Cell]]]:
     """The first table with a row that has all of ``headers``: the column of every header
-    (lower case, without a trailing colon) and the table's following rows of the same
-    width (others, such as "No players", are left out)."""
+    (lower case, without a trailing colon) and all rows of that table."""
     wanted = {header.lower() for header in headers}
     for rows in page.tables:
-        for index, row in enumerate(rows):
+        for row in rows:
             columns: dict[str, int] = {}
             for column, cell in enumerate(row):
                 columns.setdefault(cell.text.rstrip(":").strip().lower(), column)
             if wanted <= columns.keys():
-                return columns, [other for other in rows[index + 1 :] if len(other) == len(row)]
+                return columns, rows
+    return {}, []
+
+
+def table(page: Page, *headers: str) -> tuple[dict[str, int], list[list[Cell]]]:
+    """Like :func:`find_table`, but only the rows after the header row that have its width
+    (others, such as "No players", are left out)."""
+    columns, rows = find_table(page, *headers)
+    for index, row in enumerate(rows):
+        named = {cell.text.rstrip(":").strip().lower() for cell in row}
+        if {header.lower() for header in headers} <= named:
+            return columns, [other for other in rows[index + 1 :] if len(other) == len(row)]
     return {}, []
 
 
@@ -229,18 +278,19 @@ BLOCK_TAGS = frozenset(
 )
 
 
-class _TextParser(HTMLParser):
+class _TextParser(_BoundedParser):
     """The text of a page, or of the element with a given id, with ``<br>`` as a line
     break."""
 
     def __init__(self, element_id: str | None) -> None:
-        super().__init__(convert_charrefs=True)
+        super().__init__()
         self._id = element_id
         self._depth = 0 if element_id is None else -1  # -1: not inside the element yet
         self.found = element_id is None
         self.pieces: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self._count_tag()
         if tag == "br":
             if self._depth >= 0:
                 self.pieces.append("\n")
@@ -277,8 +327,7 @@ def text_lines(html: str, element_id: str | None = None) -> list[str] | None:
     """The lines of text of the page, or of the element with id ``element_id`` (``None``
     if the page has none); ``<br>`` and line breaks end a line, blank lines are dropped."""
     parser = _TextParser(element_id)
-    parser.feed(html)
-    parser.close()
+    _feed(parser, html)
     if not parser.found:
         return None
     lines = "".join(parser.pieces).splitlines()

@@ -135,6 +135,24 @@ def test_console_for_administrators(users: None, make_client: ClientFactory, que
     assert rows == [("root", 1, '{"command": "echo <b>hi</b>", "server": "Arena"}')]
 
 
+@pytest.mark.parametrize(
+    ("command", "recorded"),
+    [
+        ("rcon_password hunter2", "rcon_password (arguments not recorded)"),
+        ("sv_password  s3cret x", "sv_password (arguments not recorded)"),
+        ("set Engine.GameInfo AdminPassword x", "set (arguments not recorded)"),
+        ("changelevel de_dust2", "changelevel de_dust2"),
+        ("say " + "x" * 300, "say " + "x" * 196),
+    ],
+)
+def test_console_commands_with_passwords_are_audited_without_them(
+    command: str, recorded: str
+) -> None:
+    from lanpilot.core.actions import audited_command
+
+    assert audited_command(command) == recorded
+
+
 def test_player_entries_are_cleaned() -> None:
     reported = [
         Player(id="1", name="Ada\x1b[31m", score=3, ping=20, team="Red\n"),

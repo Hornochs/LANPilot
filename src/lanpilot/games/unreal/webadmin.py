@@ -19,6 +19,7 @@ collects chat. The answer is what the log gained while the command ran.
 from __future__ import annotations
 
 import re
+from collections import Counter
 from collections.abc import Sequence
 from typing import ClassVar
 
@@ -36,7 +37,15 @@ from lanpilot.core.adapters import (
     ServerStatus,
     UnsupportedError,
 )
-from lanpilot.core.transports.uweb import Cell, Page, UWebAdmin, parse, table, text_lines
+from lanpilot.core.transports.uweb import (
+    Cell,
+    Page,
+    UWebAdmin,
+    find_table,
+    parse,
+    table,
+    text_lines,
+)
 from lanpilot.games.unreal.common import (
     GAME_CLASS,
     MAP_NAME,
@@ -170,6 +179,37 @@ class WebAdminAdapter(GameAdapter):
         if not columns:
             raise ProtocolError("The WebAdmin's player page has an unexpected format.")
         name_column = columns["name"]
+        # UT99 does not escape names, so a name can close its row and open forged ones. A
+        # page where that may have happened is refused rather than guessed at: a forged row
+        # repeats another player's id (the kick would hit that player), and a name that
+        # closes the table puts the boxes of the rows after it outside the player table.
+        boxes = re.compile(
+            f"(?:{re.escape(self.kick_box[0])}|{re.escape(self.ban_box[0])})[0-9]{{1,9}}"
+        )
+        on_page = Counter(name for name in page.input_names if boxes.fullmatch(name))
+        _, whole_table = find_table(page, "name", "ping", "score")
+        in_table = Counter(
+            name
+            for row in whole_table
+            for cell in row
+            for name in cell.inputs
+            if boxes.fullmatch(name)
+        )
+        ids = [
+            self._box_id(row[:name_column], prefix)
+            for row in rows
+            for prefix in (self.kick_box[0], self.ban_box[0])
+        ]
+        kick_ids = ids[0::2]
+        ban_ids = ids[1::2]
+        repeated = any(
+            len(present) != len(set(present))
+            for present in ([i for i in kick_ids if i], [i for i in ban_ids if i])
+        )
+        if on_page != in_table or repeated:
+            raise ProtocolError(
+                "The WebAdmin's player page does not add up; a player name may be forged."
+            )
         players: list[Player] = []
         for number, row in enumerate(rows):
             # The checkboxes stand before the name, which a player chooses; boxes after it

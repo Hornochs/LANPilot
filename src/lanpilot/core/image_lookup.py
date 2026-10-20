@@ -43,6 +43,8 @@ RETRY_AFTER_FAILURE_SECONDS = 600.0
 # The poll reports the current map every few seconds. After a lookup found nothing, or a
 # remembered miss applied, it is not queued again for this long (memory only).
 QUIET_AFTER_MISS_SECONDS = 3600.0
+# Maps the lookup remembers not to ask for again soon; expired ones are dropped beyond this.
+MAX_REMEMBERED = 10_000
 PAUSE_SECONDS = 0.5  # between two maps, to be gentle with the sources
 # While idle, the index is read again this often: "lanpilot images prefetch" stores images
 # from another process.
@@ -140,8 +142,13 @@ class ImageLookup:
         wanted = Wanted(adapter_id, adapter.image_lookup, ref, reach)
         if wanted.key in self._queued or self._index.filename(*wanted.key):
             return False
-        if reach is Reach.AUTOMATIC and self._not_before.get(wanted.key, 0) > time.monotonic():
+        now = time.monotonic()
+        if reach is Reach.AUTOMATIC and self._not_before.get(wanted.key, 0) > now:
             return False
+        if len(self._not_before) > MAX_REMEMBERED:
+            self._not_before = {
+                key: until for key, until in self._not_before.items() if until > now
+            }
         try:
             self._queue.put_nowait(wanted)
         except asyncio.QueueFull:

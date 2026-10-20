@@ -181,3 +181,16 @@ def test_map_images_are_moved_from_families_to_games(tmp_path: Path) -> None:
         ("demo", "dm_foundry", "f"),
     ]
     assert misses == []
+
+
+def test_only_the_newest_backups_are_kept(tmp_path: Path) -> None:
+    database = tmp_path / "lanpilot.db"
+    migrate.upgrade(database)
+    for day in range(1, 9):  # older backups from earlier upgrades
+        (tmp_path / f"lanpilot.db.backup-2026010{day}T000000Z-0001").touch()
+
+    migrate._backup(database, "0007")
+
+    backups = sorted(path.name for path in tmp_path.glob("lanpilot.db.backup-*"))
+    assert len(backups) == migrate.KEEP_BACKUPS
+    assert backups[0] == "lanpilot.db.backup-20260105T000000Z-0001"

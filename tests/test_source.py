@@ -567,3 +567,32 @@ def test_cs2_server_in_the_web_interface(
     assert background_server.restarts == ["hard"]
     for path in (f"/servers/{server_id}", "/admin/servers", "/admin/audit"):
         assert PASSWORD not in client.get(path).text
+
+
+async def test_a_server_streaming_foreign_packets_cannot_keep_the_exchange_going() -> None:
+    import time
+
+    from lanpilot.core.transports.source_rcon import SourceRcon, encode
+
+    async def serve(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        (size,) = struct.unpack("<i", await reader.readexactly(4))
+        auth_id = struct.unpack("<i", (await reader.readexactly(size))[:4])[0]
+        writer.write(encode(auth_id, 2, ""))  # login accepted
+        try:
+            while True:  # then packets with ids nobody asked for, without end
+                writer.write(encode(999, 0, "") * 64)
+                await writer.drain()
+        except ConnectionError:
+            pass
+
+    server = await asyncio.start_server(serve, "127.0.0.1", 0)
+    port = server.sockets[0].getsockname()[1]
+    try:
+        rcon = SourceRcon("127.0.0.1", port, "secret")
+        started = time.monotonic()
+        with pytest.raises(ProtocolError, match="too long"):
+            await rcon.execute("status")
+        assert time.monotonic() - started < 3
+        await rcon.close()
+    finally:
+        server.close()

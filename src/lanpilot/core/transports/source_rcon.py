@@ -51,6 +51,10 @@ HEADER = struct.Struct("<iii")
 MIN_PACKET_SIZE = 10  # id, type and the two null bytes
 MAX_PACKET_SIZE = 64 * 1024
 MAX_RESPONSE_BYTES = 1024 * 1024
+# Packets one exchange may read, whatever their id: a long answer on CS:Source comes in
+# packets of about 4 KB, so this is far above what a real answer needs.
+MAX_PACKETS = 4096
+PACKET_OVERHEAD = HEADER.size + 2  # counted per packet, so empty ones add up too
 MAX_COMMAND_LENGTH = 1000
 MAX_AUTH_PACKETS = 4
 IDLE_RECONNECT_SECONDS = 60.0
@@ -198,8 +202,14 @@ class SourceRcon:
         chunks: list[bytes] = []
         answers = 0
         size = 0
+        packets = 0
         timeout = self._timeout
         while True:
+            # Every packet counts, skipped and empty ones too, so a server that keeps sending
+            # cannot keep the exchange going.
+            packets += 1
+            if packets > MAX_PACKETS:
+                raise ProtocolError("The server's answer is too long.")
             try:
                 packet_id, packet_type, body = await self._read_packet(timeout)
                 self._answered = True
@@ -222,7 +232,7 @@ class SourceRcon:
                 continue
             answers += 1
             timeout = self._timeout
-            size += len(body)
+            size += len(body) + PACKET_OVERHEAD
             if size > MAX_RESPONSE_BYTES:
                 raise ProtocolError("The server's answer is too long.")
             chunks.append(body)

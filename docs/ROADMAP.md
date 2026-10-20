@@ -6,7 +6,7 @@ as done, and [architecture.md](architecture.md) describes any structural change 
 
 ## Current status
 
-_Last updated: 2026-10-14_
+_Last updated: 2026-10-20_
 
 | Phase | State |
 |---|---|
@@ -16,12 +16,12 @@ _Last updated: 2026-10-14_
 | 3 – Trackmania | in progress |
 | 4 – Unreal Tournament | done |
 | 5 – Player management and console | done |
-| 6 – On-demand LAN scan | not started |
+| 6 – On-demand LAN scan | done |
 | 7 – More games | not started |
 | 8 – Hardening and 1.0 | not started |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5 and 5.1–5.2, which completes phases 0, 1, 2, 4
-and 5; 3.1, 3.2, 3.4 and 3.5.
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2 and 6.1–6.2, which completes phases
+0, 1, 2, 4, 5 and 6; 3.1, 3.2, 3.4 and 3.5.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
 all seven distribution packages and ran the install, upgrade, reinstall and removal test for
@@ -58,9 +58,16 @@ requests of the UT WebAdmins follow the games' own WebAdmin code and templates, 
 CS:Source and CS:GO the known `status` formats; the details are in the game documents. CS2
 has the console but no player management: its `status` format has not been measured.
 
+The LAN scan (phase 6) was run on the development instance over a /23 network: it found
+CS2 on another host and, started one group after another on the LANPilot host, CS 1.6,
+TMNF, Sunrise eXtreme, UT99, UT2004 and UT3 (the last with its server holding UDP 14001 on
+the same host), each with name and game type; "add" opened the form pre-filled. A scan
+takes about 2 s (the broadcast wait). What was measured is in
+the game documents ("LAN discovery").
+
 **In progress:** –
 
-**Next:** phase 6 (on-demand LAN scan). 3.3 (TM2/TM2020) is postponed: no test servers.
+**Next:** phase 7 (more games). 3.3 (TM2/TM2020) is postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
 
@@ -185,9 +192,14 @@ Player management should be checked with real players at the next LAN party (see
 
 ### Phase 6 – On-demand LAN scan (v0.6)
 
-- **6.1** Adapter method `discover()` using broadcast queries, limited to configured networks.
-- **6.2** Result list with an "add" action; credentials are entered afterwards. No background
-  scanning.
+- **6.1** ✔ Adapter method `discover()` without passwords, limited to the configured networks
+  (`[scan] networks`): A2S_INFO broadcast for the four Counter-Strike games (told apart by
+  app id, game and version), the UDP session query of the in-game LAN browser for
+  TrackMania Forever and Sunrise (each with its own checksum key), the LAN beacons of UT99, UT2004 and UT3 (the last
+  from UDP 14001); measured against real servers.
+- **6.2** ✔ Scan page for administrators and `lanpilot scan`: result list with name, game,
+  game type and address, "add" opens the server form pre-filled; credentials are entered
+  there. One scan at a time, audited, no background scanning.
 
 ### Phase 7 – More games (v0.7+)
 
@@ -208,6 +220,8 @@ Player management should be checked with real players at the next LAN party (see
 - CS2: the test server hung twice while the workshop map `bhop_water` was loaded; the
   cause is probably that map. The idle limit of RCON connections is unmeasured.
 - CS:GO workshop maps (`workshop/<id>/<name>`) are not supported yet.
+- LAN scan: not measured against CS:Source, CS:GO, TrackMania Original and Nations ESWC
+  servers, nor against a UT3 server on another host.
 - UT3: the status needs the WebAdmin password; its LAN beacon (UDP 14001) only answers
   queries sent from that port.
 - Unreal Tournament stock maps have no online image source (Unreal Archive holds community

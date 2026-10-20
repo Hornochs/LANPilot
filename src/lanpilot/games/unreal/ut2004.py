@@ -8,14 +8,16 @@ restart sends that form with the running map and game type.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from ipaddress import IPv4Network
 from typing import ClassVar
 
 from pydantic import Field, SecretStr
 
-from lanpilot.core.adapters import ProtocolError
+from lanpilot.core.adapters import Capability, DiscoveredServer, ProtocolError
 from lanpilot.core.transports.uweb import parse
 from lanpilot.games.unreal.common import GAME_CLASS, split_options
+from lanpilot.games.unreal.discovery import discover_ut2004
 from lanpilot.games.unreal.webadmin import ROOT, WebAdminAdapter, WebAdminConnection
 
 
@@ -52,10 +54,17 @@ class UT2004Adapter(WebAdminAdapter):
     id = "ut2004"
     name = "Unreal Tournament 2004"
     connection_schema = UT2004Connection
+    capabilities = WebAdminAdapter.capabilities | {Capability.DISCOVER}
     image_lookup: ClassVar[Mapping[str, str]] = {"unreal_archive": "Unreal Tournament 2004"}
     # XWebAdmin's CheckBox(): value "True". Bots have a kick box but no ban box.
     kick_box = ("Kick", "True")
     ban_box = ("Ban", "True")
+
+    @classmethod
+    async def discover(
+        cls, networks: Sequence[IPv4Network], wait: float
+    ) -> Sequence[DiscoveredServer]:
+        return await discover_ut2004(cls.id, networks, wait)
 
     async def _travel(self, game_class: str, name: str, options: str) -> None:
         # The restart page's form loads the map with this game type. The rule overrides it

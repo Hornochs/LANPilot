@@ -22,11 +22,13 @@ from lanpilot.core.events import EventBus
 from lanpilot.core.image_lookup import ImageLookup
 from lanpilot.core.redaction import redactor
 from lanpilot.core.runtime import ServerManager
+from lanpilot.core.scan import Scanner
 from lanpilot.db.engine import create_engine, create_sessionmaker
 from lanpilot.web import (
     health,
     routes_account,
     routes_admin_audit,
+    routes_admin_scan,
     routes_admin_servers,
     routes_admin_users,
     routes_auth,
@@ -168,6 +170,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.registry = load_registry()
     app.state.bus = EventBus()
     app.state.map_images = map_images.MapImageIndex()
+    app.state.scanner = Scanner(app.state.registry, settings.scan)
 
     # Middleware added last runs first: headers wrap everything, then the host check, then
     # the origin check (which relies on the Host header having been validated), then the
@@ -191,6 +194,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(routes_admin_users.router)
     app.include_router(routes_admin_servers.router)
     app.include_router(routes_admin_audit.router)
+    app.include_router(routes_admin_scan.router)
     app.include_router(routes_servers.router)
     app.include_router(routes_events.router)
     app.include_router(routes_map_images.router)

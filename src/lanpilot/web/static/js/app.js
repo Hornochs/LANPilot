@@ -19,8 +19,25 @@
     });
   }
 
+  // <form data-busy="text">: a slow action; show that it runs and prevent a second submit.
+  function busyForms(root) {
+    root.querySelectorAll("form[data-busy]").forEach(function (form) {
+      form.addEventListener("submit", function () {
+        var button = form.querySelector("button[type=submit]");
+        if (button) {
+          // Disabled after the submit has been dispatched, so the form is still sent.
+          window.setTimeout(function () {
+            button.disabled = true;
+            button.textContent = form.dataset.busy;
+          }, 0);
+        }
+      });
+    });
+  }
+
   function ready() {
     enhance(document);
+    busyForms(document);
     document.body.addEventListener("htmx:afterSwap", function (event) {
       enhance(event.detail.target);
     });

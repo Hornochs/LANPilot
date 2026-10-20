@@ -35,6 +35,7 @@ from lanpilot.games.counterstrike.common import (
     MAP_NAME,
     MAX_NAME_LENGTH,
     STATS_INTERVAL_SECONDS,
+    DiscoverCounterStrike,
     RconPlayerControl,
     ip_of,
     parse_stats,
@@ -77,7 +78,7 @@ class SourceConnection(ConnectionSettings):
     )
 
 
-class SourceCounterStrikeAdapter(GameAdapter):
+class SourceCounterStrikeAdapter(DiscoverCounterStrike, GameAdapter):
     """What CS:Source, CS:GO and CS2 have in common. Not registered itself."""
 
     family = "counterstrike"
@@ -90,6 +91,7 @@ class SourceCounterStrikeAdapter(GameAdapter):
             Capability.RESTART_SOFT,
             Capability.RESTART_HARD,
             Capability.CONSOLE,
+            Capability.DISCOVER,
         }
     )
     #: Whether ``maps *`` answers in the CS2 format (bare names) instead of the Source 1 one.

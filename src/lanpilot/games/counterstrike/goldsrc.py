@@ -30,6 +30,7 @@ from lanpilot.games.counterstrike.common import (
     MAP_NAME,
     MAX_NAME_LENGTH,
     STATS_INTERVAL_SECONDS,
+    DiscoverCounterStrike,
     RconPlayerControl,
     ip_of,
     parse_stats,
@@ -63,7 +64,7 @@ class CounterStrike16Connection(ConnectionSettings):
     )
 
 
-class CounterStrike16Adapter(RconPlayerControl, GameAdapter):
+class CounterStrike16Adapter(DiscoverCounterStrike, RconPlayerControl, GameAdapter):
     id = "cs16"
     name = "Counter-Strike 1.6"
     family = "counterstrike"
@@ -79,6 +80,7 @@ class CounterStrike16Adapter(RconPlayerControl, GameAdapter):
             Capability.KICK,
             Capability.BAN,
             Capability.CONSOLE,
+            Capability.DISCOVER,
         }
     )
     connection_schema = CounterStrike16Connection

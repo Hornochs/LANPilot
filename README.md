@@ -6,10 +6,11 @@ into each machine.
 
 > **Status: early development.** The core is in place: accounts, server management, live
 > dashboard, map changes and restarts, player list with kick and ban, an optional console for
-> administrators, map images (uploaded or found online) and distribution packages. Working
+> administrators, map images (uploaded or found online), an on-demand LAN scan that finds
+> servers without passwords, and distribution packages. Working
 > games: **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
 > Forever** and **TrackMania Original/Sunrise/Nations ESWC**, and **Unreal Tournament 99, 2004
-> and 3** (player management not yet on CS2). The on-demand LAN scan comes next.
+> and 3** (player management not yet on CS2). More games come next.
 > Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## What LANPilot will do
@@ -19,6 +20,8 @@ into each machine.
 - **Control** per server, as far as the game supports it: change map from a searchable list of
   the maps installed on that server, soft restart (restart the round or match), hard restart
   (reload the level), player list with kick and ban, and a raw console for administrators.
+- **LAN scan** on request: finds the game servers in the configured networks without
+  passwords and adds them with a pre-filled form.
 - **Map images** fetched from community sources, cached locally and pre-loadable for LAN
   parties without internet access.
 - **Accounts** with username and password, three roles (admin, operator, viewer) and an audit

@@ -51,7 +51,8 @@
   {% endif %}
 </section>
 {% if can_add %}
-<p><a class="button" href="{{ root }}/admin/servers/new">Add a server</a></p>
+<p><a class="button" href="{{ root }}/admin/servers/new">Add a server</a>
+  <a href="{{ root }}/admin/scan">Scan the network</a></p>
 {% else %}
 <p class="muted">No game adapters are installed, so no server can be added.</p>
 {% endif %}

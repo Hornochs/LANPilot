@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
+from ipaddress import IPv4Network
 from typing import ClassVar
 
 from pydantic import Field, SecretStr
@@ -31,6 +32,7 @@ from lanpilot.core.adapters import (
     Capability,
     CommandRejectedError,
     ConnectionSettings,
+    DiscoveredServer,
     GameAdapter,
     MapRef,
     Player,
@@ -55,6 +57,7 @@ from lanpilot.games.unreal.common import (
     split_options,
     valid_options,
 )
+from lanpilot.games.unreal.discovery import discover_ut3
 
 ROOT = "/ServerAdmin"
 GAME_CLASS_KEY = "game_class"
@@ -105,6 +108,7 @@ class UT3Adapter(GameAdapter):
             Capability.KICK,
             Capability.BAN,
             Capability.CONSOLE,
+            Capability.DISCOVER,
         }
     )
     connection_schema = UT3Connection
@@ -122,6 +126,12 @@ class UT3Adapter(GameAdapter):
         # Learnt from the map list: game type class -> name, map key -> title.
         self._game_names: dict[str, str] = {}
         self._titles: dict[str, str] = {}
+
+    @classmethod
+    async def discover(
+        cls, networks: Sequence[IPv4Network], wait: float
+    ) -> Sequence[DiscoveredServer]:
+        return await discover_ut3(cls.id, networks, wait)
 
     async def _get(self, path: str) -> Page:
         return self._checked(parse(await self._web.get(path)))

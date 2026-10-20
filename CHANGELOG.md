@@ -67,6 +67,10 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Console** for administrators: send a raw command to a game server and see its answer
   (all Counter-Strike games and Unreal Tournament 99, 2004 and 3). Switched off unless
   `enable_console` is set; every command is recorded in the audit log.
+- **LAN scan** for administrators ("Scan the network", `lanpilot scan`): looks once for
+  Counter-Strike, TrackMania and Unreal Tournament servers in the networks of the new
+  `[scan]` setting, without passwords, lists name, game, game type and address, and opens the
+  server form pre-filled for a found server. Every scan is recorded in the audit log.
 
 ### Changed
 

@@ -160,17 +160,35 @@ async def list_servers(request: Request, db: DbSession) -> Response:
     return await _list_page(request, db)
 
 
+MAX_PREFILL_LENGTH = 253
+
+
+def _prefill(request: Request, specs: list[FieldSpec]) -> dict[str, Any]:
+    """Form values from the query string, as the LAN scan links them: only text, number and
+    select fields of the schema; password fields are never filled in from a link."""
+    values: dict[str, Any] = {}
+    for spec in specs:
+        value = request.query_params.get(FIELD_PREFIX + spec.name)
+        if value is None or len(value) > MAX_PREFILL_LENGTH or not value.isprintable():
+            continue
+        if spec.kind in ("text", "number") or (spec.kind == "select" and value in spec.choices):
+            values[spec.name] = value
+    return values
+
+
 @router.get("/new", name="admin_server_new")
 async def new_server(request: Request, adapter: str | None = None) -> Response:
     if adapter is None:
         return render(request, "admin/server_new.html", {"adapters": _offered_adapters(request)})
+    chosen = _offered_adapter(request, adapter)
+    name = request.query_params.get("name", "")
     return _form_page(
         request,
-        _offered_adapter(request, adapter),
+        chosen,
         server=None,
-        name="",
+        name=name[:100] if name.isprintable() else "",
         enabled=True,
-        values={},
+        values=_prefill(request, describe_fields(chosen.connection_schema)),
     )
 
 

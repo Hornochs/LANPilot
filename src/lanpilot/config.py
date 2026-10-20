@@ -163,6 +163,27 @@ class ImageSettings(BaseModel):
         return list(dict.fromkeys(value))
 
 
+class ScanSettings(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    # IPv4 networks the on-demand LAN scan looks in. Empty: no scan is offered.
+    networks: CommaList = Field(default_factory=list)
+    # How long a scan waits for answers to its broadcasts.
+    timeout_seconds: float = Field(default=2, ge=0.5, le=10)
+
+    @field_validator("networks")
+    @classmethod
+    def _check_networks(cls, value: list[str]) -> list[str]:
+        networks: list[str] = []
+        for entry in value:
+            try:
+                network = ipaddress.IPv4Network(entry, strict=False)
+            except ValueError as exc:
+                raise ValueError(f"{entry!r} is not an IPv4 network") from exc
+            networks.append(str(network))
+        return list(dict.fromkeys(networks))
+
+
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -170,6 +191,7 @@ class Settings(BaseModel):
     auth: AuthSettings = Field(default_factory=AuthSettings)
     polling: PollingSettings = Field(default_factory=PollingSettings)
     images: ImageSettings = Field(default_factory=ImageSettings)
+    scan: ScanSettings = Field(default_factory=ScanSettings)
     data_dir: Path = Path("/var/lib/lanpilot")
     secret_key: SecretStr | None = None
     secret_key_file: Path | None = None

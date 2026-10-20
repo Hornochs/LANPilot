@@ -364,3 +364,30 @@ port number. `game="cs2"` (default), `"csgo"` and `"css"` reproduce the measured
 of each game: the wrong ids of CS2, the log lines and dropped connections of CS:GO. For
 CS:Source and CS:GO it also answers `status` with players and handles `kickid`, `addip` and
 `writeip` (`player_commands`). The adapters' tests run against all three.
+
+## LAN discovery
+
+Measured on 2026-10-20 against CS 1.6 (HLDS build 10211, same host as LANPilot) and CS2
+1.41.9.0 (another host), both on port 27015. CS:Source and CS:GO were not measured.
+
+- `FF FF FF FF 54 "Source Engine Query" 00` (A2S_INFO) reaches both servers as a directed
+  broadcast (the last address of the network), as `255.255.255.255` and as unicast; answers came
+  within 1 to 11 ms, only from port 27015 (27016–27020 and 26900–26905 were asked too).
+- Both answer the broadcast with a challenge (`FF FF FF FF 41` + 4 bytes), from the server's
+  own address. The query repeated with that challenge, by unicast to that sender, gives the
+  info (`0x49`); opengsq's `Source.get_info()` does exactly that. CS 1.6 asked over
+  127.0.0.1 skips the challenge. No `0x6D` (old GoldSrc) answer was seen.
+- What tells the games apart:
+
+| Field | CS 1.6 | CS2 |
+|---|---|---|
+| app id | 10 | 730 |
+| folder | `cstrike` | `csgo` |
+| game | `Counter-Strike` | `Counter-Strike 2` |
+| version | `1.1.2.7/Stdio` | `1.41.9.0` |
+| protocol | 48 | 17 |
+
+CS2 kept CS:GO's app id and folder, so the adapter takes `game` (`Counter-Strike 2`) and
+then the version (1.39 and later is CS2; CS:GO ended with 1.38.x) to tell them apart;
+CS:Source is app id 240. `classify()` in `games/counterstrike/common.py` does this. The four
+Counter-Strike adapters of one scan share one broadcast (`find_servers()`).

@@ -298,6 +298,38 @@ def _cmd_images_prefetch(args: argparse.Namespace) -> int:
     return asyncio.run(run())
 
 
+def _cmd_scan(args: argparse.Namespace) -> int:
+    """Look for game servers in the scan networks once and print what answered."""
+    from pydantic import ValidationError
+
+    from lanpilot.config import ScanSettings
+    from lanpilot.core.adapters.registry import load_registry
+    from lanpilot.core.scan import Scanner
+
+    settings = _settings(args)
+    _configure_logging(settings)
+    scan = settings.scan
+    if args.network:
+        try:
+            scan = ScanSettings(networks=args.network, timeout_seconds=scan.timeout_seconds)
+        except ValidationError as exc:
+            raise CommandError(exc.errors(include_input=False)[0]["msg"]) from exc
+    if not scan.networks:
+        raise CommandError("no networks to scan: set scan.networks or pass --network")
+
+    result = asyncio.run(Scanner(load_registry(), scan).run())
+    for item in result.found:
+        server = item.server
+        address = server.host if server.port is None else f"{server.host}:{server.port}"
+        extra = "".join(f" {key}={value}" for key, value in server.values.items())
+        game_type = f" ({server.game_type})" if server.game_type else ""
+        print(f"{address:<21} {item.game}{game_type}: {server.name or '-'}{extra}")
+    if result.failed:
+        print(f"did not finish: {', '.join(result.failed)}")
+    print(f"{len(result.found)} found in {', '.join(result.networks)} ({result.seconds:.1f} s)")
+    return 0
+
+
 def _cmd_config_show(args: argparse.Namespace) -> int:
     # mode="json" renders SecretStr values as asterisks.
     print(json.dumps(_settings(args).model_dump(mode="json"), indent=2))
@@ -371,6 +403,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--server", type=int, metavar="ID", help="only the maps of the server with this id"
     )
     images_prefetch.set_defaults(handler=_cmd_images_prefetch)
+
+    scan = commands.add_parser("scan", help="look for game servers on the LAN once")
+    scan.add_argument(
+        "--network",
+        action="append",
+        metavar="CIDR",
+        help="network to scan instead of scan.networks (repeatable)",
+    )
+    scan.set_defaults(handler=_cmd_scan)
 
     config = commands.add_parser("config", help="inspect the configuration")
     config_commands = config.add_subparsers(

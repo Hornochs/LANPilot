@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
+from ipaddress import IPv4Network
 from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -115,10 +116,19 @@ class ServerStatus:
 
 @dataclass(frozen=True)
 class DiscoveredServer:
+    """A server found by a LAN scan.
+
+    ``host`` and ``port`` are the values for the connection form; ``port`` is ``None`` when
+    the scan cannot learn the remote-control port, so the form keeps its default. ``values``
+    pre-fills further public connection fields, such as a query port.
+    """
+
     adapter_id: str
     host: str
-    port: int
+    port: int | None = None
     name: str | None = None
+    game_type: str | None = None
+    values: Mapping[str, str] = field(default_factory=dict)
 
 
 class ConnectionSettings(BaseModel):
@@ -231,8 +241,16 @@ class GameAdapter(ABC):
         raise UnsupportedError(f"{self.name} has no console")
 
     @classmethod
-    async def discover(cls, networks: Sequence[str]) -> Sequence[DiscoveredServer]:
-        """Find servers of this game in the given networks (CIDR), on request only."""
+    async def discover(
+        cls, networks: Sequence[IPv4Network], wait: float
+    ) -> Sequence[DiscoveredServer]:
+        """Find servers of this game in ``networks``, on request only, without passwords.
+
+        ``wait`` is how long to wait for answers to a broadcast. Return soon after it plus
+        the time follow-up queries need, report only servers whose address lies inside
+        ``networks``, and never raise for a host that answers oddly: skip it.
+        ``lanpilot.core.discovery`` has the helpers.
+        """
         raise UnsupportedError(f"{cls.name} cannot be discovered")
 
 

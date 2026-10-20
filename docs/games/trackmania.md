@@ -228,3 +228,35 @@ playlist reordering of `ChooseNextChallenge`, the differences in the table above
 files outside the playlist (`disk_tracks`) and the pack mask (`environments`), and players
 (`roster`) with ranking, `Kick` and `Ban` and the faults measured above. The adapters' tests
 run against it.
+
+## LAN discovery
+
+Measured on 2026-10-20 against the TMNF and Sunrise eXtreme servers on the LANPilot host.
+TrackMania Original and Nations ESWC were not measured.
+
+**TrackMania Forever** listens on UDP and TCP 2350 (game port) and TCP 3450. It answers the
+UDP session query of its LAN browser for the game id `TmForever`, within a millisecond, on
+directed and limited broadcast, unicast and loopback, from UDP 2350, but only when the query
+carries Forever's checksum key (opengsq's `TrackmaniaNations` key; a first measurement with
+Sunrise's key got no answer for any game id). The answer has Sunrise's layout: nonce,
+application `GameNet`, game id, version (`100`), host name, then the server's address and
+game port twice; unlike Sunrise it does not echo the nonce (always 0). The TCP server info on
+the announced port (opengsq `TrackmaniaNations.get_info()`, 4–5 ms) then adds name (with
+formatting codes), map, players, game mode ("TimeAttack") and environment, without a
+password. (An earlier version asked every host over TCP instead: about 12 s for a /23,
+because an address without a host fails only after about 3 s with "No route to host".)
+
+**Sunrise** answers the UDP session query (opengsq `build_session_query()`) only for its own
+game id (`TmSunrise` here), within a millisecond, on directed and limited broadcast and
+unicast, from UDP 2350. The answer names game id, version (1.043), the host name, and the
+server's address and port. Once, started right after TMNF had been stopped, the server used
+TCP 2351 and announced 2351 while TCP 2350 was refused, so the adapter takes the port from
+the answer. The TCP server info then adds name and game mode; it cannot tell Original from
+Sunrise, the session answer does.
+
+Both are found by their game port, not the XML-RPC port, so a find leaves the XML-RPC port
+at its default.
+
+The simulator `lanpilot.testing.lan.TrackmaniaInfoSimulator` (`game="forever"` or
+`"sunrise"`) answers the session query, with the game's key and nonce behaviour, and the
+info request.

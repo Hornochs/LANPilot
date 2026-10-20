@@ -94,6 +94,25 @@ terms of use of GameBanana and GameTracker have not been confirmed; leave them o
 over HTTPS, without following redirects; every image is decoded and encoded again before it
 is stored. An image an administrator removes is not fetched again automatically.
 
+### `[scan]`
+
+| Key | Meaning | Default |
+|---|---|---|
+| `networks` | IPv4 networks the LAN scan looks in, e.g. `["192.168.1.0/24"]`; empty: no scan | empty |
+| `timeout_seconds` | how long a scan waits for answers to its broadcasts | `2` |
+
+Administrators start a scan under "Server setup" → "Scan the network" (or with
+`lanpilot scan`); it runs once, never in the background, and takes a few seconds. It
+finds Counter-Strike 1.6, CS:Source, CS:GO, CS2, TrackMania Forever, TrackMania
+Original/Sunrise/Nations ESWC, UT99, UT2004 and UT3 servers without a password and lists
+name, game, game type and address; "Add" opens the server form with these values, and the
+passwords are entered there.
+
+The scan sends broadcasts, so LANPilot must be in the same network segment as the game
+servers (a router does not forward them). Unreal Tournament 3 answers only to UDP port
+14001; the scan uses that port for a moment, which also works while a UT3 server runs on the
+LANPilot host.
+
 ## Examples
 
 Behind a reverse proxy on the same machine (the usual setup):

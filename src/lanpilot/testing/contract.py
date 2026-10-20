@@ -12,6 +12,7 @@ declares and verifies that the rest is refused properly.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from ipaddress import IPv4Network
 
 from lanpilot.core.adapters import (
     Capability,
@@ -35,6 +36,7 @@ async def _refuses(adapter: GameAdapter, capability: Capability) -> None:
         Capability.BAN: lambda: adapter.ban(nobody),
         Capability.CONSOLE: lambda: adapter.console("status"),
         Capability.MANUAL_MAPS: lambda: adapter.look_up_map("no_such_map"),
+        Capability.DISCOVER: lambda: type(adapter).discover([IPv4Network("127.0.0.1/32")], 0.1),
     }
     if capability not in calls:
         return

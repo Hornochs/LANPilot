@@ -3,15 +3,20 @@ and player control over RCON."""
 
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 import re
 from collections.abc import Sequence
+from ipaddress import IPv4Network
+from typing import ClassVar
 
 from opengsq.protocols.source import Source
 from opengsq.responses.source import Visibility
 
+from lanpilot.core import discovery
 from lanpilot.core.adapters import (
     CommandRejectedError,
+    DiscoveredServer,
     MapRef,
     Player,
     ProtocolError,
@@ -52,6 +57,72 @@ async def query_status(host: str, port: int) -> ServerStatus:
         map=MapRef(current) if MAP_NAME.fullmatch(current) else None,
         password_protected=info.visibility == Visibility.Private,
     )
+
+
+# Discovery: A2S_INFO broadcast to the usual query ports. Servers answer with a challenge
+# (or, over loopback, the info right away); the info is then asked from each of them.
+QUERY_PORTS = (*range(27015, 27021), *range(26900, 26906))
+A2S_INFO = b"\xff\xff\xff\xffTSource Engine Query\x00"
+A2S_ANSWERS = (b"\xff\xff\xff\xffA", b"\xff\xff\xff\xffI", b"\xff\xff\xff\xffm")
+APP_CS16, APP_CSS, APP_CSGO = 10, 240, 730  # CS2 kept CS:GO's app id
+FIRST_CS2_VERSION = (1, 39)  # CS:GO ended with 1.38.x
+_scans: dict[tuple[tuple[IPv4Network, ...], float], asyncio.Task[list[DiscoveredServer]]] = {}
+
+
+def classify(info: object) -> str | None:
+    """The adapter id for a server's A2S_INFO answer, ``None`` for other games."""
+    app = int(getattr(info, "id", 0) or 0)
+    folder = str(getattr(info, "folder", "")).lower()
+    if app == APP_CS16 and folder == "cstrike":
+        return "cs16"
+    if app == APP_CSS:
+        return "css"
+    if app != APP_CSGO:
+        return None
+    if str(getattr(info, "game", "")) == "Counter-Strike 2":
+        return "cs2"
+    version = re.match(r"(\d{1,3})\.(\d{1,3})", str(getattr(info, "version", "")))
+    if version and (int(version[1]), int(version[2])) >= FIRST_CS2_VERSION:
+        return "cs2"
+    return "csgo"
+
+
+async def find_servers(networks: Sequence[IPv4Network], wait: float) -> list[DiscoveredServer]:
+    """Counter-Strike servers of all four games. The adapters of one scan ask together, so
+    they share one broadcast."""
+    key = (tuple(networks), wait)
+    task = _scans.get(key)
+    if task is None:
+        task = asyncio.ensure_future(_find_servers(networks, wait))
+        _scans[key] = task
+        task.add_done_callback(lambda _: _scans.pop(key, None))
+    return await asyncio.shield(task)
+
+
+async def _find_servers(networks: Sequence[IPv4Network], wait: float) -> list[DiscoveredServer]:
+    replies = await discovery.broadcast(networks, [(A2S_INFO, port) for port in QUERY_PORTS], wait)
+    senders = {(r.host, r.port): None for r in replies if r.data.startswith(A2S_ANSWERS)}
+
+    async def detail(host: str, port: int) -> DiscoveredServer | None:
+        info = await Source(host, port, QUERY_TIMEOUT_SECONDS).get_info()
+        adapter_id = classify(info)
+        if adapter_id is None:
+            return None
+        return DiscoveredServer(adapter_id, host, port, name=discovery.clean_text(info.name))
+
+    return await discovery.gather_found(detail(host, port) for host, port in senders)
+
+
+class DiscoverCounterStrike:
+    """``discover()`` for a Counter-Strike adapter: its own share of :func:`find_servers`."""
+
+    id: ClassVar[str]
+
+    @classmethod
+    async def discover(
+        cls, networks: Sequence[IPv4Network], wait: float
+    ) -> Sequence[DiscoveredServer]:
+        return [item for item in await find_servers(networks, wait) if item.adapter_id == cls.id]
 
 
 def parse_stats(answer: str) -> dict[str, float]:

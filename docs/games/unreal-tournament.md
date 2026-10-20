@@ -308,3 +308,29 @@ log.
 with the login form for wrong credentials, a new session for every request without cookie,
 `urlextra` carrying the layout, the fallback travel for unknown maps, the scoreboard, the
 player page with its kick and ban form, and the console.
+
+## LAN discovery
+
+Measured on 2026-10-20 against the UT99, UT2004 and UT3 servers on the LANPilot host (one at
+a time). Every query reached the servers as directed broadcast, `255.255.255.255` and
+unicast.
+
+| Game | Query | Answer |
+|---|---|---|
+| UT99 | `REPORTQUERY` to UDP 8777 (8777–8786 are asked) | `ut 7778` from 8777: the GameSpy query port, which gives name and game type |
+| UT2004 | `80 00 00 00 00` to UDP 10777 | 95 bytes **from UDP 7778** (the Unreal 2 query port, not 10777): the same layout as the Unreal 2 details, with name, map, game type and game port 7777 |
+| UT3 | UDK LAN beacon `05 01 4D 57 07 DB "SQ"` + 8-byte nonce to UDP 14001 | 354 bytes `… "SR"` + nonce, **always sent to port 14001 of the asking host**: name, map, game mode (Deathmatch), players, game port 7777 |
+
+- UT2004's GameSpy port, which LANPilot's status uses, is not in the answer: it is the game
+  port + 10 (7787 measured); the Unreal 2 query port (7778) does not answer GameSpy.
+- UT3 answers only to port 14001, so the query is sent from a socket bound to 14001. A UT3
+  server on the same host holds that port (bound without `SO_REUSEADDR`): a plain bind fails
+  with "address in use", `SO_REUSEPORT` alone as well; with `SO_REUSEADDR` the bind works and
+  the broadcast answer arrives. Our own query comes back on that socket too and is told
+  apart by its type (`SQ`). While the socket is open (the scan's wait, 2 s by default) it
+  also receives unicast datagrams meant for a UT3 server on the same host; the server
+  answered normally afterwards. Unicast to a UT3 server on another host was not measured.
+
+A find carries the host and, for UT99 and UT2004, the GameSpy query port; the WebAdmin port
+stays at its default. Simulators: `UT99BeaconSimulator`, `UT2004LanSimulator` and
+`UT3BeaconSimulator` in `lanpilot.testing.lan`.

@@ -1,4 +1,5 @@
 from importlib.metadata import EntryPoint
+from ipaddress import IPv4Network
 from typing import Literal
 
 import pytest
@@ -331,7 +332,7 @@ async def test_unsupported_calls_raise_unsupported_error() -> None:
     with pytest.raises(UnsupportedError):
         await adapter.console("status")
     with pytest.raises(UnsupportedError):
-        await StatusOnlyAdapter.discover(["10.0.0.0/24"])
+        await StatusOnlyAdapter.discover([IPv4Network("10.0.0.0/24")], 1.0)
     assert not adapter.supports(Capability.MAP_CHANGE)
 
 

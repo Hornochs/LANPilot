@@ -174,13 +174,14 @@ class SourceSimulator:
             + bytes([17])
             + text(self.hostname)
             + text(self.current_map)
-            + text("csgo" if self.cs2 else "cstrike")
+            + text("cstrike" if self.game == "css" else "csgo")
             + text(game)
-            + struct.pack("<H", 730 if self.cs2 else 240)
+            # CS2 kept CS:GO's app id; the version tells them apart.
+            + struct.pack("<H", 240 if self.game == "css" else 730)
             + bytes([self.players, self.max_players, 0])
             + b"dl"
             + bytes([0, 0])
-            + text("1.41.9.0")
+            + text({"cs2": "1.41.9.0", "csgo": "1.38.8.1", "css": "11003710"}[self.game])
             + bytes([0])
         )
 

@@ -10,11 +10,14 @@ request of ``current_restart``.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from ipaddress import IPv4Network
 from typing import ClassVar
 
 from pydantic import Field, SecretStr
 
+from lanpilot.core.adapters import Capability, DiscoveredServer
+from lanpilot.games.unreal.discovery import discover_ut99
 from lanpilot.games.unreal.webadmin import ROOT, WebAdminAdapter, WebAdminConnection
 
 
@@ -51,11 +54,18 @@ class UT99Adapter(WebAdminAdapter):
     id = "ut99"
     name = "Unreal Tournament (UT99)"
     connection_schema = UT99Connection
+    capabilities = WebAdminAdapter.capabilities | {Capability.DISCOVER}
     image_lookup: ClassVar[Mapping[str, str]] = {"unreal_archive": "Unreal Tournament"}
     map_extension = ".unr"
     # Bots have neither box: UT99's WebAdmin cannot remove them. A ban is by IP address.
     kick_box = ("KickPlayer", "kick")
     ban_box = ("BanPlayer", "ban")
+
+    @classmethod
+    async def discover(
+        cls, networks: Sequence[IPv4Network], wait: float
+    ) -> Sequence[DiscoveredServer]:
+        return await discover_ut99(cls.id, networks, wait)
 
     async def _travel(self, game_class: str, name: str, options: str) -> None:
         self._expect_wait(

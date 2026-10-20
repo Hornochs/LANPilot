@@ -4,8 +4,8 @@ This document describes how LANPilot is built. It is the reference to read befor
 the code, and it is updated in every change that alters structure, interfaces or the data
 model.
 
-> **Implementation state:** phases 0–2 are complete, phase 3 (Trackmania) except TM2/TM2020,
-> and phase 4 (Unreal Tournament) (see [ROADMAP.md](ROADMAP.md)). Sections about later phases are still the **target design**;
+> **Implementation state:** phases 0–2 and 4–6 are complete, phase 3 (Trackmania) except
+> TM2/TM2020 (see [ROADMAP.md](ROADMAP.md)). Sections about later phases are still the **target design**;
 > each section carries a state marker.
 
 ## Overview
@@ -72,6 +72,7 @@ src/lanpilot/
     routes_admin_users.py ✔  /admin/users…
     routes_admin_servers.py ✔  /admin/servers…: list, add, edit, delete, test connection
     routes_admin_audit.py ✔    /admin/audit
+    routes_admin_scan.py ✔     /admin/scan: the on-demand LAN scan
     routes_servers.py ✔        /servers/{id} and its actions
     routes_events.py ✔         /events (server-sent events)
     routes_map_images.py ✔     /map-images/<file>, /admin/servers/{id}/maps
@@ -90,6 +91,8 @@ src/lanpilot/
     image_sources.py ✔      Fetcher (the only outbound HTTP), Steam Workshop, GameBanana,
                             GameTracker
     image_lookup.py ✔       ImageLookup: source chain, remembered misses, background queue
+    discovery.py ✔          helpers for discover(): broadcast, follow-up queries, bounds
+    scan.py ✔               Scanner: one LAN scan on request, over every DISCOVER adapter
     events.py ✔             EventBus for live updates
     secrets.py ✔            key loading, SecretBox (AES-256-GCM)
     redaction.py ✔          keeps known secrets out of the log
@@ -99,6 +102,7 @@ src/lanpilot/
   testing/source.py ✔       simulator of CS:Source, CS:GO and CS2 servers (query, Source RCON)
   testing/gbxremote.py ✔    simulator of TrackMania Forever and Sunrise servers (GBXRemote 2)
   testing/uweb.py ✔         simulators of the UT99/UT2004 WebAdmin + GameSpy query, and UT3
+  testing/lan.py ✔          simulators of the LAN discovery answers of Trackmania and Unreal
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -122,14 +126,15 @@ src/lanpilot/
   games/trackmania/common.py ✔      ChallengeAdapter: what the "challenge" generation shares
   games/trackmania/forever.py ✔     TrackMania Nations/United Forever
   games/trackmania/sunrise.py ✔     TrackMania Original, Sunrise (eXtreme), Nations ESWC
+  games/trackmania/discovery.py ✔   finding Forever and Sunrise (UDP session query)
   games/unreal/common.py ✔          GameSpy status, map name, game class and URL option rules
   games/unreal/webadmin.py ✔        WebAdminAdapter: what UT99 and UT2004 share
   games/unreal/ut2004.py ✔, ut99.py ✔   Unreal Tournament 2004 and UT99
   games/unreal/ut3.py ✔             Unreal Tournament 3 (status and control over its WebAdmin)
+  games/unreal/discovery.py ✔       LAN beacons of UT99, UT2004 and UT3
   games/ (planned)  quake3/, monitor_only
   catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
                     Unreal Archive image index (package data)
-  scan/ (planned)   on-demand LAN scan
   testing/ (planned) simulators for the other protocols
 ```
 
@@ -164,7 +169,7 @@ releases it.
 | `CONSOLE` | `console(command) -> str` |
 | `MANUAL_MAPS` | `look_up_map(key) -> MapRef`: confirm a map the server has but does not list |
 | `LOAD_STATS` | no method: promises that `query()` fills `ServerStatus.load` |
-| `DISCOVER` | classmethod `discover(networks) -> Sequence[DiscoveredServer]` |
+| `DISCOVER` | classmethod `discover(networks, wait) -> Sequence[DiscoveredServer]` |
 
 Methods of undeclared capabilities raise `UnsupportedError` (the base class does this).
 `validate_adapter_class()` runs when an adapter is registered and rejects classes whose
@@ -176,7 +181,10 @@ what is sent back to the server and `extra` carries image lookup ids such as `ui
 `workshop_id`; `Player(id, name, score, ping, team, bot, can_kick, can_ban)` where `id` is
 what `kick()`/`ban()` need and `can_kick`/`can_ban` are false for entries the protocol cannot
 remove (bots on UT99 and UT3, bots and players without a reported address for an IP ban);
-`ServerStatus(name, players, max_players, map, game_type, password_protected, load)`.
+`ServerStatus(name, players, max_players, map, game_type, password_protected, load)`;
+`DiscoveredServer(adapter_id, host, port, name, game_type, values)` where `port` is `None`
+when the scan cannot learn the remote-control port and `values` pre-fills further public
+connection fields (a query port).
 
 **Errors** (all derive from `AdapterError`; messages are shown to operators and must not
 contain secrets): `ServerUnreachableError`, `AuthenticationError`, `CommandRejectedError`,
@@ -365,6 +373,45 @@ the console: the command goes to RCON as it is.
 Research results for the games not yet implemented, including what is unverified, are in
 [research/remote-control-protocols.md](research/remote-control-protocols.md).
 
+## LAN scan
+
+_State: implemented (phase 6) in `core/discovery.py`, `core/scan.py`,
+`web/routes_admin_scan.py` and the adapters' `discover()`._
+
+**Discovery** is a classmethod of an adapter with `DISCOVER`: given the configured networks
+and how long to wait for broadcast answers, it finds servers of its game without a password
+and returns `DiscoveredServer`s. `core/discovery.py` holds what does not depend on a game:
+`broadcast()` sends datagrams to the directed broadcast address of every network (a /32
+network is its own address, which the tests use with 127.0.0.1) from one socket, optionally
+bound to a fixed and shared source port, and keeps at most 1024 answers, only from addresses
+inside the networks; `gather_found()` runs follow-up queries and drops failures; `clean_text()` reduces
+server-supplied names to 64 printable characters. Packets and parsers come from opengsq.
+
+| Adapters | How they are found |
+|---|---|
+| `cs16`, `css`, `csgo`, `cs2` | A2S_INFO broadcast, then `Source.get_info()` per answering address; `classify()` picks the game; one shared broadcast per scan (`find_servers()` joins concurrent calls) |
+| `tmforever` | UDP session query (`TmForever`, Forever's checksum key) to 2350–2353, then the TCP info on the announced port |
+| `tmsunrise` | the same per game id of Original, Sunrise and Nations ESWC, with Sunrise's key |
+| `ut99` | `REPORTQUERY` to 8777–8786, then GameSpy on the announced query port |
+| `ut2004` | LAN query to 10777, then the Unreal 2 details; GameSpy port = game port + 10 |
+| `ut3` | UDK LAN beacon from UDP 14001 (`SO_REUSEADDR`) |
+
+**Scanner** (`core/scan.py`, `app.state.scanner`). `Scanner.run()` calls every registered
+adapter with `DISCOVER` (not the demo) concurrently, each with a limit of `timeout_seconds` +
+15 s; one that fails or runs out of time is listed in `failed` and never fails the scan. Finds
+are kept only if they name the adapter that reported them and lie inside the networks, are
+deduplicated by adapter, host and port, capped at 512, sorted by game and address, and marked
+`configured` when a server of that game with that host exists. One scan runs at a time;
+another request gets `ScanBusyError`. Nothing is stored and nothing runs in the background.
+
+**Page** (`/admin/scan`, administrators): the networks and the games a scan can find, a
+button (`POST`, CSRF-protected, audited as `scan.run` with networks and counts) that runs the
+scan while the request waits, and the result table. "Add" links to
+`/admin/servers/new?adapter=…&name=…&c_host=…&c_port=…&c_<field>=…`; `new_server()` takes
+only text, number and select fields of the schema from the query string (printable, at most
+253 characters), never password fields, and the form is validated as usual on submit.
+`lanpilot scan [--network CIDR]` prints the same result.
+
 ## Configuration and reverse proxy
 
 _State: loading and validation implemented (step 1.1, `config.py`); trusted proxies are
@@ -418,6 +465,10 @@ Section `[polling]`:
 Section `[images]` (step 2.4): `online` (`true`), `sources` (comma list of
 `steam_workshop`, `gamebanana`, `gametracker`, in the order they are asked; unknown names
 are rejected), `retry_days` (`7`). See "Map images".
+
+Section `[scan]` (phase 6): `networks` (comma list of IPv4 networks,
+normalised to the network address; empty, the default, offers no scan) and
+`timeout_seconds` (`2`, between 0.5 and 10). See "LAN scan".
 
 Section `[auth]`:
 
@@ -495,6 +546,7 @@ _State: implemented as listed._
 | `lanpilot secret generate-key [--output FILE]` | print a new encryption key, or write it to FILE with mode 600; never overwrites |
 | `lanpilot config show` | print the effective configuration with secrets masked |
 | `lanpilot images prefetch [--server ID]` | look online for the images of all stored maps that have none; prints what was found |
+| `lanpilot scan [--network CIDR]` | look for game servers in `scan.networks` (or the given networks) once and print them |
 
 `--config FILE` selects the configuration file. Configuration errors exit with code 2 and a
 one-line message, other command errors with code 1. Password prompts read from the terminal;
@@ -810,6 +862,10 @@ _State: planned; each mechanism lands with the step named in brackets._
 - **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 11 MB with 413 before
   anything reads them, and requests with a body but without `Content-Length` with 411.
 - **Uploads** (1.7 ✔) – images are never stored as received; see "Map images".
+- **LAN scan** (6 ✔) – on request by an administrator only, only inside the configured
+  networks (answers from elsewhere are dropped), bounded in hosts, answers and time; names
+  from answers are cleaned and escaped like all server data; pre-filled form values never
+  reach password fields.
 - **Outbound requests** (2.4 ✔, `core/image_sources.py`) – HTTPS only, to the hosts of the
   configured image sources only, redirects never followed, no proxy from the environment,
   size and time limits; values from answers are checked before use, and every image goes

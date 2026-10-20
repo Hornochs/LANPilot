@@ -55,6 +55,7 @@ from lanpilot.games.unreal.common import (
     split_options,
     valid_options,
 )
+from lanpilot.i18n import M
 
 ROOT = "/ServerAdmin"
 GAME_CLASS_KEY = "game_class"
@@ -64,9 +65,9 @@ OPTIONS_KEY = "options"
 class WebAdminConnection(ConnectionSettings):
     """The fields both games need; each game sets its own defaults and help texts."""
 
-    query_port: int = Field(title="Query port", ge=1, le=65535)
-    username: str = Field(default="admin", title="WebAdmin user", min_length=1, max_length=64)
-    password: SecretStr = Field(title="WebAdmin password")
+    query_port: int = Field(title=M("Query port"), ge=1, le=65535)
+    username: str = Field(default="admin", title=M("WebAdmin user"), min_length=1, max_length=64)
+    password: SecretStr = Field(title=M("WebAdmin password"))
 
 
 class WebAdminAdapter(GameAdapter):
@@ -116,7 +117,7 @@ class WebAdminAdapter(GameAdapter):
             if GAME_CLASS.fullmatch(option.value) and option.label.isprintable()
         ]
         if not game_types:
-            raise ProtocolError("The WebAdmin did not list any game types.")
+            raise ProtocolError(M("The WebAdmin did not list any game types."))
         maps: list[MapRef] = []
         for game_type in game_types:
             label = game_type.label[:100] or game_type.value
@@ -150,7 +151,7 @@ class WebAdminAdapter(GameAdapter):
 
     async def restart(self, mode: RestartMode) -> None:
         if mode is RestartMode.SOFT:
-            raise UnsupportedError(f"{self.name} cannot restart only the round")
+            raise UnsupportedError(M("{game} cannot restart only the round", game=self.name))
         await self._reload()
 
     async def list_players(self) -> Sequence[Player]:
@@ -164,7 +165,7 @@ class WebAdminAdapter(GameAdapter):
 
     async def _remove(self, player: Player, box: tuple[str, str]) -> None:
         if not re.fullmatch(r"[0-9]{1,9}", player.id):
-            raise CommandRejectedError("This player cannot be removed over the WebAdmin.")
+            raise CommandRejectedError(M("This player cannot be removed over the WebAdmin."))
         prefix, value = box
         # "Kick" is the page's submit button; the server acts on the ticked box alone.
         answer = await self._web.post(
@@ -172,12 +173,12 @@ class WebAdminAdapter(GameAdapter):
         )
         # The answer is the player page after the removal.
         if any(other.id == player.id for other in self._players(parse(answer))):
-            raise CommandRejectedError("The server did not remove the player.")
+            raise CommandRejectedError(M("The server did not remove the player."))
 
     def _players(self, page: Page) -> list[Player]:
         columns, rows = table(page, "name", "ping", "score")
         if not columns:
-            raise ProtocolError("The WebAdmin's player page has an unexpected format.")
+            raise ProtocolError(M("The WebAdmin's player page has an unexpected format."))
         name_column = columns["name"]
         # UT99 does not escape names, so a name can close its row and open forged ones. A
         # page where that may have happened is refused rather than guessed at: a forged row
@@ -208,7 +209,7 @@ class WebAdminAdapter(GameAdapter):
         )
         if on_page != in_table or repeated:
             raise ProtocolError(
-                "The WebAdmin's player page does not add up; a player name may be forged."
+                M("The WebAdmin's player page does not add up; a player name may be forged.")
             )
         players: list[Player] = []
         for number, row in enumerate(rows):
@@ -258,7 +259,7 @@ class WebAdminAdapter(GameAdapter):
         page = parse(await self._web.get(f"{ROOT}/current_game"))
         selected = [option.value for option in page.options("GameTypeSelect") if option.selected]
         if not selected or not GAME_CLASS.fullmatch(selected[0]):
-            raise ProtocolError("The WebAdmin did not tell which game type is running.")
+            raise ProtocolError(M("The WebAdmin did not tell which game type is running."))
         return selected[0]
 
     def _without_extension(self, value: str) -> str:
@@ -275,13 +276,13 @@ class WebAdminAdapter(GameAdapter):
             or not MAP_NAME.fullmatch(name)
             or not valid_options(options)
         ):
-            raise CommandRejectedError("This map or game type cannot be sent to the server.")
+            raise CommandRejectedError(M("This map or game type cannot be sent to the server."))
 
     @staticmethod
     def _expect_wait(answer: str) -> None:
         # The WebAdmin answers a travel with a "Please Wait" page, also for unknown maps.
         if "please wait" not in answer.lower():
-            raise CommandRejectedError("The WebAdmin did not accept the change.")
+            raise CommandRejectedError(M("The WebAdmin did not accept the change."))
 
     async def _travel(self, game_class: str, name: str, options: str) -> None:
         raise NotImplementedError

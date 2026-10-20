@@ -10,6 +10,7 @@ from collections.abc import Mapping
 from opengsq.protocols import GameSpy1
 
 from lanpilot.core.adapters import MapRef, ProtocolError, ServerStatus, ServerUnreachableError
+from lanpilot.i18n import M
 
 QUERY_TIMEOUT_SECONDS = 3.0
 MAX_NAME_LENGTH = 100
@@ -51,9 +52,9 @@ async def query_status(
         async with asyncio.timeout(QUERY_TIMEOUT_SECONDS):
             status = await GameSpy1(host, port, QUERY_TIMEOUT_SECONDS).get_status()
     except (TimeoutError, OSError) as exc:
-        raise ServerUnreachableError("The server did not answer the status query.") from exc
+        raise ServerUnreachableError(M("The server did not answer the status query.")) from exc
     except Exception as exc:
-        raise ProtocolError("The server's status answer could not be read.") from exc
+        raise ProtocolError(M("The server's status answer could not be read.")) from exc
     info = {str(key).lower(): str(value) for key, value in dict(status.info).items()}
 
     current = info.get("mapname", "")

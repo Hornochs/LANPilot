@@ -19,34 +19,37 @@ from pydantic import Field, SecretStr
 from lanpilot.core.adapters import Capability, DiscoveredServer
 from lanpilot.games.unreal.discovery import discover_ut99
 from lanpilot.games.unreal.webadmin import ROOT, WebAdminAdapter, WebAdminConnection
+from lanpilot.i18n import M
 
 
 class UT99Connection(WebAdminConnection):
     port: int = Field(
         default=8076,
-        title="WebAdmin port",
-        description="ListenPort in [UWeb.WebServer] of the server's ini file "
-        "(LinuxGSM: 8076; the game's own default is 80).",
+        title=M("WebAdmin port"),
+        description=M(
+            "ListenPort in [UWeb.WebServer] of the server's ini file "
+            "(LinuxGSM: 8076; the game's own default is 80)."
+        ),
         ge=1,
         le=65535,
     )
     query_port: int = Field(
         default=7778,
-        title="Query port",
-        description="The GameSpy query port: the game port plus 1 (7778 for game port 7777).",
+        title=M("Query port"),
+        description=M("The GameSpy query port: the game port plus 1 (7778 for game port 7777)."),
         ge=1,
         le=65535,
     )
     username: str = Field(
         default="admin",
-        title="WebAdmin user",
-        description="AdminUsername in [UTServerAdmin.UTServerAdmin] of the server's ini file.",
+        title=M("WebAdmin user"),
+        description=M("AdminUsername in [UTServerAdmin.UTServerAdmin] of the server's ini file."),
         min_length=1,
         max_length=64,
     )
     password: SecretStr = Field(
-        title="WebAdmin password",
-        description="AdminPassword in [UTServerAdmin.UTServerAdmin] of the server's ini file.",
+        title=M("WebAdmin password"),
+        description=M("AdminPassword in [UTServerAdmin.UTServerAdmin] of the server's ini file."),
     )
 
 

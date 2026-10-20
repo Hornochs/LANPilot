@@ -30,6 +30,8 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime, default=None)
+    # Language of the user interface the user chose; None: the browser's.
+    language: Mapped[str | None] = mapped_column(String(8), default=None)
 
 
 class UserSession(Base):

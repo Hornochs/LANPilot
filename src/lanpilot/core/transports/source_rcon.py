@@ -41,6 +41,7 @@ from lanpilot.core.adapters import (
     ProtocolError,
     ServerUnreachableError,
 )
+from lanpilot.i18n import M
 
 AUTH = 3
 AUTH_RESPONSE = 2
@@ -86,8 +87,10 @@ class SourceRcon:
         if not password or "\x00" in password:
             # Checked here rather than by the server: the body is a null-terminated string.
             raise AuthenticationError(
-                "The RCON password is empty or contains a null character, "
-                "which the protocol cannot carry."
+                M(
+                    "The RCON password is empty or contains a null character, "
+                    "which the protocol cannot carry."
+                )
             )
         self._address = (host, port)
         self._password = password
@@ -119,7 +122,7 @@ class SourceRcon:
         async with asyncio.timeout(wait):
             (size,) = struct.unpack("<i", await self._reader.readexactly(4))
             if not MIN_PACKET_SIZE <= size <= MAX_PACKET_SIZE:
-                raise ProtocolError("The server sent a malformed RCON packet.")
+                raise ProtocolError(M("The server sent a malformed RCON packet."))
             data = await self._reader.readexactly(size)
         packet_id, packet_type = struct.unpack_from("<ii", data)
         return packet_id, packet_type, data[8:].rstrip(b"\x00")
@@ -129,7 +132,9 @@ class SourceRcon:
             async with asyncio.timeout(self._timeout):
                 self._reader, self._writer = await asyncio.open_connection(*self._address)
         except (TimeoutError, OSError) as exc:
-            raise ServerUnreachableError("Nothing accepts RCON connections on that port.") from exc
+            raise ServerUnreachableError(
+                M("Nothing accepts RCON connections on that port.")
+            ) from exc
 
         auth_id = self._next_id()
         self._writer.write(encode(auth_id, AUTH, self._password))
@@ -139,11 +144,11 @@ class SourceRcon:
                 continue  # older servers send an empty RESPONSE_VALUE first
             if packet_id == -1:
                 self._refused = True
-                raise AuthenticationError("The server refused the RCON password.")
+                raise AuthenticationError(M("The server refused the RCON password."))
             if packet_id == auth_id:
                 return
             break
-        raise ProtocolError("The server did not confirm the RCON login.")
+        raise ProtocolError(M("The server did not confirm the RCON login."))
 
     async def execute(self, command: str) -> str:
         """Run a console command and return what the server printed.
@@ -156,11 +161,13 @@ class SourceRcon:
             or len(command) > MAX_COMMAND_LENGTH
             or any(ch in command for ch in "\r\n\x00")
         ):
-            raise CommandRejectedError("The command is empty, too long or contains a line break.")
+            raise CommandRejectedError(
+                M("The command is empty, too long or contains a line break.")
+            )
         if self._refused:
             # Do not try again: servers ban addresses that keep sending wrong passwords.
             raise AuthenticationError(
-                "The server refused the RCON password. Edit the server to enter another one."
+                M("The server refused the RCON password. Edit the server to enter another one.")
             )
         if self._writer is not None and time.monotonic() - self._last_used > IDLE_RECONNECT_SECONDS:
             await self.close()
@@ -180,10 +187,12 @@ class SourceRcon:
                     text = await self._exchange(command)
         except TimeoutError as exc:
             await self.close()
-            raise ServerUnreachableError("The server stopped answering over RCON.") from exc
+            raise ServerUnreachableError(M("The server stopped answering over RCON.")) from exc
         except (OSError, asyncio.IncompleteReadError) as exc:
             await self.close()
-            raise ServerUnreachableError("The RCON connection was closed by the server.") from exc
+            raise ServerUnreachableError(
+                M("The RCON connection was closed by the server.")
+            ) from exc
         except BaseException:
             # Whatever went wrong, the stream may hold half an answer: start afresh next time.
             await self.close()
@@ -209,7 +218,7 @@ class SourceRcon:
             # cannot keep the exchange going.
             packets += 1
             if packets > MAX_PACKETS:
-                raise ProtocolError("The server's answer is too long.")
+                raise ProtocolError(M("The server's answer is too long."))
             try:
                 packet_id, packet_type, body = await self._read_packet(timeout)
                 self._answered = True
@@ -234,6 +243,6 @@ class SourceRcon:
             timeout = self._timeout
             size += len(body) + PACKET_OVERHEAD
             if size > MAX_RESPONSE_BYTES:
-                raise ProtocolError("The server's answer is too long.")
+                raise ProtocolError(M("The server's answer is too long."))
             chunks.append(body)
         return without_log_lines(b"".join(chunks)).decode("utf-8", errors="replace")

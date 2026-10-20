@@ -8,10 +8,11 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import RedirectResponse, Response
 
-from lanpilot import audit
+from lanpilot import audit, i18n
 from lanpilot.auth import users
 from lanpilot.auth.roles import Role
 from lanpilot.db.models import User
+from lanpilot.i18n import M
 from lanpilot.web.deps import CsrfProtected, DbSession, RequireAdmin, client_ip, require_role
 from lanpilot.web.templating import render
 
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/admin/users", dependencies=[Depends(require_role(Rol
 async def _page(
     request: Request, db: AsyncSession, *, error: str | None = None, status_code: int = 200
 ) -> Response:
-    context = {"users": await users.list_users(db), "roles": list(Role), "error": error}
+    context = {"users": await users.list_users(db), "role_choices": list(Role), "error": error}
     return render(request, "admin/users.html", context, status_code=status_code)
 
 
@@ -63,7 +64,7 @@ async def create_user(
     try:
         user = await users.create_user(db, username, password, new_role)
     except users.UserError as exc:
-        return await _page(request, db, error=str(exc), status_code=400)
+        return await _page(request, db, error=i18n.message_of(exc), status_code=400)
     audit.record(
         db,
         action="user.create",
@@ -91,7 +92,7 @@ async def change_role(
     try:
         await users.set_role(db, user, new_role)
     except users.UserError as exc:
-        return await _page(request, db, error=str(exc), status_code=400)
+        return await _page(request, db, error=i18n.message_of(exc), status_code=400)
     audit.record(
         db,
         action="user.role",
@@ -118,7 +119,7 @@ async def change_active(
     try:
         await users.set_active(db, user, make_active)
     except users.UserError as exc:
-        return await _page(request, db, error=str(exc), status_code=400)
+        return await _page(request, db, error=i18n.message_of(exc), status_code=400)
     audit.record(
         db,
         action="user.enable" if make_active else "user.disable",
@@ -146,13 +147,13 @@ async def reset_password(
         return await _page(
             request,
             db,
-            error="Change your own password on the account page.",
+            error=M("Change your own password on the account page."),
             status_code=400,
         )
     try:
         await users.set_password(db, user, password)
     except users.UserError as exc:
-        return await _page(request, db, error=str(exc), status_code=400)
+        return await _page(request, db, error=i18n.message_of(exc), status_code=400)
     audit.record(
         db,
         action="user.password_reset",
@@ -173,13 +174,13 @@ async def delete_user(
     user = await _target(db, user_id)
     if user.id == auth.user.id:
         return await _page(
-            request, db, error="You cannot delete your own account.", status_code=400
+            request, db, error=M("You cannot delete your own account."), status_code=400
         )
     detail = {"username": user.username, "role": user.role}
     try:
         await users.delete_user(db, user)
     except users.UserError as exc:
-        return await _page(request, db, error=str(exc), status_code=400)
+        return await _page(request, db, error=i18n.message_of(exc), status_code=400)
     audit.record(
         db,
         action="user.delete",

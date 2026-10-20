@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.datastructures import FormData
 from starlette.responses import RedirectResponse, Response
 
-from lanpilot import audit
+from lanpilot import audit, i18n
 from lanpilot.auth.roles import Role
 from lanpilot.core import servers
 from lanpilot.core.adapters import GameAdapter
@@ -113,7 +113,7 @@ def _form_page(
         "name": name,
         "enabled": enabled,
         "values": _display_values(specs, values),
-        "error": str(error) if error else None,
+        "error": i18n.message_of(error) if error else None,
         "field_errors": error.fields if error else {},
         "prefilled": prefilled,
     }

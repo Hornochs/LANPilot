@@ -1,14 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ "Edit " ~ server.name if server else "Add a server" }} – LANPilot{% endblock %}
+{% block title %}{{ _("Edit %(name)s", name=server.name) if server else _("Add a server") }} – LANPilot{% endblock %}
 {% block content %}
-<h1>{{ "Edit " ~ server.name if server else "Add a server" }}</h1>
+<h1>{{ _("Edit %(name)s", name=server.name) if server else _("Add a server") }}</h1>
 {% if error %}
-<p class="banner error" role="alert">{{ error }}</p>
+<p class="banner error" role="alert">{{ error | tr }}</p>
 {% endif %}
 {% if prefilled %}
-<p class="banner warning" role="status">The connection was filled in from a link, for
-  example from the network scan. Check the host before you enter a password: it is sent
-  there.</p>
+<p class="banner warning" role="status">{{ _("The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there.") }}</p>
 {% endif %}
 <section class="card narrow">
   <form method="post" action="{{ root }}/admin/servers/{{ server.id ~ "/edit" if server else "new" }}">
@@ -16,23 +14,23 @@
     {% if not server %}
     <input type="hidden" name="adapter" value="{{ adapter.id }}">
     {% endif %}
-    <p class="muted">Game: {{ adapter.name }}</p>
+    <p class="muted">{{ _("Game: %(name)s", name=adapter.name) }}</p>
 
-    <label for="name">Name</label>
+    <label for="name">{{ _("Name") }}</label>
     <input id="name" name="name" type="text" value="{{ name }}" maxlength="100" required>
-    <p class="help">Shown on the dashboard.</p>
+    <p class="help">{{ _("Shown on the dashboard.") }}</p>
 
-    <h2>Connection</h2>
+    <h2>{{ _("Connection") }}</h2>
     {% for spec in specs %}
     {% set field_id = prefix ~ spec.name %}
     {% set problem = field_errors.get(spec.name) %}
     {% if spec.kind == "checkbox" %}
     <label class="check">
       <input id="{{ field_id }}" name="{{ field_id }}" type="checkbox" value="1"{% if values[spec.name] %} checked{% endif %}>
-      {{ spec.label }}
+      {{ spec.label | tr }}
     </label>
     {% else %}
-    <label for="{{ field_id }}">{{ spec.label }}</label>
+    <label for="{{ field_id }}">{{ spec.label | tr }}</label>
     {% if spec.kind == "select" %}
     <select id="{{ field_id }}" name="{{ field_id }}">
       {% for choice in spec.choices %}
@@ -41,7 +39,7 @@
     </select>
     {% elif spec.kind == "password" %}
     <input id="{{ field_id }}" name="{{ field_id }}" type="password" autocomplete="new-password"
-           {% if server %}placeholder="unchanged"{% elif spec.required %}required{% endif %}
+           {% if server %}placeholder="{{ _("unchanged") }}"{% elif spec.required %}required{% endif %}
            {% if problem %}aria-invalid="true"{% endif %}>
     {% elif spec.kind == "number" %}
     <input id="{{ field_id }}" name="{{ field_id }}" type="number" value="{{ values[spec.name] }}"
@@ -56,26 +54,25 @@
     {% endif %}
     {% endif %}
     {% if problem %}
-    <p class="help problem">{{ problem }}</p>
+    <p class="help problem">{{ problem | tr }}</p>
     {% endif %}
     {% if spec.help %}
-    <p class="help">{{ spec.help }}</p>
+    <p class="help">{{ spec.help | tr }}</p>
     {% endif %}
     {% if spec.kind == "password" and server %}
-    <p class="help">Leave empty to keep the stored value. It has to be entered again when
-      host or port change.</p>
+    <p class="help">{{ _("Leave empty to keep the stored value. It has to be entered again when host or port change.") }}</p>
     {% endif %}
     {% endfor %}
 
-    <h2>Options</h2>
+    <h2>{{ _("Options") }}</h2>
     <label class="check">
       <input name="enabled" type="checkbox" value="1"{% if enabled %} checked{% endif %}>
-      Enabled
+      {{ _("Enabled") }}
     </label>
-    <p class="help">Disabled servers stay configured but are not queried.</p>
+    <p class="help">{{ _("Disabled servers stay configured but are not queried.") }}</p>
 
-    <button type="submit">{{ "Save" if server else "Add server" }}</button>
-    <a class="cancel" href="{{ root }}/admin/servers">Cancel</a>
+    <button type="submit">{{ _("Save") if server else _("Add server") }}</button>
+    <a class="cancel" href="{{ root }}/admin/servers">{{ _("Cancel") }}</a>
   </form>
 </section>
 {% endblock %}

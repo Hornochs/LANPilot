@@ -1,31 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Account – LANPilot{% endblock %}
+{% block title %}{{ _("Account") }} – LANPilot{% endblock %}
 {% block content %}
-<h1>Account</h1>
+<h1>{{ _("Account") }}</h1>
 <section class="card narrow">
   <dl class="facts">
-    <dt>User name</dt><dd>{{ auth.user.username }}</dd>
-    <dt>Role</dt><dd>{{ auth.user.role }}</dd>
+    <dt>{{ _("User name") }}</dt><dd>{{ auth.user.username }}</dd>
+    <dt>{{ _("Role") }}</dt><dd>{{ roles[auth.user.role] | tr }}</dd>
   </dl>
 </section>
 <section class="card narrow">
-  <h2>Change password</h2>
+  <h2>{{ _("Language") }}</h2>
+  <form method="post" action="{{ root }}/account/language">
+    <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
+    <label for="language">{{ _("Language of the user interface") }}</label>
+    <select id="language" name="language">
+      <option value=""{% if not auth.user.language %} selected{% endif %}>{{ _("As the browser prefers") }}</option>
+      {% for code, label in languages.items() %}
+      <option value="{{ code }}"{% if auth.user.language == code %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">{{ _("Save") }}</button>
+  </form>
+</section>
+<section class="card narrow">
+  <h2>{{ _("Change password") }}</h2>
   {% if error %}
-  <p class="banner error" role="alert">{{ error }}</p>
+  <p class="banner error" role="alert">{{ error | tr }}</p>
   {% endif %}
   <form method="post" action="{{ root }}/account/password">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-    <label for="current_password">Current password</label>
+    <label for="current_password">{{ _("Current password") }}</label>
     <input id="current_password" name="current_password" type="password" maxlength="256"
            autocomplete="current-password" required>
-    <label for="new_password">New password</label>
+    <label for="new_password">{{ _("New password") }}</label>
     <input id="new_password" name="new_password" type="password" minlength="10" maxlength="256"
            autocomplete="new-password" required>
-    <label for="new_password_repeat">New password, again</label>
+    <label for="new_password_repeat">{{ _("New password, again") }}</label>
     <input id="new_password_repeat" name="new_password_repeat" type="password" minlength="10"
            maxlength="256" autocomplete="new-password" required>
-    <p class="muted">At least 10 characters. Changing it signs out your other sessions.</p>
-    <button type="submit">Change password</button>
+    <p class="muted">{{ _("At least 10 characters. Changing it signs out your other sessions.") }}</p>
+    <button type="submit">{{ _("Change password") }}</button>
   </form>
 </section>
 {% endblock %}

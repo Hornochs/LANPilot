@@ -21,6 +21,7 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from lanpilot.config import ConfigError, Settings
+from lanpilot.i18n import M, Message
 
 KEY_BYTES = 32
 NONCE_BYTES = 12
@@ -30,7 +31,51 @@ HOW_TO_GENERATE = "create one with 'lanpilot secret generate-key'"
 
 
 class SecretError(Exception):
-    """Stored credentials cannot be decrypted: wrong key, or the data was altered."""
+    """Stored credentials cannot be decrypted: wrong key, or the data was altered.
+
+    ``kind`` is "format", "decrypt" or "structure"; :func:`describe` turns the error into
+    a message for the user.
+    """
+
+    def __init__(self, message: str, kind: str = "decrypt") -> None:
+        super().__init__(message)
+        self.kind = kind
+
+
+def describe(error: SecretError, *, reenter: bool) -> Message:
+    """What to show for unusable stored credentials. With ``reenter`` the text only says to
+    enter the passwords again (shown on the server's page); otherwise it also says to edit
+    the server first (the connection test)."""
+    if reenter:
+        again = {
+            "format": M(
+                "Unknown format of stored credentials. Enter the server's passwords again."
+            ),
+            "structure": M(
+                "Stored credentials have an unexpected structure."
+                " Enter the server's passwords again."
+            ),
+            "decrypt": M(
+                "Stored credentials cannot be decrypted; the key changed or the entry was"
+                " altered. Enter the server's passwords again."
+            ),
+        }
+    else:
+        again = {
+            "format": M(
+                "Unknown format of stored credentials."
+                " Edit the server and enter its passwords again."
+            ),
+            "structure": M(
+                "Stored credentials have an unexpected structure."
+                " Edit the server and enter its passwords again."
+            ),
+            "decrypt": M(
+                "Stored credentials cannot be decrypted; the key changed or the entry was"
+                " altered. Edit the server and enter its passwords again."
+            ),
+        }
+    return again.get(error.kind, again["decrypt"])
 
 
 def generate_key() -> str:
@@ -114,7 +159,7 @@ class SecretBox:
     def decrypt(self, token: str, *, context: str) -> dict[str, str]:
         version, _, payload = token.partition(":")
         if version != VERSION:
-            raise SecretError("unknown format of stored credentials")
+            raise SecretError("unknown format of stored credentials", "format")
         try:
             raw = base64.urlsafe_b64decode(payload)
             plaintext = self._aead.decrypt(raw[:NONCE_BYTES], raw[NONCE_BYTES:], context.encode())
@@ -124,7 +169,7 @@ class SecretBox:
                 "stored credentials cannot be decrypted; the key changed or the entry was altered"
             ) from exc
         if not isinstance(values, dict) or not all(isinstance(v, str) for v in values.values()):
-            raise SecretError("stored credentials have an unexpected structure")
+            raise SecretError("stored credentials have an unexpected structure", "structure")
         return values
 
 

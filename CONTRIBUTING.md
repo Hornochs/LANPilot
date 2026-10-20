@@ -48,7 +48,26 @@ mkdir -p data && .venv/bin/lanpilot db upgrade        # bring the dev database t
 ```
 
 Review the generated file in `src/lanpilot/db/migrations/versions/`, give it the next number
-(`0002_…`, revision id `"0002"`) and keep `downgrade()` working.
+(`0002_…`, revision id `"0002"`) and keep `downgrade()` working. Add data for it to `DATA`
+in `tests/test_migrations.py`: the upgrade test writes it in the new schema and checks that
+everything survives the following upgrades.
+
+### Texts and translations
+
+The user interface is English and German. Every text a user sees is marked: `{{ _("…") }}`
+in templates (with `%(name)s` for values), `M("…")` in Python for messages that are shown
+elsewhere (exceptions, form labels, notices; `{name}` for values), and variables holding
+such a message are shown with `{{ message | tr }}`. Values are inserted after the
+translation, so never build a sentence from pieces. After adding or changing texts:
+
+```bash
+.venv/bin/python scripts/update_translations.py   # extract, merge into the .po files, compile
+```
+
+then translate the new or fuzzy entries in `src/lanpilot/locale/de/LC_MESSAGES/lanpilot.po`
+and run the script again. `tests/test_i18n.py` fails while a text is untranslated, a
+translation is fuzzy, placeholders differ or the `.mo` is outdated. If you cannot translate,
+say so in the pull request; someone else will.
 
 ### Frontend
 

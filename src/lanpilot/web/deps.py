@@ -15,6 +15,7 @@ from lanpilot.auth import sessions
 from lanpilot.auth.roles import Role
 from lanpilot.config import Settings
 from lanpilot.db.models import User, UserSession
+from lanpilot.i18n import M
 
 CSRF_FIELD = "csrf_token"
 CSRF_HEADER = "x-csrf-token"
@@ -95,7 +96,7 @@ RequireAuth = Annotated[Auth, Depends(require_auth)]
 def require_role(required: Role) -> Callable[[Auth], Awaitable[Auth]]:
     async def dependency(auth: RequireAuth) -> Auth:
         if not auth.role.allows(required):
-            raise ForbiddenError(f"This page requires the {required.value} role.")
+            raise ForbiddenError(M("This page requires the {value} role.", value=required.value))
         return auth
 
     return dependency
@@ -111,7 +112,7 @@ async def csrf_protect(request: Request, auth: RequireAuth) -> None:
         value = (await request.form()).get(CSRF_FIELD)
         sent = value if isinstance(value, str) else None
     if sent is None or not hmac.compare_digest(sent.encode(), auth.session.csrf_token.encode()):
-        raise ForbiddenError("The form has expired. Reload the page and try again.")
+        raise ForbiddenError(M("The form has expired. Reload the page and try again."))
 
 
 CsrfProtected = Depends(csrf_protect)

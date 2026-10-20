@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import PlainTextResponse, RedirectResponse, Response
 from starlette.staticfiles import StaticFiles
 
-from lanpilot import __version__
+from lanpilot import __version__, i18n
 from lanpilot.auth.throttle import LoginThrottle
 from lanpilot.config import Settings
 from lanpilot.core import image_lookup, map_images, secrets
@@ -24,6 +24,7 @@ from lanpilot.core.redaction import redactor
 from lanpilot.core.runtime import ServerManager
 from lanpilot.core.scan import Scanner
 from lanpilot.db.engine import create_engine, create_sessionmaker
+from lanpilot.i18n import M
 from lanpilot.web import (
     health,
     routes_account,
@@ -51,10 +52,10 @@ logger = logging.getLogger(__name__)
 MAX_BODY_BYTES = map_images.MAX_UPLOAD_BYTES + 1024 * 1024
 
 ERROR_TITLES = {
-    400: "Bad request",
-    403: "Not allowed",
-    404: "Page not found",
-    405: "Method not allowed",
+    400: M("Bad request"),
+    403: M("Not allowed"),
+    404: M("Page not found"),
+    405: M("Method not allowed"),
 }
 
 
@@ -79,7 +80,7 @@ async def _not_authenticated(request: Request, _exc: Exception) -> Response:
 
 
 async def _forbidden(request: Request, exc: Exception) -> Response:
-    message = str(exc) or "You are not allowed to do this."
+    message = i18n.message_of(exc) or M("You are not allowed to do this.")
     return render(
         request, "error.html", {"title": ERROR_TITLES[403], "message": message}, status_code=403
     )
@@ -87,10 +88,10 @@ async def _forbidden(request: Request, exc: Exception) -> Response:
 
 async def _http_error(request: Request, exc: Exception) -> Response:
     assert isinstance(exc, StarletteHTTPException)  # noqa: S101 - registered for this type only
-    title = ERROR_TITLES.get(exc.status_code, f"Error {exc.status_code}")
-    message = "The request could not be completed."
+    title = ERROR_TITLES.get(exc.status_code, M("Error {code}", code=exc.status_code))
+    message = M("The request could not be completed.")
     if exc.status_code == 404:
-        message = "This page does not exist."
+        message = M("This page does not exist.")
     return render(
         request,
         "error.html",

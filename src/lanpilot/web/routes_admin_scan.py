@@ -16,6 +16,7 @@ from lanpilot import audit
 from lanpilot.auth.roles import Role
 from lanpilot.core import servers
 from lanpilot.core.scan import Found, ScanBusyError, Scanner, ScanResult
+from lanpilot.i18n import M
 from lanpilot.web.deps import CsrfProtected, DbSession, RequireAdmin, client_ip, require_role
 from lanpilot.web.routes_admin_servers import FIELD_PREFIX
 from lanpilot.web.templating import render
@@ -74,12 +75,12 @@ async def scan_page(request: Request) -> Response:
 async def run_scan(request: Request, db: DbSession, auth: RequireAdmin) -> Response:
     scanner = _scanner(request)
     if not scanner.enabled:
-        return _page(request, error="No networks are configured for the scan.", status_code=409)
+        return _page(request, error=M("No networks are configured for the scan."), status_code=409)
     try:
         result = await scanner.run(await _configured(db))
     except ScanBusyError:
         return _page(
-            request, error="A scan is already running. Try again in a moment.", status_code=409
+            request, error=M("A scan is already running. Try again in a moment."), status_code=409
         )
     audit.record(
         db,

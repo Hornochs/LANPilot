@@ -38,6 +38,7 @@ from lanpilot.core.adapters import (
     ProtocolError,
     ServerUnreachableError,
 )
+from lanpilot.i18n import M
 
 PROTOCOL = b"GBXRemote 2"
 FIRST_HANDLE = 0x80000000
@@ -95,7 +96,7 @@ class GbxRemote:
         if self._refused:
             # Same rule as for RCON: a refused password is not sent again.
             raise AuthenticationError(
-                "The server refused the password. Edit the server to enter another one."
+                M("The server refused the password. Edit the server to enter another one.")
             )
         try:
             if self._writer is None:
@@ -112,10 +113,10 @@ class GbxRemote:
                 return await self._call(method, params)
         except TimeoutError as exc:
             await self.close()
-            raise ServerUnreachableError("The server stopped answering.") from exc
+            raise ServerUnreachableError(M("The server stopped answering.")) from exc
         except (OSError, asyncio.IncompleteReadError) as exc:
             await self.close()
-            raise ServerUnreachableError("The connection was closed by the server.") from exc
+            raise ServerUnreachableError(M("The connection was closed by the server.")) from exc
         except GbxFaultError:
             raise  # a fault is a complete answer; the connection is fine
         except BaseException:
@@ -130,7 +131,7 @@ class GbxRemote:
             [{"methodName": method, "params": list(params)} for method, params in calls],
         )
         if not isinstance(answer, list) or len(answer) != len(calls):
-            raise ProtocolError("The server's answer to a batch of calls is malformed.")
+            raise ProtocolError(M("The server's answer to a batch of calls is malformed."))
         results: list[Any] = []
         for item in answer:
             if isinstance(item, list) and len(item) == 1:
@@ -138,7 +139,7 @@ class GbxRemote:
             elif isinstance(item, dict) and "faultCode" in item:
                 results.append(_fault(item.get("faultCode"), item.get("faultString")))
             else:
-                raise ProtocolError("The server's answer to a batch of calls is malformed.")
+                raise ProtocolError(M("The server's answer to a batch of calls is malformed."))
         return results
 
     async def _connect(self) -> None:
@@ -147,17 +148,17 @@ class GbxRemote:
                 self._reader, self._writer = await asyncio.open_connection(*self._address)
                 (size,) = struct.unpack("<I", await self._reader.readexactly(4))
                 if size > MAX_GREETING:
-                    raise ProtocolError("The server does not speak GBXRemote.")
+                    raise ProtocolError(M("The server does not speak GBXRemote."))
                 greeting = await self._reader.readexactly(size)
         except (TimeoutError, OSError, asyncio.IncompleteReadError) as exc:
             await self.close()
-            raise ServerUnreachableError("Nothing answers with GBXRemote on that port.") from exc
+            raise ServerUnreachableError(M("Nothing answers with GBXRemote on that port.")) from exc
         except ProtocolError:
             await self.close()
             raise
         if greeting != PROTOCOL:
             await self.close()
-            raise ProtocolError("The server speaks an unsupported protocol version.")
+            raise ProtocolError(M("The server speaks an unsupported protocol version."))
         if self._login is None:
             return  # a connection for what the server answers without a login
         try:
@@ -166,7 +167,7 @@ class GbxRemote:
             await self.close()
             if exc.text == PASSWORD_INCORRECT:
                 self._refused = True
-                raise AuthenticationError("The server refused the login or password.") from exc
+                raise AuthenticationError(M("The server refused the login or password.")) from exc
             raise
 
     def _next_handle(self) -> int:
@@ -185,12 +186,12 @@ class GbxRemote:
                 size, answer_handle = struct.unpack("<II", await self._reader.readexactly(8))
                 self._answered = True
                 if size > MAX_ANSWER_BYTES:
-                    raise ProtocolError("The server's answer is too long.")
+                    raise ProtocolError(M("The server's answer is too long."))
                 data = await self._reader.readexactly(size)
                 if answer_handle == handle:
                     return _parse(data)
                 # A callback or the answer to an abandoned call: skip it.
-        raise ProtocolError("The server sent too many unexpected messages.")
+        raise ProtocolError(M("The server sent too many unexpected messages."))
 
 
 def _parse(data: bytes) -> Any:
@@ -199,9 +200,9 @@ def _parse(data: bytes) -> Any:
     except xmlrpc.client.Fault as fault:
         raise _fault(fault.faultCode, fault.faultString) from None
     except Exception as exc:
-        raise ProtocolError("The server's answer is not valid XML-RPC.") from exc
+        raise ProtocolError(M("The server's answer is not valid XML-RPC.")) from exc
     if len(result) != 1:
-        raise ProtocolError("The server's answer is not valid XML-RPC.")
+        raise ProtocolError(M("The server's answer is not valid XML-RPC."))
     return result[0]
 
 

@@ -36,6 +36,7 @@ from lanpilot.games.counterstrike.common import (
     parse_stats,
     query_status,
 )
+from lanpilot.i18n import M
 
 __all__ = [
     "CounterStrike16Adapter",
@@ -57,10 +58,10 @@ STATUS_PLAYER = re.compile(
 
 
 class CounterStrike16Connection(ConnectionSettings):
-    port: int = Field(default=27015, title="Port", ge=1, le=65535)
+    port: int = Field(default=27015, title=M("Port"), ge=1, le=65535)
     rcon_password: SecretStr = Field(
-        title="RCON password",
-        description="The value of rcon_password in the server's configuration (server.cfg).",
+        title=M("RCON password"),
+        description=M("The value of rcon_password in the server's configuration (server.cfg)."),
     )
 
 
@@ -123,10 +124,10 @@ class CounterStrike16Adapter(DiscoverCounterStrike, RconPlayerControl, GameAdapt
 
     async def change_map(self, target: MapRef) -> None:
         if not MAP_NAME.fullmatch(target.key):
-            raise CommandRejectedError("This map name cannot be sent to the server.")
+            raise CommandRejectedError(M("This map name cannot be sent to the server."))
         answer = await self._rcon().execute(f"changelevel {target.key}")
         if "changelevel failed" in answer:
-            raise CommandRejectedError(f"The server does not have the map {target.key}.")
+            raise CommandRejectedError(M("The server does not have the map {key}.", key=target.key))
 
     async def restart(self, mode: RestartMode) -> None:
         # sv_restart restarts the round after the given number of seconds and resets the

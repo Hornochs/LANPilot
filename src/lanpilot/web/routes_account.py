@@ -8,9 +8,10 @@ from typing import Annotated
 from fastapi import APIRouter, Form, Request
 from starlette.responses import RedirectResponse, Response
 
-from lanpilot import audit
+from lanpilot import audit, i18n
 from lanpilot.auth import passwords, sessions, users
 from lanpilot.auth.throttle import LoginThrottle
+from lanpilot.i18n import M
 from lanpilot.web.deps import AppSettings, CsrfProtected, DbSession, RequireAuth, client_ip
 from lanpilot.web.templating import render
 
@@ -33,6 +34,22 @@ async def account(request: Request, auth: RequireAuth) -> Response:
     return render(request, "account.html", {"error": None})
 
 
+@router.post("/account/language", dependencies=[CsrfProtected])
+async def change_language(
+    request: Request,
+    db: DbSession,
+    auth: RequireAuth,
+    language: Annotated[str, Form()] = "",
+) -> Response:
+    try:
+        users.set_language(auth.user, language)
+    except users.UserError as exc:
+        return render(request, "account.html", {"error": exc.args[0]}, status_code=400)
+    await db.commit()
+    root = request.app.state.settings.server.root_path
+    return RedirectResponse(f"{root}/account?notice=language_changed", status_code=303)
+
+
 @router.post("/account/password", dependencies=[CsrfProtected])
 async def change_password(
     request: Request,
@@ -52,7 +69,7 @@ async def change_password(
     key, address = f"{user.username} (password change)", client_ip(request) or "unknown"
     wait, mark = throttle.attempt(key, address)
     if wait:
-        return failed("Too many wrong passwords. Try again later.")
+        return failed(M("Too many wrong passwords. Try again later."))
     if not await passwords.in_worker(
         passwords.verify_password, user.password_hash, current_password
     ):
@@ -65,15 +82,15 @@ async def change_password(
             success=False,
         )
         await db.commit()
-        return failed("The current password is wrong.")
+        return failed(M("The current password is wrong."))
     throttle.record_success(key, address, mark)
     if new_password != new_password_repeat:
-        return failed("The two new passwords do not match.")
+        return failed(M("The two new passwords do not match."))
 
     try:
         await users.set_password(db, user, new_password)  # ends all sessions, this one included
     except users.UserError as exc:
-        return failed(str(exc))
+        return failed(i18n.message_of(exc))
 
     lifetime = timedelta(hours=settings.auth.session_lifetime_hours)
     token, _ = await sessions.create(

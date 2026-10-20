@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import RedirectResponse, Response
 
+from lanpilot import i18n
 from lanpilot.auth.roles import Role
 from lanpilot.core import maps
 from lanpilot.core.actions import ActionError, Actions, Actor
@@ -75,7 +76,7 @@ async def _players(request: Request, state: ServerState) -> dict[str, object]:
     try:
         players = await _actions(request).list_players(state.server_id)
     except ActionError as exc:
-        error = str(exc)
+        error = i18n.message_of(exc)
     return {"players": players, "players_error": error}
 
 
@@ -87,7 +88,9 @@ async def _run(
     except ActionError as exc:
         if exc.status == 404:
             raise HTTPException(status_code=404) from None
-        return await _page(request, db, server_id, error=str(exc), status_code=exc.status)
+        return await _page(
+            request, db, server_id, error=i18n.message_of(exc), status_code=exc.status
+        )
     await _manager(request).poll_now(server_id)
     root = request.app.state.settings.server.root_path
     return RedirectResponse(f"{root}/servers/{server_id}?notice={notice}", status_code=303)
@@ -220,6 +223,6 @@ async def console(
         if exc.status == 404:
             raise HTTPException(status_code=404) from None
         return await _console_page(
-            request, server_id, command=command, error=str(exc), status_code=exc.status
+            request, server_id, command=command, error=i18n.message_of(exc), status_code=exc.status
         )
     return await _console_page(request, server_id, command=command, output=output)

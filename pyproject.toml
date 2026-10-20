@@ -45,6 +45,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "babel>=2.16",
   "build>=1.2",
   "httpx2>=2.0",
   "mypy>=1.11",

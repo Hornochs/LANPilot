@@ -118,6 +118,10 @@ def _0007(db: sqlite3.Connection) -> None:
     )
 
 
+def _0008(db: sqlite3.Connection) -> None:
+    db.execute("UPDATE users SET language = 'de' WHERE username = 'viewer1'")
+
+
 # Revision -> what an installation at that revision could have stored.
 DATA: dict[str, Callable[[sqlite3.Connection], None]] = {
     "0001": _0001,
@@ -127,6 +131,7 @@ DATA: dict[str, Callable[[sqlite3.Connection], None]] = {
     "0005": _0005,
     "0006": _0006,
     "0007": _0007,
+    "0008": _0008,
 }
 
 
@@ -160,9 +165,9 @@ def test_upgrading_keeps_the_data(tmp_path: Path) -> None:
             return db.execute(sql).fetchall()
 
         assert rows("SELECT key, value FROM app_settings") == [("motd", "hello")]
-        assert rows("SELECT username, role FROM users ORDER BY id") == [
-            ("root", "admin"),
-            ("viewer1", "viewer"),
+        assert rows("SELECT username, role, language FROM users ORDER BY id") == [
+            ("root", "admin", None),
+            ("viewer1", "viewer", "de"),
         ]
         assert rows("SELECT name, adapter_id, host, port FROM servers") == [
             ("CS Arena", "cs16", "127.0.0.1", 27015)

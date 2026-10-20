@@ -1,9 +1,9 @@
 {# Status badge and facts for one server; expects `state`. #}
 {% macro badge(state) %}
-{% if not state.enabled %}<span class="badge off">disabled</span>
-{% elif not state.usable %}<span class="badge bad">needs attention</span>
-{% elif state.online is none %}<span class="badge off">checking…</span>
-{% elif state.online %}<span class="badge good">online</span>
-{% else %}<span class="badge bad">offline</span>
+{% if not state.enabled %}<span class="badge off">{{ _("disabled") }}</span>
+{% elif not state.usable %}<span class="badge bad">{{ _("needs attention") }}</span>
+{% elif state.online is none %}<span class="badge off">{{ _("checking…") }}</span>
+{% elif state.online %}<span class="badge good">{{ _("online") }}</span>
+{% else %}<span class="badge bad">{{ _("offline") }}</span>
 {% endif %}
 {% endmacro %}

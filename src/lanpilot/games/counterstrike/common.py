@@ -19,6 +19,7 @@ from lanpilot.core.adapters import (
     ServerStatus,
 )
 from lanpilot.core.transports.a2s import ServerInfo, query_info
+from lanpilot.i18n import M
 
 # Map names as they occur in practice. Everything that goes into a console command is
 # checked against this, so a crafted name cannot carry a second command.
@@ -172,7 +173,7 @@ class RconPlayerControl:
         address = next((ip for entry, ip in entries if entry.id == user_id), None)
         if address is None:
             raise CommandRejectedError(
-                "The server did not report this player's IP address, so it cannot ban it."
+                M("The server did not report this player's IP address, so it cannot ban it.")
             )
         await self._execute(f"addip 0 {address}")
         await self._execute(self._kick_command(user_id, safe_message(reason)))
@@ -181,5 +182,5 @@ class RconPlayerControl:
 
 def _user_id(player: Player) -> str:
     if not USER_ID.fullmatch(player.id):
-        raise CommandRejectedError("This player cannot be named in a command.")
+        raise CommandRejectedError(M("This player cannot be named in a command."))
     return player.id

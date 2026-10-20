@@ -41,6 +41,7 @@ from lanpilot.games.counterstrike.common import (
     parse_stats,
     query_status,
 )
+from lanpilot.i18n import M
 
 # Answers to "changelevel" for a map the server does not have: CS2, CS:Source, CS:GO.
 UNKNOWN_MAP_ANSWERS = ("invalid map name", "Failed to find map", "changelevel failed")
@@ -67,14 +68,14 @@ CONNECTED = re.compile(r"[0-9]{1,4}(?::[0-9]{2}){1,2}")
 class SourceConnection(ConnectionSettings):
     port: int = Field(
         default=27015,
-        title="Port",
-        description="The game port. RCON uses the same port over TCP.",
+        title=M("Port"),
+        description=M("The game port. RCON uses the same port over TCP."),
         ge=1,
         le=65535,
     )
     rcon_password: SecretStr = Field(
-        title="RCON password",
-        description="The value of rcon_password in the server's configuration (server.cfg).",
+        title=M("RCON password"),
+        description=M("The value of rcon_password in the server's configuration (server.cfg)."),
     )
 
 
@@ -144,15 +145,17 @@ class SourceCounterStrikeAdapter(DiscoverCounterStrike, GameAdapter):
 
     async def _change_level(self, name: str, *, workshop: bool = False) -> None:
         if not MAP_NAME.fullmatch(name):
-            raise CommandRejectedError("This map name cannot be sent to the server.")
+            raise CommandRejectedError(M("This map name cannot be sent to the server."))
         command = "ds_workshop_changelevel" if workshop else "changelevel"
         answer = await self._rcon().execute(f"{command} {name}")
         if any(text in answer for text in UNKNOWN_MAP_ANSWERS):
-            raise CommandRejectedError(f"The server does not have the map {name}.")
+            raise CommandRejectedError(M("The server does not have the map {name}.", name=name))
         if LOADING_ANSWER in answer:
             raise CommandRejectedError(
-                "The server is still loading a map and ignored the change. "
-                "Try again in a few seconds."
+                M(
+                    "The server is still loading a map and ignored the change. "
+                    "Try again in a few seconds."
+                )
             )
 
     async def restart(self, mode: RestartMode) -> None:
@@ -163,7 +166,7 @@ class SourceCounterStrikeAdapter(DiscoverCounterStrike, GameAdapter):
         # "restart" is a cheat command on CS2, so the level is reloaded by changing to it.
         current = (await query_status(self._host, self._port)).map
         if current is None:
-            raise ProtocolError("The server did not report which map is running.")
+            raise ProtocolError(M("The server did not report which map is running."))
         await self._change_level(current.key, workshop=await self._is_workshop_map(current.key))
 
     async def _is_workshop_map(self, name: str) -> bool:

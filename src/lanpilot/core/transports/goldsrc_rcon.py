@@ -25,6 +25,7 @@ from lanpilot.core.adapters import (
     ProtocolError,
     ServerUnreachableError,
 )
+from lanpilot.i18n import M
 
 HEADER = b"\xff\xff\xff\xff"
 SPLIT_HEADER = b"\xfe\xff\xff\xff"
@@ -98,8 +99,10 @@ class GoldSrcRcon:
         if not password or any(ch in password for ch in '"\r\n\x00'):
             # Checked here rather than by the server: such a password cannot be quoted.
             raise AuthenticationError(
-                "The RCON password is empty or contains a quote or line break, "
-                "which the protocol cannot carry."
+                M(
+                    "The RCON password is empty or contains a quote or line break, "
+                    "which the protocol cannot carry."
+                )
             )
         self._address = (host, port)
         self._password = password
@@ -115,7 +118,7 @@ class GoldSrcRcon:
                 _Collector, remote_addr=self._address
             )
         except OSError as exc:
-            raise ServerUnreachableError("The server's address cannot be reached.") from exc
+            raise ServerUnreachableError(M("The server's address cannot be reached.")) from exc
         try:
             transport.sendto(HEADER + payload)
             datagrams: list[bytes] = []
@@ -128,14 +131,14 @@ class GoldSrcRcon:
                 except TimeoutError:
                     break
                 if protocol.error is not None:
-                    raise ServerUnreachableError("Nothing answers on the server's port.")
+                    raise ServerUnreachableError(M("Nothing answers on the server's port."))
                 datagrams.append(datagram)
                 size += len(datagram)
                 wait = self._quiet_seconds
         finally:
             transport.close()
         if not datagrams:
-            raise ServerUnreachableError("The server did not answer.")
+            raise ServerUnreachableError(M("The server did not answer."))
         return assemble(datagrams)
 
     async def _fetch_challenge(self) -> str:
@@ -144,7 +147,7 @@ class GoldSrcRcon:
             match = CHALLENGE_PATTERN.search(packet)
             if match:
                 return match.group(1).decode()
-        raise ProtocolError("The server did not send an RCON challenge.")
+        raise ProtocolError(M("The server did not send an RCON challenge."))
 
     async def execute(self, command: str) -> str:
         """Run a console command and return what the server printed.
@@ -153,11 +156,11 @@ class GoldSrcRcon:
         parts; this method only rejects what would break the line itself.
         """
         if not command.strip() or any(ch in command for ch in "\r\n\x00"):
-            raise CommandRejectedError("The command is empty or contains a line break.")
+            raise CommandRejectedError(M("The command is empty or contains a line break."))
         if self._refused:
             # Do not try again: the server bans addresses that keep sending wrong passwords.
             raise AuthenticationError(
-                "The server refused the RCON password. Edit the server to enter another one."
+                M("The server refused the RCON password. Edit the server to enter another one.")
             )
 
         for attempt in range(2):
@@ -170,6 +173,6 @@ class GoldSrcRcon:
                 continue
             if text.startswith(REFUSED_TEXT):
                 self._refused = True
-                raise AuthenticationError("The server refused the RCON password.")
+                raise AuthenticationError(M("The server refused the RCON password."))
             return text
-        raise ProtocolError("The server keeps rejecting the RCON challenge.")
+        raise ProtocolError(M("The server keeps rejecting the RCON challenge."))

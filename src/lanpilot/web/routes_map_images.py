@@ -8,13 +8,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import FileResponse, RedirectResponse, Response
 
-from lanpilot import audit
+from lanpilot import audit, i18n
 from lanpilot.auth.roles import Role
 from lanpilot.core import image_lookup, map_images, maps, servers
 from lanpilot.core.actions import ActionError, Actor
 from lanpilot.core.adapters import Capability, GameAdapter
 from lanpilot.core.image_sources import SOURCES
 from lanpilot.db.models import MapImage, Server, ServerMap
+from lanpilot.i18n import M
 from lanpilot.web.deps import (
     CsrfProtected,
     DbSession,
@@ -25,7 +26,7 @@ from lanpilot.web.deps import (
 )
 from lanpilot.web.templating import render
 
-ONLINE_OFF = "Looking for images online is switched off (images.online in the configuration)."
+ONLINE_OFF = M("Looking for images online is switched off (images.online in the configuration).")
 
 router = APIRouter()
 admin_router = APIRouter(prefix="/admin/servers", dependencies=[Depends(require_role(Role.ADMIN))])
@@ -126,7 +127,9 @@ async def upload_image(
     try:
         stored = await index.store(db, directory, adapter.id, map_key, data)
     except map_images.ImageError as exc:
-        return await _page(request, db, server, adapter, error=str(exc), status_code=400)
+        return await _page(
+            request, db, server, adapter, error=i18n.message_of(exc), status_code=400
+        )
 
     audit.record(
         db,
@@ -228,7 +231,9 @@ async def add_map(
     except ActionError as exc:
         if exc.status == 404:
             raise HTTPException(status_code=404) from None
-        return await _page(request, db, server, adapter, error=str(exc), status_code=exc.status)
+        return await _page(
+            request, db, server, adapter, error=i18n.message_of(exc), status_code=exc.status
+        )
     return _redirect(request, server_id, "map_added")
 
 

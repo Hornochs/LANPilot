@@ -3,7 +3,7 @@
 {% block content %}
 {% set can_operate = auth.is_operator and state.usable %}
 {% if error %}
-<p class="banner error" role="alert">{{ error }}</p>
+<p class="banner error" role="alert">{{ error | tr }}</p>
 {% endif %}
 <div hx-ext="sse" sse-connect="{{ root }}/events">
   {% include "_server_live.html" %}
@@ -14,12 +14,12 @@
 
 {% if can_operate and state.can("map_change") %}
 <section class="card narrow">
-  <h2>Change map</h2>
+  <h2>{{ _("Change map") }}</h2>
   {% if maps %}
   <form method="post" action="{{ root }}/servers/{{ state.server_id }}/map">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-    <label for="map_id">Map</label>
-    <select id="map_id" name="map_id" data-searchable data-placeholder="Type to search…" required>
+    <label for="map_id">{{ _("Map") }}</label>
+    <select id="map_id" name="map_id" data-searchable data-placeholder="{{ _("Type to search…") }}" required>
       {% for game_type, rows in maps.items() %}
       {% if game_type %}<optgroup label="{{ game_type }}">{% endif %}
       {% for row in rows %}
@@ -29,15 +29,15 @@
       {% if game_type %}</optgroup>{% endif %}
       {% endfor %}
     </select>
-    <button type="submit">Change map</button>
+    <button type="submit">{{ _("Change map") }}</button>
   </form>
   {% else %}
-  <p class="muted">No maps are known for this server yet.</p>
+  <p class="muted">{{ _("No maps are known for this server yet.") }}</p>
   {% endif %}
   {% if state.can("map_list") %}
   <form method="post" action="{{ root }}/servers/{{ state.server_id }}/maps/refresh">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-    <button type="submit" class="link">Read the map list from the server again</button>
+    <button type="submit" class="link">{{ _("Read the map list from the server again") }}</button>
   </form>
   {% endif %}
 </section>
@@ -45,36 +45,35 @@
 
 {% if can_operate and (state.can("restart_soft") or state.can("restart_hard")) %}
 <section class="card narrow">
-  <h2>Restart</h2>
+  <h2>{{ _("Restart") }}</h2>
   {% if state.can("restart_soft") %}
   <form method="post" action="{{ root }}/servers/{{ state.server_id }}/restart">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
     <input type="hidden" name="mode" value="soft">
-    <button type="submit">Restart the match</button>
-    <p class="help">Scores are reset; players stay connected.</p>
+    <button type="submit">{{ _("Restart the match") }}</button>
+    <p class="help">{{ _("Scores are reset; players stay connected.") }}</p>
   </form>
   {% endif %}
   {% if state.can("restart_hard") %}
   <details>
-    <summary>Reload the level</summary>
+    <summary>{{ _("Reload the level") }}</summary>
     <form method="post" action="{{ root }}/servers/{{ state.server_id }}/restart">
       <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
       <input type="hidden" name="mode" value="hard">
-      <p class="help">The current level is loaded again from scratch. Depending on the game,
-        players are briefly disconnected.</p>
-      <button type="submit" class="danger">Reload the level now</button>
+      <p class="help">{{ _("The current level is loaded again from scratch. Depending on the game, players are briefly disconnected.") }}</p>
+      <button type="submit" class="danger">{{ _("Reload the level now") }}</button>
     </form>
   </details>
   {% endif %}
 </section>
 {% endif %}
 <p>
-  <a href="{{ root }}/">Back to all servers</a>
+  <a href="{{ root }}/">{{ _("Back to all servers") }}</a>
   {% if auth.is_admin %}
-  · <a href="{{ root }}/admin/servers/{{ state.server_id }}/maps">Maps and images</a>
-  · <a href="{{ root }}/admin/servers/{{ state.server_id }}/edit">Edit server</a>
+  · <a href="{{ root }}/admin/servers/{{ state.server_id }}/maps">{{ _("Maps and images") }}</a>
+  · <a href="{{ root }}/admin/servers/{{ state.server_id }}/edit">{{ _("Edit server") }}</a>
   {% if state.can("console") %}
-  · <a href="{{ root }}/servers/{{ state.server_id }}/console">Console</a>
+  · <a href="{{ root }}/servers/{{ state.server_id }}/console">{{ _("Console") }}</a>
   {% endif %}
   {% endif %}
 </p>

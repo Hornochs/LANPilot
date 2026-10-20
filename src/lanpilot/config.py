@@ -201,6 +201,8 @@ class Settings(BaseModel):
     enable_demo_adapter: bool = False
     # Lets administrators send raw console commands to game servers.
     enable_console: bool = False
+    # Language of the user interface when neither the user nor the browser chooses one.
+    default_language: Literal["en", "de"] = "en"
 
     @property
     def database_path(self) -> Path:

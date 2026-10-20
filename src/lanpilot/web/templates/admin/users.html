@@ -1,54 +1,54 @@
 {% extends "base.html" %}
-{% block title %}Users – LANPilot{% endblock %}
+{% block title %}{{ _("Users") }} – LANPilot{% endblock %}
 {% block content %}
-<h1>Users</h1>
+<h1>{{ _("Users") }}</h1>
 {% if error %}
-<p class="banner error" role="alert">{{ error }}</p>
+<p class="banner error" role="alert">{{ error | tr }}</p>
 {% endif %}
 <section class="card scroll">
   <table>
     <thead>
-      <tr><th>User name</th><th>Role</th><th>Status</th><th>Last sign-in</th><th>Actions</th></tr>
+      <tr><th>{{ _("User name") }}</th><th>{{ _("Role") }}</th><th>{{ _("Status") }}</th><th>{{ _("Last sign-in") }}</th><th>{{ _("Actions") }}</th></tr>
     </thead>
     <tbody>
       {% for user in users %}
       {% set is_self = user.id == auth.user.id %}
       <tr>
-        <td>{{ user.username }}{% if is_self %} <span class="muted">(you)</span>{% endif %}</td>
+        <td>{{ user.username }}{% if is_self %} <span class="muted">{{ _("(you)") }}</span>{% endif %}</td>
         <td>
           <form method="post" action="{{ root }}/admin/users/{{ user.id }}/role" class="inline">
             <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-            <select name="role" aria-label="Role of {{ user.username }}">
-              {% for role in roles %}
-              <option value="{{ role.value }}"{% if role.value == user.role %} selected{% endif %}>{{ role.value }}</option>
+            <select name="role" aria-label="{{ _("Role of %(name)s", name=user.username) }}">
+              {% for role in role_choices %}
+              <option value="{{ role.value }}"{% if role.value == user.role %} selected{% endif %}>{{ roles[role] | tr }}</option>
               {% endfor %}
             </select>
-            <button type="submit" class="small">Save</button>
+            <button type="submit" class="small">{{ _("Save") }}</button>
           </form>
         </td>
-        <td>{{ "active" if user.is_active else "disabled" }}</td>
-        <td>{{ user.last_login_at.strftime("%Y-%m-%d %H:%M UTC") if user.last_login_at else "never" }}</td>
+        <td>{{ _("active") if user.is_active else _("disabled") }}</td>
+        <td>{{ user.last_login_at.strftime("%Y-%m-%d %H:%M UTC") if user.last_login_at else _("never") }}</td>
         <td class="actions">
           <form method="post" action="{{ root }}/admin/users/{{ user.id }}/active" class="inline">
             <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
             <input type="hidden" name="active" value="{{ "0" if user.is_active else "1" }}">
-            <button type="submit" class="small">{{ "Disable" if user.is_active else "Enable" }}</button>
+            <button type="submit" class="small">{{ _("Disable") if user.is_active else _("Enable") }}</button>
           </form>
           {% if not is_self %}
           <details>
-            <summary>Set password</summary>
+            <summary>{{ _("Set password") }}</summary>
             <form method="post" action="{{ root }}/admin/users/{{ user.id }}/password">
               <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
               <input name="password" type="password" minlength="10" maxlength="256"
-                     autocomplete="new-password" aria-label="New password for {{ user.username }}" required>
-              <button type="submit" class="small">Set</button>
+                     autocomplete="new-password" aria-label="{{ _("New password for %(name)s", name=user.username) }}" required>
+              <button type="submit" class="small">{{ _("Set") }}</button>
             </form>
           </details>
           <details>
-            <summary>Delete</summary>
+            <summary>{{ _("Delete") }}</summary>
             <form method="post" action="{{ root }}/admin/users/{{ user.id }}/delete">
               <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-              <button type="submit" class="small danger">Delete {{ user.username }} for good</button>
+              <button type="submit" class="small danger">{{ _("Delete %(name)s for good", name=user.username) }}</button>
             </form>
           </details>
           {% endif %}
@@ -59,24 +59,23 @@
   </table>
 </section>
 <section class="card narrow">
-  <h2>Add a user</h2>
+  <h2>{{ _("Add a user") }}</h2>
   <form method="post" action="{{ root }}/admin/users">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-    <label for="new_username">User name</label>
+    <label for="new_username">{{ _("User name") }}</label>
     <input id="new_username" name="username" type="text" minlength="3" maxlength="64"
            autocomplete="off" autocapitalize="none" spellcheck="false" required>
-    <label for="new_user_password">Password</label>
+    <label for="new_user_password">{{ _("Password") }}</label>
     <input id="new_user_password" name="password" type="password" minlength="10" maxlength="256"
            autocomplete="new-password" required>
-    <label for="new_role">Role</label>
+    <label for="new_role">{{ _("Role") }}</label>
     <select id="new_role" name="role">
-      {% for role in roles %}
-      <option value="{{ role.value }}">{{ role.value }}</option>
+      {% for role in role_choices %}
+      <option value="{{ role.value }}">{{ roles[role] | tr }}</option>
       {% endfor %}
     </select>
-    <p class="muted">viewer: see servers. operator: also change maps and restart.
-      admin: also manage users and servers.</p>
-    <button type="submit">Add user</button>
+    <p class="muted">{{ _("viewer: see servers. operator: also change maps and restart. admin: also manage users and servers.") }}</p>
+    <button type="submit">{{ _("Add user") }}</button>
   </form>
 </section>
 {% endblock %}

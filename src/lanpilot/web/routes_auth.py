@@ -11,12 +11,13 @@ from starlette.responses import RedirectResponse, Response
 from lanpilot import audit
 from lanpilot.auth import sessions, users
 from lanpilot.auth.throttle import LoginThrottle
+from lanpilot.i18n import M
 from lanpilot.web.deps import AppSettings, CsrfProtected, DbSession, OptionalAuth, client_ip
 from lanpilot.web.templating import render
 
 router = APIRouter()
 
-BAD_CREDENTIALS = "Wrong user name or password."
+BAD_CREDENTIALS = M("Wrong user name or password.")
 
 
 def safe_next(value: str) -> str:
@@ -83,7 +84,7 @@ async def login(
             await db.commit()
         minutes = max(1, round(wait / 60))
         return failed(
-            f"Too many failed attempts. Try again in about {minutes} minute(s).",
+            M("Too many failed attempts. Try again in about {minutes} minute(s).", minutes=minutes),
             429,
             {"Retry-After": str(wait)},
         )

@@ -13,13 +13,15 @@ from collections.abc import Sequence
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lanpilot import i18n
 from lanpilot.auth import passwords
 from lanpilot.auth.roles import Role
 from lanpilot.db.base import utcnow
 from lanpilot.db.models import User, UserSession
+from lanpilot.i18n import M
 
 USERNAME_PATTERN = re.compile(r"[a-z0-9][a-z0-9._-]{2,63}")
-LAST_ADMIN = "This is the last active administrator; LANPilot would be left without one."
+LAST_ADMIN = M("This is the last active administrator; LANPilot would be left without one.")
 
 
 class UserError(Exception):
@@ -30,8 +32,10 @@ def normalise_username(raw: str) -> str:
     username = raw.strip().lower()
     if not USERNAME_PATTERN.fullmatch(username):
         raise UserError(
-            "User names have 3 to 64 characters: letters, digits, dot, dash and underscore, "
-            "starting with a letter or digit."
+            M(
+                "User names have 3 to 64 characters: letters, digits, dot, dash and underscore, "
+                "starting with a letter or digit."
+            )
         )
     return username
 
@@ -53,9 +57,9 @@ async def create_user(db: AsyncSession, username: str, password: str, role: Role
     try:
         passwords.check_policy(password, name)
     except passwords.PasswordPolicyError as exc:
-        raise UserError(str(exc)) from exc
+        raise UserError(i18n.message_of(exc)) from exc
     if await get_by_username(db, name) is not None:
-        raise UserError(f"A user named {name!r} already exists.")
+        raise UserError(M("A user named {name} already exists.", name=repr(name)))
 
     user = User(
         username=name,
@@ -65,6 +69,13 @@ async def create_user(db: AsyncSession, username: str, password: str, role: Role
     db.add(user)
     await db.flush()
     return user
+
+
+def set_language(user: User, language: str | None) -> None:
+    """``None`` (or "") follows the browser."""
+    if language and language not in i18n.LANGUAGES:
+        raise UserError(M("This language is not available."))
+    user.language = language or None
 
 
 async def authenticate(db: AsyncSession, username: str, password: str) -> User | None:
@@ -105,7 +116,7 @@ async def set_password(db: AsyncSession, user: User, password: str) -> None:
     try:
         passwords.check_policy(password, user.username)
     except passwords.PasswordPolicyError as exc:
-        raise UserError(str(exc)) from exc
+        raise UserError(i18n.message_of(exc)) from exc
     user.password_hash = await passwords.in_worker(passwords.hash_password, password)
     await _end_sessions(db, user)
 

@@ -439,6 +439,7 @@ Top-level settings:
 | `log_level` | `debug`, `info`, `warning` or `error` | `info` |
 | `auto_migrate` | upgrade the database schema when `lanpilot serve` starts | `true` |
 | `enable_demo_adapter` | offer the simulated demo server | `false` |
+| `default_language` | language when neither the user nor the browser picks one | `en` |
 
 Exactly one of `secret_key` and `secret_key_file` must be set; `lanpilot serve` refuses to
 start otherwise, before it touches the database.
@@ -504,11 +505,11 @@ Derived behaviour (implemented in `web/middleware.py` and `auth/sessions.py`):
 
 ## Data model
 
-_State: all tables below are implemented (migrations 0001–0007)._
+_State: all tables below are implemented (migrations 0001–0008)._
 
 | Table | Content |
 |---|---|
-| `users` | username (lower-case, unique), Argon2id hash, role, active flag, last login |
+| `users` | username (lower-case, unique), Argon2id hash, role, active flag, last login, chosen language (NULL: the browser's) |
 | `sessions` | SHA-256 of the session token, user, CSRF token, created/last seen/expires, client IP and user agent |
 | `servers` | name (unique), adapter id, host, port, `settings` (JSON of the other non-secret connection values), `credentials` (encrypted secrets or NULL), `enabled` |
 | `server_maps` | server (cascade delete), `key`, `name`, `game_type` ("" if none), `source`, `extra` (JSON: track UId, workshop id); unique per server, key and game type |
@@ -716,6 +717,36 @@ authenticates with short-lived database sessions (the request dependency would p
 connection for the stream's lifetime), allows eight streams per session and 500 in all
 (`StreamLimit`), re-checks the session every 15 s with the keepalive
 and ends when it is gone. It sends `X-Accel-Buffering: no`.
+
+## Languages
+
+_State: implemented (step 8.3) in `i18n.py`, `locale/` and the templates._
+
+The user interface is English and German. English texts are the message ids; the German
+catalogue is `locale/de/LC_MESSAGES/lanpilot.po`, compiled to `lanpilot.mo` (both committed,
+written by `scripts/update_translations.py` with Babel, which is a development dependency
+only; at run time the standard library's `gettext` reads the `.mo`).
+
+- **Choice** (`i18n.choose()`): the user's own choice (`users.language`, set on the account
+  page), else the first language of the browser's `Accept-Language` LANPilot has (by
+  quality), else `default_language`. `templating.render()` activates it for the request
+  (a context variable) and sets `<html lang>`.
+- **Templates** use `{{ _("…") }}` (Jinja2's i18n extension, newstyle gettext: values are
+  escaped and inserted with `%(name)s`).
+- **Messages from code** are created with `M("…{name}…", name=value)`: a `Message` is a
+  `str` holding the English text with the values filled in, plus the id and the values. It
+  travels as an exception message, a form label or a notice and is translated where it is
+  shown (`{{ value | tr }}`, `i18n.translate()`): the id is looked up, then the values are
+  inserted, translating values that are messages themselves. Values from users and game
+  servers therefore never pass through a translation, and a broken translation falls back
+  to English. `i18n.message_of(exc)` keeps a `Message` when an error is passed on.
+- **What stays English:** log messages, the audit log's stored details, the command line,
+  configuration errors, and whatever game servers send. A third-party adapter's plain
+  English messages are shown translated if the catalogue happens to know them.
+
+`tests/test_i18n.py` fails when a marked text is missing from the template catalogue or
+the German one, when a translation is fuzzy or its placeholders differ, or when the `.mo`
+does not match its `.po`.
 
 ## Frontend and live updates in the browser
 

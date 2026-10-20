@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lanpilot.core import catalog
 from lanpilot.core.adapters import MapRef
 from lanpilot.db.models import ServerMap
+from lanpilot.i18n import M
 
 SOURCE_PROTOCOL = "protocol"
 SOURCE_MANUAL = "manual"  # added by an administrator, e.g. a track outside the playlist
@@ -110,10 +111,10 @@ async def add_manual(db: AsyncSession, server_id: int, ref: MapRef, adapter_id: 
     already in the list. Does not commit."""
     cleaned = _clean([ref])
     if not cleaned:
-        raise ValueError("This map name cannot be stored.")
+        raise ValueError(M("This map name cannot be stored."))
     item = catalog.load().named(adapter_id, cleaned[0])
     if await find_map(db, server_id, item.key) is not None:
-        raise ValueError("This map is already in the list.")
+        raise ValueError(M("This map is already in the list."))
     row = ServerMap(
         server_id=server_id,
         key=item.key,

@@ -29,6 +29,7 @@ from lanpilot.core.adapters import (
     ProtocolError,
     ServerUnreachableError,
 )
+from lanpilot.i18n import M
 
 MAX_PAGE_BYTES = 2 * 1024 * 1024
 # What a WebAdmin page may contain. Real pages have a few thousand elements; the bounds keep
@@ -102,7 +103,7 @@ def _feed(parser: HTMLParser, html: str) -> None:
         parser.feed(html)
         parser.close()
     except _TooComplexError as exc:
-        raise ProtocolError("The WebAdmin's page is too large to read.") from exc
+        raise ProtocolError(M("The WebAdmin's page is too large to read.")) from exc
 
 
 class _FormParser(_BoundedParser):
@@ -373,7 +374,10 @@ class UWebAdmin:
         if self._refused:
             # As with the other protocols: refused credentials are not sent again.
             raise AuthenticationError(
-                "The server refused the user name or password. Edit the server to enter other ones."
+                M(
+                    "The server refused the user name or password."
+                    " Edit the server to enter other ones."
+                )
             )
         try:
             if self._cookies is None:
@@ -393,19 +397,21 @@ class UWebAdmin:
                 if response.status == 401:
                     self._refused = True
                     raise AuthenticationError(
-                        "The server refused the WebAdmin user name or password."
+                        M("The server refused the WebAdmin user name or password.")
                     )
                 if response.status == 404:
                     raise PageNotFoundError("The WebAdmin does not offer this page (HTTP 404).")
                 if response.status != 200:
-                    raise ProtocolError(f"The WebAdmin answered with HTTP {response.status}.")
+                    raise ProtocolError(
+                        M("The WebAdmin answered with HTTP {status}.", status=response.status)
+                    )
                 body = bytearray()
                 async for chunk in response.content.iter_chunked(64 * 1024):
                     body += chunk
                     if len(body) > MAX_PAGE_BYTES:
-                        raise ProtocolError("The WebAdmin's page is too large.")
+                        raise ProtocolError(M("The WebAdmin's page is too large."))
         except (aiohttp.ClientConnectionError, TimeoutError) as exc:
-            raise ServerUnreachableError("The WebAdmin cannot be reached.") from exc
+            raise ServerUnreachableError(M("The WebAdmin cannot be reached.")) from exc
         except aiohttp.ClientError as exc:
-            raise ProtocolError("The WebAdmin's answer could not be read.") from exc
+            raise ProtocolError(M("The WebAdmin's answer could not be read.")) from exc
         return bytes(body).decode(ENCODING, errors="replace")

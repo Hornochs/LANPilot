@@ -16,15 +16,15 @@
       {% if state.status %}
       <div class="players">
         <progress value="{{ state.status.players }}" max="{{ [state.status.max_players, 1]|max }}"
-                  aria-label="Players"></progress>
+                  aria-label="{{ _("Players") }}"></progress>
         <span>{{ state.status.players }}/{{ state.status.max_players }}</span>
       </div>
       {% if state.status.game_type %}<p class="muted">{{ state.status.game_type }}</p>{% endif %}
       {% elif state.error %}
-      <p class="muted">{{ state.error }}</p>
+      <p class="muted">{{ state.error | tr }}</p>
       {% endif %}
       {% if state.control_error %}
-      <p class="muted">Remote control is not working.</p>
+      <p class="muted">{{ _("Remote control is not working.") }}</p>
       {% endif %}
     </div>
   </a>

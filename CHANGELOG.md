@@ -71,6 +71,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Counter-Strike, TrackMania and Unreal Tournament servers in the networks of the new
   `[scan]` setting, without passwords, lists name, game, game type and address, and opens the
   server form pre-filled for a found server. Every scan is recorded in the audit log.
+- **German user interface** in addition to English. Each user picks the language on the
+  account page; otherwise the browser's preference decides, else the new setting
+  `default_language`.
 
 ### Changed
 

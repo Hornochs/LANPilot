@@ -4,10 +4,10 @@
      hx-trigger="sse:server-{{ state.server_id }}, sse:resync" hx-swap="outerHTML">
   <h1>{{ state.name }} {{ badge(state) }}</h1>
   {% if state.error %}
-  <p class="banner error">{{ state.error }}</p>
+  <p class="banner error">{{ state.error | tr }}</p>
   {% endif %}
   {% if state.control_error %}
-  <p class="banner warning">Status works, but remote control does not: {{ state.control_error }}</p>
+  <p class="banner warning">{{ _("Status works, but remote control does not: %(error)s", error=state.control_error | tr) }}</p>
   {% endif %}
   <section class="card server-facts">
     {% set current = state.status.map if state.status else none %}
@@ -17,18 +17,18 @@
       <span>{{ current.label if current else "" }}</span>
     </div>
     <dl class="facts">
-      <dt>Game</dt><dd>{{ state.adapter_name }}</dd>
-      <dt>Address</dt><dd>{{ state.host }}:{{ state.port }}</dd>
+      <dt>{{ _("Game") }}</dt><dd>{{ state.adapter_name }}</dd>
+      <dt>{{ _("Address") }}</dt><dd>{{ state.host }}:{{ state.port }}</dd>
       {% if state.status %}
-      <dt>Server name</dt><dd>{{ state.status.name }}</dd>
-      <dt>Map</dt><dd>{{ current.label if current else "unknown" }}{% if state.status.game_type %} <span class="muted">({{ state.status.game_type }})</span>{% endif %}</dd>
-      <dt>Players</dt><dd>{{ state.status.players }}/{{ state.status.max_players }}</dd>
+      <dt>{{ _("Server name") }}</dt><dd>{{ state.status.name }}</dd>
+      <dt>{{ _("Map") }}</dt><dd>{{ current.label if current else _("unknown") }}{% if state.status.game_type %} <span class="muted">({{ state.status.game_type }})</span>{% endif %}</dd>
+      <dt>{{ _("Players") }}</dt><dd>{{ state.status.players }}/{{ state.status.max_players }}</dd>
       {% for name, value in state.status.load.items() %}
       <dt>{{ name }}</dt><dd>{{ "%.1f"|format(value) }}</dd>
       {% endfor %}
       {% endif %}
       {% if state.last_seen_at %}
-      <dt>Last answer</dt><dd>{{ state.last_seen_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</dd>
+      <dt>{{ _("Last answer") }}</dt><dd>{{ state.last_seen_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</dd>
       {% endif %}
     </dl>
   </section>

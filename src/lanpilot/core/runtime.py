@@ -18,7 +18,8 @@ from typing import TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from lanpilot.core import catalog, maps, servers
+from lanpilot import i18n
+from lanpilot.core import catalog, maps, secrets, servers
 from lanpilot.core.adapters import (
     AdapterError,
     AuthenticationError,
@@ -32,6 +33,7 @@ from lanpilot.core.events import SERVER_CHANGED, SERVERS_CHANGED, Event, EventBu
 from lanpilot.core.secrets import SecretBox, SecretError
 from lanpilot.db.base import utcnow
 from lanpilot.db.models import Server
+from lanpilot.i18n import M
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,7 @@ T = TypeVar("T")
 
 MAX_BACKOFF_FACTOR = 6
 FIRST_POLL_WAIT_SECONDS = 2.0
-INTERNAL_ERROR = "Internal error while talking to the server; see the LANPilot log."
+INTERNAL_ERROR = M("Internal error while talking to the server; see the LANPilot log.")
 
 
 @dataclass(frozen=True)
@@ -149,16 +151,15 @@ class ServerManager:
         self._runtimes[server.id] = runtime
 
         if adapter_class is None:
-            runtime.state = replace(state, error="The adapter for this game is not installed.")
+            runtime.state = replace(state, error=M("The adapter for this game is not installed."))
             return runtime
         try:
             connection = servers.load_connection(server, adapter_class, self._box)
         except SecretError as exc:
-            message = f"{str(exc).capitalize()}. Enter the server's passwords again."
-            runtime.state = replace(state, error=message)
+            runtime.state = replace(state, error=secrets.describe(exc, reenter=True))
             return runtime
         except servers.ServerError as exc:
-            runtime.state = replace(state, error=str(exc))
+            runtime.state = replace(state, error=i18n.message_of(exc))
             return runtime
 
         runtime.adapter = adapter_class(connection)
@@ -264,13 +265,14 @@ class ServerManager:
             return
         previous = runtime.state
         now = utcnow()
+        error: str
         try:
             async with runtime.lock, asyncio.timeout(self._timeout):
                 status = await adapter.query()
         except TimeoutError:
-            error = f"No answer within {self._timeout:.0f} seconds."
+            error = M("No answer within {seconds} seconds.", seconds=f"{self._timeout:.0f}")
         except AdapterError as exc:
-            error = str(exc) or type(exc).__name__
+            error = i18n.message_of(exc) or type(exc).__name__
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -324,11 +326,11 @@ class ServerManager:
                 await maps.replace_reported(db, server_id, reported, runtime.state.adapter_id)
                 await db.commit()
         except AuthenticationError as exc:
-            runtime.state = replace(runtime.state, control_error=str(exc))
+            runtime.state = replace(runtime.state, control_error=i18n.message_of(exc))
         except TimeoutError:
             runtime.maps_loaded = False  # try again with the next successful poll
         except AdapterError as exc:
-            runtime.state = replace(runtime.state, control_error=str(exc))
+            runtime.state = replace(runtime.state, control_error=i18n.message_of(exc))
         except asyncio.CancelledError:
             raise
         except Exception:

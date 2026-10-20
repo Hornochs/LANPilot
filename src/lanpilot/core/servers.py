@@ -16,6 +16,8 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lanpilot import i18n
+from lanpilot.core import secrets
 from lanpilot.core.adapters import (
     AdapterError,
     Capability,
@@ -32,10 +34,11 @@ from lanpilot.core.adapters.schema import (
 from lanpilot.core.redaction import redactor
 from lanpilot.core.secrets import SecretBox, SecretError, server_context
 from lanpilot.db.models import Server
+from lanpilot.i18n import M
 
 NAME_MAX_LENGTH = 100
 PROBE_TIMEOUT_SECONDS = 8.0
-ADDRESS_CHANGED = "The address changed, so this has to be entered again."
+ADDRESS_CHANGED = M("The address changed, so this has to be entered again.")
 
 
 class ServerError(Exception):
@@ -43,7 +46,7 @@ class ServerError(Exception):
     connection field name to its problem."""
 
     def __init__(self, message: str = "", fields: Mapping[str, str] | None = None) -> None:
-        super().__init__(message or "Please correct the marked fields.")
+        super().__init__(message or M("Please correct the marked fields."))
         self.fields = dict(fields or {})
 
 
@@ -74,11 +77,16 @@ class ProbeResult:
 def _clean_name(raw: str) -> str:
     name = " ".join(raw.split())
     if not name:
-        raise ServerError("Give the server a name.")
+        raise ServerError(M("Give the server a name."))
     if len(name) > NAME_MAX_LENGTH:
-        raise ServerError(f"The name must have at most {NAME_MAX_LENGTH} characters.")
+        raise ServerError(
+            M(
+                "The name must have at most {maximum} characters.",
+                maximum=NAME_MAX_LENGTH,
+            )
+        )
     if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in name):
-        raise ServerError("The name must not contain control characters.")
+        raise ServerError(M("The name must not contain control characters."))
     return name
 
 
@@ -87,7 +95,7 @@ async def _ensure_unique_name(db: AsyncSession, name: str, *, except_id: int | N
     if except_id is not None:
         query = query.where(Server.id != except_id)
     if (await db.execute(query)).first() is not None:
-        raise ServerError(f"A server named {name!r} already exists.")
+        raise ServerError(M("A server named {name} already exists.", name=repr(name)))
 
 
 def _build_connection(
@@ -136,10 +144,10 @@ def _decrypt(server: Server, box: SecretBox) -> dict[str, str]:
     if server.credentials is None:
         return {}
     context = server_context(server.adapter_id, server.host, server.port)
-    secrets = box.decrypt(server.credentials, context=context)
-    for value in secrets.values():
+    values = box.decrypt(server.credentials, context=context)
+    for value in values.values():
         redactor.add(value)
-    return secrets
+    return values
 
 
 async def list_servers(db: AsyncSession) -> Sequence[Server]:
@@ -228,7 +236,7 @@ def load_connection(
         )
     except ValidationError as exc:
         raise ServerError(
-            "The stored settings no longer fit this game; edit the server and save it again.",
+            M("The stored settings no longer fit this game; edit the server and save it again."),
             describe_errors(exc),
         ) from exc
 
@@ -243,10 +251,9 @@ async def probe(server: Server, adapter: type[GameAdapter], box: SecretBox) -> P
     try:
         instance = adapter(load_connection(server, adapter, box))
     except SecretError as exc:
-        message = f"{str(exc).capitalize()}. Edit the server and enter its passwords again."
-        return ProbeResult(False, (message,))
+        return ProbeResult(False, (secrets.describe(exc, reenter=False),))
     except ServerError as exc:
-        return ProbeResult(False, (str(exc),))
+        return ProbeResult(False, (i18n.message_of(exc),))
 
     lines: list[str] = []
     reachable = False
@@ -255,21 +262,36 @@ async def probe(server: Server, adapter: type[GameAdapter], box: SecretBox) -> P
         async with asyncio.timeout(PROBE_TIMEOUT_SECONDS):
             status = await instance.query()
             reachable = True
-            current = status.map.label if status.map else "unknown map"
-            occupancy = f"{status.players}/{status.max_players} players"
-            lines.append(f"Status: “{status.name}”, {current}, {occupancy}.")
+            current = status.map.label if status.map else M("unknown map")
+            occupancy = M(
+                "{players}/{max_players} players",
+                players=status.players,
+                max_players=status.max_players,
+            )
+            lines.append(
+                M(
+                    "Status: “{name}”, {map}, {occupancy}.",
+                    name=status.name,
+                    map=current,
+                    occupancy=occupancy,
+                )
+            )
             if instance.supports(Capability.MAP_LIST):
                 try:
                     maps = await instance.list_maps()
                     remote_control = True
-                    lines.append(f"Remote control works: the server lists {len(maps)} maps.")
+                    lines.append(
+                        M("Remote control works: the server lists {count} maps.", count=len(maps))
+                    )
                 except AdapterError as exc:
                     remote_control = False
-                    lines.append(f"Remote control failed: {exc}")
+                    lines.append(M("Remote control failed: {reason}", reason=i18n.message_of(exc)))
     except TimeoutError:
-        lines.append(f"No answer within {PROBE_TIMEOUT_SECONDS:.0f} seconds.")
+        lines.append(
+            M("No answer within {seconds} seconds.", seconds=f"{PROBE_TIMEOUT_SECONDS:.0f}")
+        )
     except AdapterError as exc:
-        lines.append(f"Status query failed: {exc}")
+        lines.append(M("Status query failed: {reason}", reason=i18n.message_of(exc)))
     finally:
         await instance.close()
     return ProbeResult(reachable, tuple(lines), remote_control)

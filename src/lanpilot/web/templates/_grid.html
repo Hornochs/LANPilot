@@ -5,11 +5,11 @@
   {% include "_card.html" %}
   {% else %}
   <section class="card">
-    <p>No game servers have been added yet.</p>
+    <p>{{ _("No game servers have been added yet.") }}</p>
     {% if auth.is_admin %}
-    <p><a class="button" href="{{ root }}/admin/servers/new">Add a server</a></p>
+    <p><a class="button" href="{{ root }}/admin/servers/new">{{ _("Add a server") }}</a></p>
     {% else %}
-    <p class="muted">An administrator can add them under “Server setup”.</p>
+    <p class="muted">{{ _("An administrator can add them under “Server setup”.") }}</p>
     {% endif %}
   </section>
   {% endfor %}

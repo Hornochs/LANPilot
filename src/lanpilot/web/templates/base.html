@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ language }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,28 +22,28 @@
     <a class="brand" href="{{ root }}/">LANPilot</a>
     {% if auth %}
     <nav>
-      <a href="{{ root }}/">Servers</a>
+      <a href="{{ root }}/">{{ _("Servers") }}</a>
       {% if auth.is_admin %}
-      <a href="{{ root }}/admin/servers">Server setup</a>
-      <a href="{{ root }}/admin/users">Users</a>
-      <a href="{{ root }}/admin/audit">Audit log</a>
+      <a href="{{ root }}/admin/servers">{{ _("Server setup") }}</a>
+      <a href="{{ root }}/admin/users">{{ _("Users") }}</a>
+      <a href="{{ root }}/admin/audit">{{ _("Audit log") }}</a>
       {% endif %}
       <a href="{{ root }}/account">{{ auth.user.username }}</a>
       <form method="post" action="{{ root }}/logout" class="inline">
         <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-        <button type="submit" class="link">Sign out</button>
+        <button type="submit" class="link">{{ _("Sign out") }}</button>
       </form>
     </nav>
     {% endif %}
   </header>
   {% if insecure_transport %}
   <p class="banner warning">
-    This LANPilot is not reached over HTTPS. Passwords and session cookies travel unencrypted.
+    {{ _("This LANPilot is not reached over HTTPS. Passwords and session cookies travel unencrypted.") }}
   </p>
   {% endif %}
   <main>
     {% if notice %}
-    <p class="banner success">{{ notice }}</p>
+    <p class="banner success">{{ notice | tr }}</p>
     {% endif %}
     {% block content %}{% endblock %}
   </main>

@@ -19,7 +19,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from lanpilot import audit
+from lanpilot import audit, i18n
 from lanpilot.auth.roles import Role
 from lanpilot.core import maps
 from lanpilot.core.adapters import (
@@ -31,6 +31,7 @@ from lanpilot.core.adapters import (
     RestartMode,
 )
 from lanpilot.core.runtime import INTERNAL_ERROR, ServerManager
+from lanpilot.i18n import M
 
 logger = logging.getLogger(__name__)
 
@@ -123,21 +124,23 @@ class Actions:
 
         async def refused(message: str, status: int) -> ActionError:
             await db.rollback()  # drop whatever the operation had begun to change
-            await record({"error": message}, success=False)
+            await record({"error": str(message)}, success=False)
             return ActionError(message, status=status)
 
         manager = self._manager
         if not actor.role.allows(required_role):
-            raise await refused(f"This needs the {required_role.value} role.", 403)
+            raise await refused(M("This needs the {role} role.", role=required_role.value), 403)
         state = manager.state(server_id)
         if state is None:
-            raise ActionError("This server does not exist.", status=404)
+            raise ActionError(M("This server does not exist."), status=404)
         if not state.enabled:
-            raise await refused("This server is disabled.", 409)
+            raise await refused(M("This server is disabled."), 409)
         if not state.usable:
-            raise await refused(state.error or "This server is not set up correctly.", 409)
+            raise await refused(state.error or M("This server is not set up correctly."), 409)
         if not state.can(capability):
-            raise await refused(f"{state.adapter_name} does not support this.", 400)
+            raise await refused(
+                M("{adapter_name} does not support this.", adapter_name=state.adapter_name), 400
+            )
 
         try:
             async with asyncio.timeout(ACTION_TIMEOUT_SECONDS):
@@ -145,12 +148,12 @@ class Actions:
         except TimeoutError:
             seconds = f"{ACTION_TIMEOUT_SECONDS:.0f}"
             raise await refused(
-                f"The server did not answer within {seconds} seconds.", 504
+                M("The server did not answer within {seconds} seconds.", seconds=seconds), 504
             ) from None
         except AdapterError as exc:
-            raise await refused(str(exc) or type(exc).__name__, 502) from exc
+            raise await refused(i18n.message_of(exc) or type(exc).__name__, 502) from exc
         except LookupError:
-            raise ActionError("This server does not exist.", status=404) from None
+            raise ActionError(M("This server does not exist."), status=404) from None
         except Exception:
             logger.exception("action %s on server %s failed unexpectedly", action, server_id)
             raise await refused(INTERNAL_ERROR, 500) from None
@@ -166,7 +169,7 @@ class Actions:
             row = await maps.get_map(db, server_id, map_id)
             if row is None:
                 # Nothing was sent anywhere, so there is nothing to audit.
-                raise ActionError("Pick a map from this server's list.", status=400)
+                raise ActionError(M("Pick a map from this server's list."), status=400)
             target = maps.to_ref(row)
             label = row.label
 
@@ -209,17 +212,17 @@ class Actions:
         """Add a map the server has but does not list, after the server confirmed it."""
         key = key.strip()
         if not key or len(key) > maps.MAX_KEY_LENGTH or not key.isprintable():
-            raise ActionError("Enter the map's file name as the server knows it.", status=400)
+            raise ActionError(M("Enter the map's file name as the server knows it."), status=400)
         async with self._sessionmaker() as db:
             if await maps.find_map(db, server_id, key) is not None:
-                raise ActionError("This map is already in the list.", status=409)
+                raise ActionError(M("This map is already in the list."), status=409)
 
             async def operation(adapter: GameAdapter, db: AsyncSession) -> str:
                 found = await adapter.look_up_map(key)
                 try:
                     row = await maps.add_manual(db, server_id, found, adapter.id)
                 except ValueError as exc:
-                    raise CommandRejectedError(str(exc)) from None
+                    raise CommandRejectedError(i18n.message_of(exc)) from None
                 return f"{row.label} was added to the map list."
 
             return await self._perform(
@@ -260,20 +263,23 @@ class Actions:
         signed in (done by the route), and no audit entry."""
         state = self._manager.state(server_id)
         if state is None:
-            raise ActionError("This server does not exist.", status=404)
+            raise ActionError(M("This server does not exist."), status=404)
         if not state.usable or not state.can(Capability.PLAYERS):
-            raise ActionError(f"{state.adapter_name} cannot list players.", status=400)
+            raise ActionError(
+                M("{adapter_name} cannot list players.", adapter_name=state.adapter_name),
+                status=400,
+            )
         try:
             async with asyncio.timeout(ACTION_TIMEOUT_SECONDS):
                 reported = await self._manager.call(
                     server_id, lambda adapter: adapter.list_players()
                 )
         except TimeoutError:
-            raise ActionError("The server did not answer in time.", status=504) from None
+            raise ActionError(M("The server did not answer in time."), status=504) from None
         except AdapterError as exc:
-            raise ActionError(str(exc) or type(exc).__name__, status=502) from exc
+            raise ActionError(i18n.message_of(exc) or type(exc).__name__, status=502) from exc
         except LookupError:
-            raise ActionError("This server does not exist.", status=404) from None
+            raise ActionError(M("This server does not exist."), status=404) from None
         return clean_players(reported)
 
     async def kick(self, actor: Actor, server_id: int, player_id: str, reason: str) -> str:
@@ -293,11 +299,15 @@ class Actions:
             players = clean_players(await adapter.list_players())
             target = next((player for player in players if player.id == player_id), None)
             if target is None:
-                raise CommandRejectedError("This player is no longer on the server.")
+                raise CommandRejectedError(M("This player is no longer on the server."))
             detail["player"] = target.name
             if not (target.can_ban if ban else target.can_kick):
-                verb = "banned" if ban else "kicked"
-                raise CommandRejectedError(f"{target.name} cannot be {verb} on this server.")
+                text = (
+                    M("{name} cannot be banned on this server.", name=target.name)
+                    if ban
+                    else M("{name} cannot be kicked on this server.", name=target.name)
+                )
+                raise CommandRejectedError(text)
             if ban:
                 await adapter.ban(target, reason)
                 return f"{target.name} was banned."
@@ -321,11 +331,11 @@ class Actions:
         only, and only when the console is switched on in the configuration."""
         if not self._console_enabled:
             raise ActionError(
-                "The console is switched off (enable_console in the configuration).", status=403
+                M("The console is switched off (enable_console in the configuration)."), status=403
             )
         command = command.strip()
         if not command or len(command) > MAX_COMMAND_LENGTH or not command.isprintable():
-            raise ActionError("Enter one line of at most 500 printable characters.", status=400)
+            raise ActionError(M("Enter one line of at most 500 printable characters."), status=400)
 
         async def operation(adapter: GameAdapter, _db: AsyncSession) -> str:
             answer = await adapter.console(command)

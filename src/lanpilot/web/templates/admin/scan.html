@@ -1,35 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Scan the network – LANPilot{% endblock %}
+{% block title %}{{ _("Scan the network") }} – LANPilot{% endblock %}
 {% block content %}
-<h1>Scan the network</h1>
+<h1>{{ _("Scan the network") }}</h1>
 {% if error %}
-<p class="banner error" role="alert">{{ error }}</p>
+<p class="banner error" role="alert">{{ error | tr }}</p>
 {% endif %}
 {% if not enabled %}
 <section class="card">
-  <p>No networks are configured for the scan. Set <code>networks</code> in the
-    <code>[scan]</code> section of the configuration, for example
-    <code>networks = "192.168.1.0/24"</code>, and restart LANPilot.</p>
+  <p>{{ _("No networks are configured for the scan. Set %(setting)s in the %(section)s section of the configuration, for example %(example)s, and restart LANPilot.", setting="networks", section="[scan]", example='networks = "192.168.1.0/24"') }}</p>
 </section>
 {% else %}
 <section class="card">
-  <p>Looks once for game servers in {{ networks | join(", ") }}, without passwords. Found
-    servers can be added; their passwords are entered in the form.</p>
-  <p class="muted">Games: {{ games | join(", ") if games else "none can be found by a scan" }}.</p>
-  <form method="post" action="{{ root }}/admin/scan" data-busy="Scanning…">
+  <p>{{ _("Looks once for game servers in %(networks)s, without passwords. Found servers can be added; their passwords are entered in the form.", networks=networks | join(", ")) }}</p>
+  <p class="muted">{{ _("Games: %(games)s.", games=games | join(", ") if games else _("none can be found by a scan")) }}</p>
+  <form method="post" action="{{ root }}/admin/scan" data-busy="{{ _("Scanning…") }}">
     <input type="hidden" name="csrf_token" value="{{ auth.session.csrf_token }}">
-    <button type="submit">{{ "Scan again" if result else "Scan now" }}</button>
+    <button type="submit">{{ _("Scan again") if result else _("Scan now") }}</button>
   </form>
-  <p class="help">A scan takes a few seconds.</p>
+  <p class="help">{{ _("A scan takes a few seconds.") }}</p>
 </section>
 {% endif %}
 {% if result %}
 <section class="card scroll">
-  <h2>Result</h2>
+  <h2>{{ _("Result") }}</h2>
   {% if rows %}
   <table>
     <thead>
-      <tr><th>Name</th><th>Game</th><th>Game type</th><th>Address</th><th>Actions</th></tr>
+      <tr><th>{{ _("Name") }}</th><th>{{ _("Game") }}</th><th>{{ _("Game type") }}</th><th>{{ _("Address") }}</th><th>{{ _("Actions") }}</th></tr>
     </thead>
     <tbody>
       {% for item, link in rows %}
@@ -39,20 +36,20 @@
         <td>{{ item.server.game_type or "" }}</td>
         <td>{{ item.server.host }}{% if item.server.port %}:{{ item.server.port }}{% endif %}</td>
         <td class="actions">
-          {% if item.configured %}<span class="badge off">already added</span>{% endif %}
-          <a href="{{ link }}">Add</a>
+          {% if item.configured %}<span class="badge off">{{ _("already added") }}</span>{% endif %}
+          <a href="{{ link }}">{{ _("Add") }}</a>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
   {% else %}
-  <p>No game servers were found.</p>
+  <p>{{ _("No game servers were found.") }}</p>
   {% endif %}
   {% if result.failed %}
-  <p class="bad">The scan for {{ result.failed | join(", ") }} did not finish; see the log.</p>
+  <p class="bad">{{ _("The scan for %(games)s did not finish; see the log.", games=result.failed | join(", ")) }}</p>
   {% endif %}
-  <p class="muted">Took {{ "%.1f" | format(result.seconds) }} s.</p>
+  <p class="muted">{{ _("Took %(seconds)s s.", seconds="%.1f" | format(result.seconds)) }}</p>
 </section>
 {% endif %}
 {% endblock %}

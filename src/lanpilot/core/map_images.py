@@ -22,6 +22,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lanpilot.db.models import MapImage
+from lanpilot.i18n import M
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 # Decoded size limit: a small file can describe an enormous image ("decompression bomb").
@@ -53,25 +54,30 @@ def normalise_key(map_key: str) -> str:
 def process(data: bytes) -> ProcessedImage:
     """Decode, shrink and re-encode an image. Blocking; call it in a thread."""
     if not data:
-        raise ImageError("Choose an image file.")
+        raise ImageError(M("Choose an image file."))
     if len(data) > MAX_UPLOAD_BYTES:
-        raise ImageError(f"The file is larger than {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+        raise ImageError(
+            M(
+                "The file is larger than {megabytes} MB.",
+                megabytes=MAX_UPLOAD_BYTES // (1024 * 1024),
+            )
+        )
     try:
         with warnings.catch_warnings():
             # Pillow only warns about suspiciously large images up to twice its limit.
             warnings.simplefilter("error", Image.DecompressionBombWarning)
             with Image.open(io.BytesIO(data), formats=sorted(ALLOWED_FORMATS)) as image:
                 if image.width * image.height > MAX_PIXELS:
-                    raise ImageError("The image has too many pixels.")
+                    raise ImageError(M("The image has too many pixels."))
                 image.load()
                 upright = ImageOps.exif_transpose(image)
                 converted = upright.convert("RGB")
     except ImageError:
         raise
     except (Image.DecompressionBombError, Image.DecompressionBombWarning):
-        raise ImageError("The image has too many pixels.") from None
+        raise ImageError(M("The image has too many pixels.")) from None
     except (UnidentifiedImageError, OSError, ValueError, SyntaxError):
-        raise ImageError("This is not a JPEG, PNG or WebP image.") from None
+        raise ImageError(M("This is not a JPEG, PNG or WebP image.")) from None
 
     converted.thumbnail(MAX_SIZE, Image.Resampling.LANCZOS)
     output = io.BytesIO()

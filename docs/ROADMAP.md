@@ -223,7 +223,9 @@ Player management should be checked with real players at the next LAN party (see
   from a real older version (the last release, until then `1cd36c0`), built with its own
   packaging, and carries a server and its map list through the upgrade. The CI run of the
   changed workflow is still to be checked.
-- **8.3** German user interface in addition to English, documentation complete, release 1.0.
+- **8.3** German user interface in addition to English (✔ in progress: choice per user,
+  browser or `default_language`; every visible text marked and translated), documentation
+  complete, release 1.0.
 
 ## Open points
 

@@ -22,6 +22,8 @@ from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from lanpilot.i18n import M
+
 ADAPTER_ID_PATTERN = re.compile(r"[a-z][a-z0-9_]{1,31}")
 HOST_PATTERN = re.compile(r"[A-Za-z0-9._:-]+")
 
@@ -143,19 +145,19 @@ class ConnectionSettings(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     host: str = Field(
-        title="Host",
-        description="IP address or host name of the game server.",
+        title=M("Host"),
+        description=M("IP address or host name of the game server."),
         min_length=1,
         max_length=253,
     )
-    port: int = Field(title="Port", ge=1, le=65535)
+    port: int = Field(title=M("Port"), ge=1, le=65535)
 
     @field_validator("host")
     @classmethod
     def _check_host(cls, value: str) -> str:
         host = value.strip()
         if not HOST_PATTERN.fullmatch(host):
-            raise ValueError("must be a host name or an IP address, without scheme or path")
+            raise ValueError(M("must be a host name or an IP address, without scheme or path"))
         return host
 
 
@@ -212,33 +214,33 @@ class GameAdapter(ABC):
 
     async def list_maps(self) -> Sequence[MapRef]:
         """Return the maps the server can switch to."""
-        raise UnsupportedError(f"{self.name} cannot list maps")
+        raise UnsupportedError(M("{game} cannot list maps", game=self.name))
 
     async def change_map(self, target: MapRef) -> None:
         """Switch to ``target``, which LANPilot has checked to be in the server's map list."""
-        raise UnsupportedError(f"{self.name} cannot change the map")
+        raise UnsupportedError(M("{game} cannot change the map", game=self.name))
 
     async def restart(self, mode: RestartMode) -> None:
-        raise UnsupportedError(f"{self.name} cannot restart")
+        raise UnsupportedError(M("{game} cannot restart", game=self.name))
 
     async def list_players(self) -> Sequence[Player]:
-        raise UnsupportedError(f"{self.name} cannot list players")
+        raise UnsupportedError(M("{game} cannot list players", game=self.name))
 
     async def kick(self, player: Player, reason: str = "") -> None:
-        raise UnsupportedError(f"{self.name} cannot kick players")
+        raise UnsupportedError(M("{game} cannot kick players", game=self.name))
 
     async def ban(self, player: Player, reason: str = "") -> None:
-        raise UnsupportedError(f"{self.name} cannot ban players")
+        raise UnsupportedError(M("{game} cannot ban players", game=self.name))
 
     async def look_up_map(self, key: str) -> MapRef:
         """Check that the server has a map it does not list (a track outside the playlist)
         and return it. Raise ``CommandRejectedError`` if it has none of that name.
         ``change_map()`` must be able to switch to every map returned here."""
-        raise UnsupportedError(f"{self.name} cannot add maps by hand")
+        raise UnsupportedError(M("{game} cannot add maps by hand", game=self.name))
 
     async def console(self, command: str) -> str:
         """Run a raw console command and return the server's answer. Administrators only."""
-        raise UnsupportedError(f"{self.name} has no console")
+        raise UnsupportedError(M("{game} has no console", game=self.name))
 
     @classmethod
     async def discover(
@@ -251,7 +253,7 @@ class GameAdapter(ABC):
         ``networks``, and never raise for a host that answers oddly: skip it.
         ``lanpilot.core.discovery`` has the helpers.
         """
-        raise UnsupportedError(f"{cls.name} cannot be discovered")
+        raise UnsupportedError(M("{game} cannot be discovered", game=cls.name))
 
 
 def validate_adapter_class(cls: type[GameAdapter]) -> None:

@@ -25,6 +25,7 @@ are rejected, so a typing error does not go unnoticed. Restart the service after
 | `auto_migrate` | bring the database to the current schema when the service starts | `true` |
 | `enable_demo_adapter` | offer a simulated game server for trying LANPilot out | `false` |
 | `enable_console` | let administrators send raw console commands to game servers (each one is recorded in the audit log) | `false` |
+| `default_language` | language of the user interface (`en` or `de`) when neither the user (under "Account") nor the browser chooses one of them | `en` |
 
 Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 `lanpilot secret generate-key --output <file>`; the packages do this at installation.

@@ -58,6 +58,7 @@ from lanpilot.games.unreal.common import (
     valid_options,
 )
 from lanpilot.games.unreal.discovery import discover_ut3
+from lanpilot.i18n import M
 
 ROOT = "/ServerAdmin"
 GAME_CLASS_KEY = "game_class"
@@ -75,22 +76,24 @@ TEAMS = {"0": "Red", "1": "Blue"}
 class UT3Connection(ConnectionSettings):
     port: int = Field(
         default=8075,
-        title="WebAdmin port",
-        description="ListenPort in [IpDrv.WebServer] of UTWeb.ini (the game's default is 8080).",
+        title=M("WebAdmin port"),
+        description=M("ListenPort in [IpDrv.WebServer] of UTWeb.ini (the game's default is 8080)."),
         ge=1,
         le=65535,
     )
     username: str = Field(
         default="admin",
-        title="WebAdmin user",
-        description="With the standard access control the user is admin.",
+        title=M("WebAdmin user"),
+        description=M("With the standard access control the user is admin."),
         min_length=1,
         max_length=64,
     )
     password: SecretStr = Field(
-        title="WebAdmin password",
-        description="AdminPassword in [Engine.AccessControl] of UTGame.ini. The WebAdmin needs "
-        "bHttpAuth=true in [WebAdmin.WebAdmin].",
+        title=M("WebAdmin password"),
+        description=M(
+            "AdminPassword in [Engine.AccessControl] of UTGame.ini. The WebAdmin needs "
+            "bHttpAuth=true in [WebAdmin.WebAdmin]."
+        ),
     )
 
 
@@ -144,7 +147,7 @@ class UT3Adapter(GameAdapter):
         # Without valid HTTP credentials UT3 answers with its login form, not with 401.
         if "token" in page.inputs and "username" in page.inputs:
             self._web.refuse()
-            raise AuthenticationError("The server refused the WebAdmin user name or password.")
+            raise AuthenticationError(M("The server refused the WebAdmin user name or password."))
         return page
 
     async def query(self) -> ServerStatus:
@@ -152,7 +155,7 @@ class UT3Adapter(GameAdapter):
         facts = page.definitions
         name, game, current = facts.get("Server Name"), facts.get("Game type"), facts.get("Map")
         if name is None or game is None or current is None:
-            raise ProtocolError("The WebAdmin's status page has an unexpected format.")
+            raise ProtocolError(M("The WebAdmin's status page has an unexpected format."))
         key, _ = split_options(current[0]) if current else ("", "")
         players = PLAYERS.fullmatch(" ".join(facts.get("Players (Max)", [])))
         game_class = game[-1] if game else ""
@@ -172,7 +175,7 @@ class UT3Adapter(GameAdapter):
             if GAME_CLASS.fullmatch(option.value) and option.label.isprintable()
         ]
         if not game_types:
-            raise ProtocolError("The WebAdmin did not list any game types.")
+            raise ProtocolError(M("The WebAdmin did not list any game types."))
         maps: list[MapRef] = []
         for game_type in game_types:
             label = game_type.label[:100] or game_type.value
@@ -212,11 +215,11 @@ class UT3Adapter(GameAdapter):
 
     async def restart(self, mode: RestartMode) -> None:
         if mode is RestartMode.SOFT:
-            raise UnsupportedError(f"{self.name} cannot restart only the round")
+            raise UnsupportedError(M("{game} cannot restart only the round", game=self.name))
         page = await self._get(f"{ROOT}/current")
         current, game = page.definitions.get("Map"), page.definitions.get("Game type")
         if not current or not game:
-            raise ProtocolError("The WebAdmin did not tell which game is running.")
+            raise ProtocolError(M("The WebAdmin did not tell which game is running."))
         name, _ = split_options(current[0])
         # The status page leaves out the map's layout (?LinkSetup=...); the running URL
         # options in the change form have it, and a reload keeps it.
@@ -261,7 +264,7 @@ class UT3Adapter(GameAdapter):
 
     async def _remove(self, player: Player, action: str) -> None:
         if not PLAYER_KEY.fullmatch(player.id):
-            raise CommandRejectedError("This player cannot be removed over the WebAdmin.")
+            raise CommandRejectedError(M("This player cannot be removed over the WebAdmin."))
         page, _ = await self._post(
             f"{ROOT}/current/players",
             {"playerid": player.id.split("_", 1)[0], "playerkey": player.id, "action": action},
@@ -269,18 +272,18 @@ class UT3Adapter(GameAdapter):
         # The answer is the player page after the action (its messages are not localised
         # on every server, so the list is what tells).
         if any(key == player.id for key, _, _, _ in self._humans(page)):
-            raise CommandRejectedError("The server did not remove the player.")
+            raise CommandRejectedError(M("The server did not remove the player."))
 
     async def console(self, command: str) -> str:
         try:
             _, answer = await self._post(f"{ROOT}/console", {"command": command})
         except PageNotFoundError as exc:
             raise UnsupportedError(
-                "The WebAdmin's console is switched off (bConsoleEnabled in UTWeb.ini)."
+                M("The WebAdmin's console is switched off (bConsoleEnabled in UTWeb.ini).")
             ) from exc
         lines = text_lines(answer, "consoleResults")
         if lines is None:
-            raise ProtocolError("The WebAdmin's console page has an unexpected format.")
+            raise ProtocolError(M("The WebAdmin's console page has an unexpected format."))
         # The first line repeats the command ("> command").
         return "\n".join(lines[1:])
 
@@ -289,7 +292,7 @@ class UT3Adapter(GameAdapter):
         """Name, score and bot flag of everyone on the status page's scoreboard."""
         columns, rows = table(page, "player name", "score", "bot")
         if not columns:
-            raise ProtocolError("The WebAdmin's status page has an unexpected format.")
+            raise ProtocolError(M("The WebAdmin's status page has an unexpected format."))
         return [
             (
                 row[columns["player name"]].text[:MAX_NAME_LENGTH],
@@ -305,7 +308,7 @@ class UT3Adapter(GameAdapter):
         """Key, name, ping and team of the human players on the player page."""
         columns, rows = table(page, "player name", "ping", "controls")
         if not columns:
-            raise ProtocolError("The WebAdmin's player page has an unexpected format.")
+            raise ProtocolError(M("The WebAdmin's player page has an unexpected format."))
         humans = []
         for row in rows:
             key = row[columns["controls"]].inputs.get("playerkey")
@@ -325,7 +328,7 @@ class UT3Adapter(GameAdapter):
     async def _current_class(self) -> str:
         game = (await self._get(f"{ROOT}/current")).definitions.get("Game type")
         if not game or not GAME_CLASS.fullmatch(game[-1]):
-            raise ProtocolError("The WebAdmin did not tell which game type is running.")
+            raise ProtocolError(M("The WebAdmin did not tell which game type is running."))
         return game[-1]
 
     async def _change(self, game_class: str, name: str, options: str | None) -> None:
@@ -342,7 +345,7 @@ class UT3Adapter(GameAdapter):
             or not MAP_NAME.fullmatch(name)
             or not valid_options(options)
         ):
-            raise CommandRejectedError("This map or game type cannot be sent to the server.")
+            raise CommandRejectedError(M("This map or game type cannot be sent to the server."))
         fields = {
             "gametype": game_class,
             "map": name + options,
@@ -355,4 +358,4 @@ class UT3Adapter(GameAdapter):
                 fields[field_name] = values[0]
         _, answer = await self._post(f"{ROOT}/current/change", fields)
         if CHANGING not in answer.lower():
-            raise CommandRejectedError("The WebAdmin did not accept the change.")
+            raise CommandRejectedError(M("The WebAdmin did not accept the change."))

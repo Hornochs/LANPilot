@@ -27,6 +27,7 @@ from lanpilot.core.adapters import (
     ServerStatus,
     ServerUnreachableError,
 )
+from lanpilot.i18n import M
 
 DEMO_PASSWORD = "demo"  # noqa: S105 - documented password of the simulation
 MAPS = (
@@ -44,21 +45,24 @@ BOT_INDEX = 3
 class DemoConnection(ConnectionSettings):
     host: str = Field(
         default="demo.invalid",
-        title="Host",
-        description="Only a label: the simulation does not connect anywhere.",
+        title=M("Host"),
+        description=M("Only a label: the simulation does not connect anywhere."),
         max_length=253,
     )
-    port: int = Field(default=27015, title="Port", ge=1, le=65535)
+    port: int = Field(default=27015, title=M("Port"), ge=1, le=65535)
     password: SecretStr = Field(
-        title="Remote-control password",
-        description=f"The simulated server accepts the password '{DEMO_PASSWORD}'.",
+        title=M("Remote-control password"),
+        description=M(
+            "The simulated server accepts the password '{DEMO_PASSWORD}'.",
+            DEMO_PASSWORD=DEMO_PASSWORD,
+        ),
     )
     behaviour: Literal["normal", "slow", "offline"] = Field(
         default="normal",
-        title="Behaviour",
-        description="'slow' answers after a delay, 'offline' does not answer at all.",
+        title=M("Behaviour"),
+        description=M("'slow' answers after a delay, 'offline' does not answer at all."),
     )
-    players: int = Field(default=4, title="Simulated players", ge=0, le=len(PLAYER_NAMES))
+    players: int = Field(default=4, title=M("Simulated players"), ge=0, le=len(PLAYER_NAMES))
 
 
 class DemoAdapter(GameAdapter):
@@ -101,11 +105,11 @@ class DemoAdapter(GameAdapter):
 
     async def _connect(self, *, authenticated: bool = True) -> None:
         if self._settings.behaviour == "offline":
-            raise ServerUnreachableError("The server did not answer.")
+            raise ServerUnreachableError(M("The server did not answer."))
         if self._settings.behaviour == "slow":
             await asyncio.sleep(1.5)
         if authenticated and self._settings.password.get_secret_value() != DEMO_PASSWORD:
-            raise AuthenticationError("The server refused the remote-control password.")
+            raise AuthenticationError(M("The server refused the remote-control password."))
 
     async def query(self) -> ServerStatus:
         await self._connect(authenticated=False)  # status needs no password, as with real games
@@ -127,7 +131,9 @@ class DemoAdapter(GameAdapter):
         await self._connect()
         match = next((item for item in MAPS if item.key == target.key), None)
         if match is None:
-            raise CommandRejectedError(f"The server has no map named {target.key!r}.")
+            raise CommandRejectedError(
+                M("The server has no map named {key}.", key=repr(target.key))
+            )
         self._map = match
 
     async def restart(self, mode: RestartMode) -> None:
@@ -142,7 +148,7 @@ class DemoAdapter(GameAdapter):
     async def kick(self, player: Player, reason: str = "") -> None:
         await self._connect()
         if not any(item.id == player.id for item in self._players):
-            raise CommandRejectedError("That player is not on the server.")
+            raise CommandRejectedError(M("That player is not on the server."))
         self._players = [item for item in self._players if item.id != player.id]
 
     async def console(self, command: str) -> str:

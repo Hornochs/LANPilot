@@ -23,6 +23,7 @@ import struct
 from dataclasses import dataclass
 
 from lanpilot.core.adapters import ProtocolError, ServerUnreachableError
+from lanpilot.i18n import M
 
 HEADER = b"\xff\xff\xff\xff"
 SPLIT = b"\xfe\xff\xff\xff"
@@ -56,7 +57,7 @@ class _Reader:
 
     def take(self, count: int) -> bytes:
         if self._position + count > len(self._data):
-            raise ProtocolError("The server's status answer is truncated.")
+            raise ProtocolError(M("The server's status answer is truncated."))
         part = self._data[self._position : self._position + count]
         self._position += count
         return part
@@ -73,7 +74,7 @@ class _Reader:
     def string(self) -> str:
         end = self._data.find(b"\x00", self._position)
         if end < 0:
-            raise ProtocolError("The server's status answer is truncated.")
+            raise ProtocolError(M("The server's status answer is truncated."))
         text = self._data[self._position : end]
         self._position = end + 1
         return text.decode("utf-8", errors="replace")
@@ -86,13 +87,13 @@ class _Reader:
 def parse_info(packet: bytes) -> ServerInfo:
     """An A2S_INFO answer (one whole datagram, header included)."""
     if not packet.startswith(HEADER) or len(packet) < 6:
-        raise ProtocolError("The server's status answer could not be read.")
+        raise ProtocolError(M("The server's status answer could not be read."))
     reader = _Reader(packet[5:])
     if packet[4] == SOURCE_INFO:
         return _source(reader)
     if packet[4] == GOLDSRC_INFO:
         return _goldsrc(reader)
-    raise ProtocolError("The server's status answer could not be read.")
+    raise ProtocolError(M("The server's status answer could not be read."))
 
 
 def _source(reader: _Reader) -> ServerInfo:
@@ -163,7 +164,7 @@ async def query_info(host: str, port: int, seconds: float) -> ServerInfo:
             _Datagrams, remote_addr=(host, port), family=socket.AF_INET
         )
     except OSError as exc:
-        raise ServerUnreachableError("The server's address cannot be reached.") from exc
+        raise ServerUnreachableError(M("The server's address cannot be reached.")) from exc
     try:
         async with asyncio.timeout(seconds):
             transport.sendto(QUERY)
@@ -171,9 +172,9 @@ async def query_info(host: str, port: int, seconds: float) -> ServerInfo:
             for _ in range(MAX_DATAGRAMS):
                 answer = await protocol.queue.get()
                 if isinstance(answer, OSError):
-                    raise ServerUnreachableError("Nothing answers on the server's port.")
+                    raise ServerUnreachableError(M("Nothing answers on the server's port."))
                 if answer.startswith(SPLIT) or len(answer) > MAX_DATAGRAM_BYTES:
-                    raise ProtocolError("The server sent a split status answer.")
+                    raise ProtocolError(M("The server sent a split status answer."))
                 if len(answer) == 9 and answer[:5] == HEADER + bytes([CHALLENGE]):
                     challenges += 1
                     if challenges > MAX_CHALLENGES:
@@ -182,7 +183,7 @@ async def query_info(host: str, port: int, seconds: float) -> ServerInfo:
                     continue
                 return parse_info(answer)
     except TimeoutError as exc:
-        raise ServerUnreachableError("The server did not answer the status query.") from exc
+        raise ServerUnreachableError(M("The server did not answer the status query.")) from exc
     finally:
         transport.close()
-    raise ProtocolError("The server's status answer could not be read.")
+    raise ProtocolError(M("The server's status answer could not be read."))

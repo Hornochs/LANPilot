@@ -12,6 +12,8 @@ from typing import Any, TypeVar
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 
+from lanpilot.i18n import M
+
 MIN_LENGTH = 10
 # Bounds the work an unauthenticated client can cause with one login attempt.
 MAX_LENGTH = 256
@@ -26,11 +28,15 @@ class PasswordPolicyError(ValueError):
 
 def check_policy(password: str, username: str | None = None) -> None:
     if len(password) < MIN_LENGTH:
-        raise PasswordPolicyError(f"The password must have at least {MIN_LENGTH} characters.")
+        raise PasswordPolicyError(
+            M("The password must have at least {minimum} characters.", minimum=MIN_LENGTH)
+        )
     if len(password) > MAX_LENGTH:
-        raise PasswordPolicyError(f"The password must have at most {MAX_LENGTH} characters.")
+        raise PasswordPolicyError(
+            M("The password must have at most {maximum} characters.", maximum=MAX_LENGTH)
+        )
     if username is not None and password.casefold() == username.casefold():
-        raise PasswordPolicyError("The password must differ from the user name.")
+        raise PasswordPolicyError(M("The password must differ from the user name."))
 
 
 # Argon2 needs 64 MiB per hash; without a limit, a burst of logins could take gigabytes.

@@ -29,6 +29,7 @@ from lanpilot.core.adapters import (
     ServerStatus,
 )
 from lanpilot.core.transports.gbxremote import PERMISSION_DENIED, GbxFaultError, GbxRemote
+from lanpilot.i18n import M
 
 GAME_MODES = {0: "Rounds", 1: "Time Attack", 2: "Team", 3: "Laps", 4: "Stunts", 5: "Cup"}
 TRACK_UNKNOWN = "Track unknown."  # TMF ChooseNextChallenge: no such file
@@ -57,21 +58,27 @@ UID = re.compile(r"[A-Za-z0-9_-]{1,40}")
 class ChallengeConnection(ConnectionSettings):
     port: int = Field(
         default=5000,
-        title="XML-RPC port",
-        description="xmlrpc_port in the dedicated server's configuration; "
-        "xmlrpc_allowremote must allow LANPilot.",
+        title=M("XML-RPC port"),
+        description=M(
+            "xmlrpc_port in the dedicated server's configuration; "
+            "xmlrpc_allowremote must allow LANPilot."
+        ),
         ge=1,
         le=65535,
     )
     login: Literal["Admin", "SuperAdmin"] = Field(
         default="Admin",
-        title="Login",
-        description="Admin can change tracks and restart; SuperAdmin could also stop the server.",
+        title=M("Login"),
+        description=M(
+            "Admin can change tracks and restart; SuperAdmin could also stop the server."
+        ),
     )
     password: SecretStr = Field(
-        title="Password",
-        description="The password of that login in the <authorization_levels> of the "
-        "dedicated server's configuration.",
+        title=M("Password"),
+        description=M(
+            "The password of that login in the <authorization_levels> of the "
+            "dedicated server's configuration."
+        ),
     )
 
 
@@ -158,7 +165,7 @@ class ChallengeAdapter(GameAdapter):
         if isinstance(challenge, GbxFaultError) and challenge.text != NOTHING_LOADED:
             raise _translate(challenge)
         if not isinstance(players, list) or not isinstance(max_players, dict):
-            raise ProtocolError("The server's status answer has an unexpected format.")
+            raise ProtocolError(M("The server's status answer has an unexpected format."))
         return ServerStatus(
             name=plain(str(name))[:MAX_NAME_LENGTH],
             players=len(players),
@@ -175,7 +182,7 @@ class ChallengeAdapter(GameAdapter):
         while start < MAX_TRACKS:
             page = await self._call("GetChallengeList", PAGE_SIZE, start)
             if not isinstance(page, list):
-                raise ProtocolError("The server's track list has an unexpected format.")
+                raise ProtocolError(M("The server's track list has an unexpected format."))
             tracks += [ref for item in page if (ref := to_ref(item)) is not None]
             start += len(page)
             if len(page) < PAGE_SIZE:
@@ -186,8 +193,10 @@ class ChallengeAdapter(GameAdapter):
         """A track file the server has, whether in the playlist or not."""
         if not valid_filename(key):
             raise CommandRejectedError(
-                "Enter the track's file name relative to the server's Tracks directory, "
-                "e.g. Challenges/My Challenges/Fun.Challenge.Gbx."
+                M(
+                    "Enter the track's file name relative to the server's Tracks directory, "
+                    "e.g. Challenges/My Challenges/Fun.Challenge.Gbx."
+                )
             )
         if self.check_method is not None:
             # GetChallengeInfo also knows tracks the server cannot run (e.g. environments
@@ -197,10 +206,12 @@ class ChallengeAdapter(GameAdapter):
             except GbxFaultError as fault:
                 if fault.text in (TRACK_UNKNOWN, CHALLENGE_UNKNOWN):
                     raise _translate(fault) from fault
-                raise CommandRejectedError(f"The server cannot run this track: {fault}") from fault
+                raise CommandRejectedError(
+                    M("The server cannot run this track: {fault}", fault=fault)
+                ) from fault
         found = to_ref(await self._call("GetChallengeInfo", key))
         if found is None:
-            raise ProtocolError("The server's answer about this track has an unexpected format.")
+            raise ProtocolError(M("The server's answer about this track has an unexpected format."))
         return found
 
     async def change_map(self, target: MapRef) -> None:
@@ -213,7 +224,7 @@ class ChallengeAdapter(GameAdapter):
             return
         current = to_ref(await self._call("GetCurrentChallengeInfo"))
         if current is None:
-            raise ProtocolError("The server did not report which track is running.")
+            raise ProtocolError(M("The server did not report which track is running."))
         await self._load(current.key)
 
     async def list_players(self) -> Sequence[Player]:
@@ -226,7 +237,7 @@ class ChallengeAdapter(GameAdapter):
         if isinstance(players, GbxFaultError):
             raise _translate(players)
         if not isinstance(players, list):
-            raise ProtocolError("The server's player list has an unexpected format.")
+            raise ProtocolError(M("The server's player list has an unexpected format."))
         scores: dict[str, int] = {}
         if isinstance(ranking, list):  # in team mode the ranking lists the teams
             for entry in ranking:
@@ -242,13 +253,13 @@ class ChallengeAdapter(GameAdapter):
 
     async def _remove(self, method: str, player: Player, reason: str) -> None:
         if not valid_login(player.id):
-            raise CommandRejectedError("This player cannot be removed.")
+            raise CommandRejectedError(M("This player cannot be removed."))
         params = [player.id, reason] if self.message_parameter and reason else [player.id]
         await self._call(method, *params)
 
     async def _load(self, filename: str) -> None:
         if not valid_filename(filename):
-            raise CommandRejectedError("This track name cannot be sent to the server.")
+            raise CommandRejectedError(M("This track name cannot be sent to the server."))
         # ChooseNextChallenge moves the track behind the current one in the playlist;
         # these games have no way to jump without changing the order.
         try:
@@ -327,13 +338,13 @@ def _int(value: object) -> int:
 
 def _translate(fault: GbxFaultError) -> Exception:
     if fault.text in (TRACK_UNKNOWN, CHALLENGE_UNKNOWN):
-        return CommandRejectedError("The server does not have this track.")
+        return CommandRejectedError(M("The server does not have this track."))
     if fault.text == CHANGE_IN_PROGRESS:
         return CommandRejectedError(
-            "The server is still loading a track and ignored this. Try again in a few seconds."
+            M("The server is still loading a track and ignored this. Try again in a few seconds.")
         )
     if fault.text == LOGIN_UNKNOWN:
-        return CommandRejectedError("This player is no longer on the server.")
+        return CommandRejectedError(M("This player is no longer on the server."))
     if fault.text == PERMISSION_DENIED:
-        return AuthenticationError("The login is not allowed to do this; use the Admin login.")
+        return AuthenticationError(M("The login is not allowed to do this; use the Admin login."))
     return fault

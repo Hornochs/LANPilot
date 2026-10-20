@@ -1,10 +1,12 @@
 name: Packages
 
 # Builds the wheel and the distribution packages, installs and upgrades every package in a
-# clean container, and publishes them when a version tag (v1.2.3) is pushed.
+# clean container, and attaches them to the GitHub release when one is published (the tag
+# of the release is the version, v1.2.3). The release itself, with its notes, is created
+# in the GitHub web interface.
 on:
-  push:
-    tags: ["v*"]
+  release:
+    types: [published]
   pull_request:
     paths:
       - "packaging/**"
@@ -197,12 +199,12 @@ jobs:
           sh packaging/test-install.sh "$FORMAT" "$new" "$old"
 
   release:
-    name: Publish release
+    name: Attach to release
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [wheel, test]
     runs-on: ubuntu-24.04
     permissions:
-      contents: write # create the release
+      contents: write # upload the release assets
       id-token: write # sign the provenance attestation
       attestations: write
     steps:
@@ -223,8 +225,8 @@ jobs:
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-checksums: release/SHA256SUMS
-      - name: Create the GitHub release
+      - name: Attach the files to the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes release/*
+        run: gh release upload "$GITHUB_REF_NAME" release/* --clobber

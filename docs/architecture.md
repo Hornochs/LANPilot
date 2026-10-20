@@ -983,7 +983,7 @@ to happen on every upgrade is the service restart, so the post-install script is
 for upgrades in every format (Arch needs a separate `postupgrade` entry). The database schema
 is migrated when the service starts, after a backup.
 
-**Pipeline** (`release.yml`, on version tags, on pull requests touching `packaging/`, and
+**Pipeline** (`release.yml`, when a GitHub release is published, on pull requests touching `packaging/`, and
 on demand): build the wheel, and a wheel of the version the upgrade test starts from (the newest
 release tag before this commit; until the first release, `1cd36c0`, the first commit that
 built packages) → build packages in containers, the older one with the packaging of its own
@@ -993,6 +993,6 @@ distribution run `packaging/test-install.sh`: install an older version, configur
 user, write a server and its map list into its database, start, sign in, **upgrade**, check
 that the new version is in place, that key and configuration are untouched, that the
 database is at the newest schema with the server, its maps and the user still there and
-that signing in works, reinstall, remove, and purge on Debian → on a tag publish everything
-with `SHA256SUMS` and a build provenance attestation as a GitHub release. The tag must match
-`__version__`.
+that signing in works, reinstall, remove, and purge on Debian → on a published
+release attach everything with `SHA256SUMS` and a build provenance attestation to that release
+(its notes are written in the GitHub web interface). The release tag must match `__version__`.

@@ -5,8 +5,9 @@ the code, and it is updated in every change that alters structure, interfaces or
 model.
 
 > **Implementation state:** phases 0–2 and 4–6 are complete, phase 3 (Trackmania) except
-> TM2/TM2020 (see [ROADMAP.md](ROADMAP.md)). Sections about later phases are still the **target design**;
-> each section carries a state marker.
+> TM2/TM2020, and of phase 8 the security review, the upgrade tests and the German
+> interface (see [ROADMAP.md](ROADMAP.md)). Each section carries a state marker; what is
+> still planned (more games, phase 7) is marked as such.
 
 ## Overview
 
@@ -46,7 +47,7 @@ _State: decided; web, database and configuration parts in use since step 1.1._
 | Live updates | Server-sent events | one-way status stream is enough |
 | Status queries | `opengsq` (A2S: own client) | MIT, covers nearly all games; its A2S parser inflates compressed answers without a limit |
 | Crypto | `argon2-cffi`, `cryptography` | password hashing, credential encryption |
-| HTTP client | `aiohttp` (already required by `opengsq`) | image fetching; WebAdmin transport later |
+| HTTP client | `aiohttp` (already required by `opengsq`) | image fetching and the Unreal WebAdmin |
 | Images | `Pillow` | re-encoding of fetched and uploaded images |
 
 GPL-licensed libraries are not used (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
@@ -57,9 +58,11 @@ _State: files marked ✔ exist; the rest is planned._
 
 ```
 src/lanpilot/
-  cli.py ✔      argparse commands: serve, db, user, config
+  cli.py ✔      argparse commands: serve, db, user, secret, images, scan, config
   config.py ✔   Settings model and loader (defaults < TOML < environment)
   app.py ✔      create_app(settings): middleware, error handlers, routers, static mount
+  i18n.py ✔     translations: M() messages, language choice, translate()
+  locale/ ✔     lanpilot.pot and de/LC_MESSAGES/lanpilot.po/.mo (German catalogue)
   audit.py ✔    record(): add an audit entry to the caller's transaction
   web/
     health.py ✔              /healthz
@@ -68,7 +71,7 @@ src/lanpilot/
                              require_role(), csrf_protect
     templating.py ✔          Jinja2 environment, render(), fixed notice texts
     routes_auth.py ✔         /login, /logout
-    routes_account.py ✔      / (start page), /account, /account/password
+    routes_account.py ✔      / (dashboard), /cards, /account, /account/password, /account/language
     routes_admin_users.py ✔  /admin/users…
     routes_admin_servers.py ✔  /admin/servers…: list, add, edit, delete, test connection
     routes_admin_audit.py ✔    /admin/audit
@@ -89,13 +92,19 @@ src/lanpilot/
     catalog.py ✔            stock map catalogue: display names per game
     map_images.py ✔         image processing, cache directory, MapImageIndex
     image_sources.py ✔      Fetcher (the only outbound HTTP), Steam Workshop, GameBanana,
-                            GameTracker
+                            GameTracker, TrackMania Exchange, Unreal Archive
     image_lookup.py ✔       ImageLookup: source chain, remembered misses, background queue
     discovery.py ✔          helpers for discover(): broadcast, follow-up queries, bounds
     scan.py ✔               Scanner: one LAN scan on request, over every DISCOVER adapter
     events.py ✔             EventBus for live updates
     secrets.py ✔            key loading, SecretBox (AES-256-GCM)
     redaction.py ✔          keeps known secrets out of the log
+    transports/a2s.py ✔           the A2S_INFO status query (single datagram, bounded)
+    transports/goldsrc_rcon.py ✔  RCON over UDP for GoldSrc servers
+    transports/source_rcon.py ✔   RCON over TCP for Source and Source 2 servers
+    transports/gbxremote.py ✔     GBXRemote 2 (XML-RPC over TCP) for Trackmania
+    transports/uweb.py ✔          WebAdmin of Unreal servers: HTTP Basic auth, form parsing
+    transports/ (planned)        q3_rcon
   games/demo.py ✔           simulated server
   testing/contract.py ✔     check_adapter() for adapter authors
   testing/goldsrc.py ✔      simulator of a GoldSrc server (status query and RCON)
@@ -103,6 +112,7 @@ src/lanpilot/
   testing/gbxremote.py ✔    simulator of TrackMania Forever and Sunrise servers (GBXRemote 2)
   testing/uweb.py ✔         simulators of the UT99/UT2004 WebAdmin + GameSpy query, and UT3
   testing/lan.py ✔          simulators of the LAN discovery answers of Trackmania and Unreal
+  testing/rcon_players.py ✔ players, kicks and bans for the RCON simulators
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -115,12 +125,6 @@ src/lanpilot/
     engine.py ✔    async engine with SQLite pragmas, session factory
     migrate.py ✔   upgrade(), current_revision(), head_revision(), pre-migration backup
     migrations/ ✔  Alembic environment and versions/ (shipped inside the package)
-    transports/a2s.py ✔           the A2S_INFO status query (single datagram, bounded)
-    transports/goldsrc_rcon.py ✔  RCON over UDP for GoldSrc servers
-    transports/source_rcon.py ✔   RCON over TCP for Source and Source 2 servers
-    transports/gbxremote.py ✔     GBXRemote 2 (XML-RPC over TCP) for Trackmania
-    transports/uweb.py ✔          WebAdmin of Unreal servers: HTTP Basic auth, form parsing
-    transports/ (planned)        q3_rcon
   games/counterstrike/common.py ✔   status query, map name pattern, stats parser
   games/counterstrike/goldsrc.py ✔  Counter-Strike 1.6
   games/counterstrike/source.py ✔   CS:Source, CS:GO, CS2 (one base class, three adapters)
@@ -418,7 +422,7 @@ only text, number and select fields of the schema from the query string (printab
 ## Configuration and reverse proxy
 
 _State: loading and validation implemented (step 1.1, `config.py`); trusted proxies are
-passed to Uvicorn by `lanpilot serve`. The host, origin and cookie behaviour below lands in
+passed to Uvicorn by `lanpilot serve`; the host, origin and cookie behaviour below since
 step 1.2._
 
 Precedence, lowest to highest: built-in defaults, the TOML file, environment variables
@@ -439,6 +443,7 @@ Top-level settings:
 | `log_level` | `debug`, `info`, `warning` or `error` | `info` |
 | `auto_migrate` | upgrade the database schema when `lanpilot serve` starts | `true` |
 | `enable_demo_adapter` | offer the simulated demo server | `false` |
+| `enable_console` | let administrators send raw console commands | `false` |
 | `default_language` | language when neither the user nor the browser picks one | `en` |
 
 Exactly one of `secret_key` and `secret_key_file` must be set; `lanpilot serve` refuses to
@@ -467,8 +472,8 @@ Section `[polling]`:
 | `timeout_seconds` | how long LANPilot waits for an answer | `8` |
 
 Section `[images]` (step 2.4): `online` (`true`), `sources` (comma list of
-`steam_workshop`, `gamebanana`, `gametracker`, in the order they are asked; unknown names
-are rejected), `retry_days` (`7`). See "Map images".
+`steam_workshop`, `gamebanana`, `gametracker`, `tmx`, `unreal_archive`, in the order they are
+asked, all by default; unknown names are rejected), `retry_days` (`7`). See "Map images".
 
 Section `[scan]` (phase 6): `networks` (comma list of IPv4 networks,
 normalised to the network address; empty, the default, offers no scan) and
@@ -640,7 +645,7 @@ _State: implemented (step 1.4) in `core/servers.py` and `web/routes_admin_server
   A server whose adapter is no longer installed is listed as "not installed" and can only
   be deleted.
 - Every create, update and delete is audited with name, game and address, never secrets.
-- The start page `/` lists the servers for every signed-in user (dashboard follows in 1.6).
+- The start page `/` is the dashboard for every signed-in user (see "Frontend").
 
 ## Live state, actions and events
 
@@ -669,8 +674,8 @@ timestamps. It never contains credentials. State lives in memory only.
 **Map lists** (`core/maps.py`, table `server_maps`). The list a server reports is cached, so
 the picker is instant and a map change can be validated. Reported entries are untrusted:
 keys and names with non-printable characters, overlong values and duplicates are dropped,
-and the list is capped at 5000. Rows carry a `source` (`protocol`, later `catalog` and
-`manual`); a refresh replaces only the `protocol` rows.
+and the list is capped at 5000. Rows carry a `source` (`protocol`, `manual`; `catalog` is
+reserved for games that cannot list maps); a refresh replaces only the `protocol` rows.
 
 **Actions** (`core/actions.py`, `app.state.actions`). `Actions._perform()` is the only code
 path that changes a game server:
@@ -781,14 +786,15 @@ a `<progress>`, the map placeholder colour is one of six `tone-N` classes chosen
 version and integrity hash; updating a library means editing that table and re-running the
 script. Alpine.js, mentioned in early plans, is not used: nothing needs it so far.
 
-Until map images exist (step 1.7) cards show a coloured placeholder with the map name.
+Cards without an image show a coloured placeholder with the map name.
 
 ## Map images
 
 _State: storage, delivery, upload and display implemented (step 1.7, `core/map_images.py`,
 `web/routes_map_images.py`); online sources for Counter-Strike and the stock map catalogue
 implemented (step 2.4, `core/image_sources.py`, `core/image_lookup.py`, `core/catalog.py`);
-TrackMania Exchange for Trackmania (step 3.4). Unreal Archive follows with phase 4._
+TrackMania Exchange for Trackmania (step 3.4), Unreal Archive for Unreal Tournament (step
+4.5)._
 
 An image belongs to a **game and a map key** (table `map_images`: adapter id and
 lower-case key), not to one server: every server of that game with a map of that name

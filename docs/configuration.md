@@ -142,13 +142,20 @@ trusted_proxies = []
 
 | Role | May |
 |---|---|
-| `viewer` | see servers and their status |
-| `operator` | also change maps, restart matches and reload levels |
-| `admin` | also manage users, servers and map images, and read the audit log |
+| `viewer` | see servers, maps, players and their status |
+| `operator` | also change maps, read a server's map list again, restart matches, reload levels and kick players |
+| `admin` | also ban players; manage users, servers and map images; scan the network; read the audit log; use the console (only with `enable_console`) |
 
-The first administrator is created on the command line (`lanpilot user create NAME`),
-further accounts in the web interface under "Users". Passwords have at least 10
-characters.
+The first administrator is created on the command line (`lanpilot user create NAME`,
+optionally `--role viewer|operator|admin`; the default is `admin`), further accounts in the
+web interface under "Users". Passwords have at least 10 characters. Each user chooses the
+language of the interface (English, German, or as the browser prefers) on the "Account"
+page.
+
+**Console.** With `enable_console = true` (and a restart), administrators find a "Console"
+link on the page of every server whose game has one (all Counter-Strike games, Unreal
+Tournament 99, 2004 and 3). Commands go to the server as they are and are recorded in the
+audit log; a command that sets a password is recorded without its arguments.
 
 ## Game servers and their passwords
 

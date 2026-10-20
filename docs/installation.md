@@ -48,7 +48,8 @@ is yours to make:
 1. Set `public_url` in `/etc/lanpilot/lanpilot.toml` to the address users will open, for
    example `https://lanpilot.example.lan`. See [configuration.md](configuration.md) and,
    if you use one, [reverse-proxy.md](reverse-proxy.md).
-2. Create the first administrator:
+2. Create the first administrator (run as root, the `lanpilot` command switches to the
+   service user, so the database it creates belongs to the service):
 
    ```bash
    sudo lanpilot user create admin
@@ -61,6 +62,11 @@ is yours to make:
    ```
 
 Then open the address from step 1 and sign in. Logs: `journalctl -u lanpilot`.
+
+Optional settings in the same file (see [configuration.md](configuration.md)):
+`[scan] networks` switches on the LAN scan, `enable_console = true` the raw console for
+administrators, `default_language = "de"` makes German the default language. For running an
+event, see [lan-party-guide.md](lan-party-guide.md).
 
 ### What is where
 

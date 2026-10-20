@@ -11,6 +11,12 @@ data_dir = "/var/lib/lanpilot"
 # installed. Keep a copy somewhere safe: without it the stored passwords are unreadable.
 secret_key_file = "/etc/lanpilot/secret.key"
 
+# Language of the user interface when neither the user nor the browser picks one: en or de.
+#default_language = "en"
+
+# Let administrators send raw console commands to game servers (recorded in the audit log).
+#enable_console = false
+
 [server]
 # REQUIRED. The address under which users reach LANPilot, exactly as they type it into the
 # browser. LANPilot accepts requests for this host only and refuses to start without it.
@@ -29,3 +35,12 @@ allowed_hosts = []
 # Reverse proxies whose X-Forwarded-For / X-Forwarded-Proto headers are trusted.
 # Use [] if there is no reverse proxy.
 trusted_proxies = ["127.0.0.1"]
+
+# On-demand LAN scan ("Server setup" -> "Scan the network"). Off while no network is given.
+[scan]
+#networks = ["192.168.1.0/24"]
+
+# Map images from the internet. Switch off for events without internet access, after
+# loading them with `lanpilot images prefetch`.
+[images]
+#online = true

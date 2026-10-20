@@ -24,7 +24,9 @@ together with an advisory that credits you, unless you prefer to stay anonymous.
 
 ## Security model in brief
 
-The full description lives in [docs/architecture.md](docs/architecture.md#security).
+The threat model, what is protected against whom and the residual risks are in
+[docs/security.md](docs/security.md); the mechanisms in
+[docs/architecture.md](docs/architecture.md#security).
 
 - Every page requires a login; there is no anonymous access.
 - Passwords of LANPilot users are hashed with Argon2id.
@@ -32,6 +34,8 @@ The full description lives in [docs/architecture.md](docs/architecture.md#securi
 - Everything a game server sends (server names, player names, HTML) is treated as untrusted.
 - Console commands are built from validated values only; map names must be in the stored map
   list of the server.
+- Roles limit what a user may do (viewer, operator, admin); the raw console is off unless
+  switched on, and then for administrators only.
 
 ## Known limitation of the game protocols
 

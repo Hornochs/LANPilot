@@ -48,7 +48,7 @@ mkdir -p data && .venv/bin/lanpilot db upgrade        # bring the dev database t
 ```
 
 Review the generated file in `src/lanpilot/db/migrations/versions/`, give it the next number
-(`0002_…`, revision id `"0002"`) and keep `downgrade()` working. Add data for it to `DATA`
+(the next free number, for example `0009_…` with revision id `"0009"`) and keep `downgrade()` working. Add data for it to `DATA`
 in `tests/test_migrations.py`: the upgrade test writes it in the new schema and checks that
 everything survives the following upgrades.
 

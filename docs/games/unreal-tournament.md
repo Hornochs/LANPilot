@@ -291,7 +291,7 @@ and the player must be gone from the answer.
 ## Map images
 
 All three adapters look their maps up in the Unreal Archive index shipped with LANPilot
-(image source `unreal_archive`, see docs/configuration.md). The archive holds community
+(image source `unreal_archive`, see [configuration.md](../configuration.md)). The archive holds community
 maps; for the test servers it had images for 33 of 81 UT99, 66 of 230 UT2004 and 1 of 60
 UT3 maps. Stock maps need an uploaded image.
 

@@ -20,7 +20,7 @@ _Last updated: 2026-10-20_
 | 7 – More games | not started |
 | 8 – Hardening and 1.0 | in progress |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 8.1 and 8.2, which completes
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2 and 8.1–8.4, which completes
 phases 0, 1, 2, 4, 5 and 6; 3.1, 3.2, 3.4 and 3.5.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
@@ -69,9 +69,9 @@ The security review (8.1) and its fixes are summed up in [security.md](security.
 A2S client that replaced opengsq's was checked against CS2 and CS 1.6, the package with the
 hash-pinned dependencies was built and inspected locally.
 
-**In progress:** phase 8 (8.3 next).
+**In progress:** phase 8: 8.5 (release 1.0).
 
-**Next:** 8.3; phase 7 (more games) when test servers exist. 3.3 (TM2/TM2020) is
+**Next:** 8.5; phase 7 (more games) when test servers exist. 3.3 (TM2/TM2020) is
 postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
@@ -221,11 +221,15 @@ Player management should be checked with real players at the next LAN party (see
 - **8.2** ✔ Upgrade tests with real data: `tests/test_migrations.py` (every revision, data in
   each revision's schema, LANPilot working on the result); the package upgrade test starts
   from a real older version (the last release, until then `1cd36c0`), built with its own
-  packaging, and carries a server and its map list through the upgrade. The CI run of the
-  changed workflow is still to be checked.
-- **8.3** German user interface in addition to English (✔ in progress: choice per user,
-  browser or `default_language`; every visible text marked and translated), documentation
-  complete, release 1.0.
+  packaging, and carries a server and its map list through the upgrade. Its first CI run
+  failed on the older version's packaging (it ships `README.md`) and on Python 3.11 (the
+  UDP simulators); both are fixed, the next run is still to be checked.
+- **8.3** ✔ German user interface in addition to English: chosen per user, else by the
+  browser, else `default_language`; every visible text marked and translated
+  (`tests/test_i18n.py` keeps the catalogue complete).
+- **8.4** ✔ Documentation complete: a guide for organisers ([lan-party-guide.md](lan-party-guide.md)),
+  every document checked against the code.
+- **8.5** Release 1.0.
 
 ## Open points
 

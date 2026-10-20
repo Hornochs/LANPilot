@@ -4,16 +4,16 @@ A web interface for monitoring and remote-controlling game servers at LAN partie
 server on one dashboard, change the map, restart a match and manage players without logging
 into each machine.
 
-> **Status: early development.** The core is in place: accounts, server management, live
-> dashboard, map changes and restarts, player list with kick and ban, an optional console for
-> administrators, map images (uploaded or found online), an on-demand LAN scan that finds
-> servers without passwords, and distribution packages. Working
-> games: **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
-> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, and **Unreal Tournament 99, 2004
-> and 3** (player management not yet on CS2). More games come next.
+> **Status: approaching 1.0.** Accounts, server management, live dashboard, map changes and
+> restarts, player list with kick and ban, an optional console for administrators, map
+> images (uploaded or found online), an on-demand LAN scan that finds servers without
+> passwords, an English and German interface, and distribution packages. Working games:
+> **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
+> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, and **Unreal Tournament 99,
+> 2004 and 3** (player management not yet on CS2). More games come next.
 > Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## What LANPilot will do
+## What LANPilot does
 
 - **Dashboard** with one card per server: game, current map with a preview image, player
   count and status, updated live.
@@ -26,7 +26,8 @@ into each machine.
   parties without internet access.
 - **Accounts** with username and password, three roles (admin, operator, viewer) and an audit
   log of every action.
-- **Monitoring-only mode** for games that offer no remote control at all.
+- **Interface in English and German**, chosen per user or by the browser.
+- **Monitoring-only mode** for games that offer no remote control at all (planned).
 - **Packages** for Debian/Ubuntu (`.deb`), Fedora/RHEL (`.rpm`) and Arch Linux.
 
 ## Design principles
@@ -54,12 +55,15 @@ into each machine.
 
 ## Documentation
 
+- [docs/lan-party-guide.md](docs/lan-party-guide.md) – checklist for organisers: before, during and after the event
 - [docs/installation.md](docs/installation.md) – packages, first start, backup, upgrade
 - [docs/configuration.md](docs/configuration.md) – all settings, accounts and roles
 - [docs/reverse-proxy.md](docs/reverse-proxy.md) – Nginx, Caddy, Traefik, or none
 - [docs/adapters.md](docs/adapters.md) – adding support for a game
 - [docs/ROADMAP.md](docs/ROADMAP.md) – phases, numbered steps and current status
 - [docs/architecture.md](docs/architecture.md) – how LANPilot is built
+- [docs/security.md](docs/security.md) – threat model and residual risks
+- [docs/games/](docs/games/) – protocol facts measured against real servers
 - [docs/research/](docs/research/) – protocol and map image research notes
 - [CONTRIBUTING.md](CONTRIBUTING.md) – development setup and contribution rules
 - [SECURITY.md](SECURITY.md) – reporting vulnerabilities, security model

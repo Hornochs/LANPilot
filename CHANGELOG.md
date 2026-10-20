@@ -81,7 +81,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   CS2 each have their own picture of `de_dust2`. Existing images whose game cannot be told
   (uploaded Counter-Strike images in particular) are dropped by the database upgrade and have
   to be uploaded again; online images are found again by themselves.
-- Documentation for installation, configuration, reverse proxies and writing a game adapter.
+- Documentation for installation, configuration, reverse proxies and writing a game adapter,
+  a checklist for organisers of LAN parties (`docs/lan-party-guide.md`) and the threat model
+  (`docs/security.md`).
 - Server-sent events that tell open pages when a server's state changed.
 - Encryption of game server credentials with a key outside the database
   (`secret_key` / `secret_key_file`, `lanpilot secret generate-key`); known secrets are

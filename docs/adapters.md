@@ -158,6 +158,21 @@ What to take from it:
 - **Console** (`Capability.CONSOLE`): `console(command)` sends one line as it is and returns
   the server's answer. Only administrators can use it, and only when the console is switched
   on in the configuration.
+- **Load** (`Capability.LOAD_STATS`): declare it when `query()` fills `ServerStatus.load`
+  (for example `{"cpu": 12.5, "fps": 128.0}`); the contract checks that it does.
+- **LAN scan** (`Capability.DISCOVER`): the classmethod `discover(networks, wait)` finds
+  servers of the game without a password, on request only. `wait` is how long to wait for
+  answers to a broadcast. Return `DiscoveredServer(adapter_id, host, port, name, game_type,
+  values)` for servers inside `networks` only (`port` is `None` when the scan cannot learn
+  the remote-control port; `values` pre-fills further public connection fields, such as a
+  query port), and skip hosts that answer oddly rather than raising. `lanpilot.core.discovery`
+  has the helpers (`broadcast()`, `gather_found()`, `clean_text()`), `lanpilot.testing.lan`
+  examples of simulators.
+- **Texts users see.** An adapter that ships with LANPilot wraps its form titles,
+  descriptions and error messages in `M("…")` (`from lanpilot.i18n import M`; values as
+  `M("No map named {name}.", name=key)`) and comes with the German translation (see
+  "Texts and translations" in [CONTRIBUTING.md](../CONTRIBUTING.md)). A third-party adapter
+  may use plain English strings; they are shown as they are.
 - **Stock map names** for the map picker can be added to the catalogue in
   `src/lanpilot/catalog/<family>.toml`: a table named after the adapter id with
   `map_key = "Display name"` lines.
@@ -240,7 +255,9 @@ is logged and skipped.
 2. A simulator or recorded answers, a test calling `check_adapter()`, and tests for errors.
 3. `docs/games/<game>.md` with what you verified against a **real** server: versions,
    ports, how to enable remote control, exact commands, quirks.
-4. A line in `CHANGELOG.md`.
+4. The German translation of the new texts, or a note in the pull request that you cannot
+   provide it.
+5. A line in `CHANGELOG.md`.
 
 Games without any remote control are welcome too: an adapter with only `STATUS` puts them
 on the dashboard.

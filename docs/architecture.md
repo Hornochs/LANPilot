@@ -530,8 +530,13 @@ so an installed LANPilot upgrades its own database. `lanpilot serve` upgrades on
 `auto_migrate` is off, in which case it refuses to start with an outdated schema.
 `migrate.upgrade()` first copies an existing database to
 `lanpilot.db.backup-<timestamp>-<revision>` (mode 600) using SQLite's backup API. The database
-file is mode 600, the data directory mode 700. A test compares the models with the migrated
-schema, so a model change without a migration fails CI. For development, `alembic.ini` in the
+file is mode 600, the data directory mode 700; the newest five backups are kept. A test
+compares the models with the migrated schema, so a model change without a migration fails
+CI. `tests/test_migrations.py` brings a database up one revision at a time and writes data
+in the schema of each revision (`DATA`, one entry per migration, which a test enforces);
+after the upgrade the data must be there, a stored password must decrypt, a session opened
+before must still be valid and the pages must work. Every revision is also upgraded from in
+one step, the way an installation that stopped there would be. For development, `alembic.ini` in the
 repository root lets `alembic revision --autogenerate` find the migrations.
 
 ## Command line
@@ -938,10 +943,15 @@ for upgrades in every format (Arch needs a separate `postupgrade` entry). The da
 is migrated when the service starts, after a backup.
 
 **Pipeline** (`release.yml`, on version tags, on pull requests touching `packaging/`, and
-on demand): build the wheel → build packages in containers for Debian 12 and 13, Ubuntu 24.04
+on demand): build the wheel, and a wheel of the version the upgrade test starts from (the newest
+release tag before this commit; until the first release, `1cd36c0`, the first commit that
+built packages) → build packages in containers, the older one with the packaging of its own
+version for Debian 12 and 13, Ubuntu 24.04
 and 26.04, Fedora 44, Rocky Linux 9 (with `python3.11`) and Arch → in a fresh container per
-distribution run `packaging/test-install.sh`: install an older build, configure, create a
-user, start, **upgrade**, check that the new version is in place and that key, configuration
-and data are untouched, reinstall, remove, and purge on Debian → on a tag publish everything
+distribution run `packaging/test-install.sh`: install an older version, configure, create a
+user, write a server and its map list into its database, start, sign in, **upgrade**, check
+that the new version is in place, that key and configuration are untouched, that the
+database is at the newest schema with the server, its maps and the user still there and
+that signing in works, reinstall, remove, and purge on Debian → on a tag publish everything
 with `SHA256SUMS` and a build provenance attestation as a GitHub release. The tag must match
 `__version__`.

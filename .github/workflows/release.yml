@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # the upgrade test builds an older version from the history
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
@@ -42,11 +43,24 @@ jobs:
         run: |
           python -m pip install build
           python -m build
-      - name: Build a wheel with an older version number for the upgrade test
+      - name: Build the version the upgrade test starts from
+        env:
+          # Until there is a release: the first commit that built packages (schema 0005).
+          UPGRADE_BASE: 1cd36c0
         run: |
-          cp -r . /tmp/older
-          sed -i 's/^__version__ = .*/__version__ = "0.0.1"/' /tmp/older/src/lanpilot/__init__.py
+          # The newest release before this one, with its own packaging, so the upgrade runs
+          # the old install scripts and the migrations since then on real data.
+          base="$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || echo "$UPGRADE_BASE")"
+          echo "The upgrade test starts from $base."
+          mkdir -p /tmp/older dist-older
+          git archive "$base" | tar -x -C /tmp/older
+          # An unreleased base has the same version number; the package must be older.
+          version() { sed -n 's/^__version__ = "\(.*\)"/\1/p' "$1/src/lanpilot/__init__.py"; }
+          if [ "$(version /tmp/older)" = "$(version .)" ]; then
+            sed -i 's/^__version__ = .*/__version__ = "0.0.1"/' /tmp/older/src/lanpilot/__init__.py
+          fi
           python -m build --wheel --outdir dist-older /tmp/older
+          tar -C /tmp/older -czf dist-older/packaging.tar.gz packaging LICENSE NOTICE.md
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: python
@@ -122,7 +136,10 @@ jobs:
           . /etc/os-release
           export NFPM=/tmp/nfpm/nfpm DISTRO="${ID}${VERSION_ID:-}"
           sh packaging/build.sh "$FORMAT" dist/lanpilot-*.whl packages
-          sh packaging/build.sh "$FORMAT" dist-older/lanpilot-*.whl packages-older
+          # The older package is built with the packaging of its own version.
+          mkdir -p /tmp/older
+          tar -C /tmp/older -xzf dist-older/packaging.tar.gz
+          sh /tmp/older/packaging/build.sh "$FORMAT" "$PWD"/dist-older/lanpilot-*.whl "$PWD/packages-older"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package-${{ matrix.id }}

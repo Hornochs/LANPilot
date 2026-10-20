@@ -74,6 +74,23 @@ stop_service() {
     wait "$SERVICE_PID" 2>/dev/null || true
 }
 
+database() {
+    # The service's own interpreter; its sqlite3 module is all that is needed.
+    runuser -u lanpilot -- /opt/lanpilot/bin/python -c "
+import sqlite3, sys
+db = sqlite3.connect('/var/lib/lanpilot/lanpilot.db')
+for row in db.execute(sys.argv[1]):
+    print(*row, sep='|')
+db.commit()
+" "$1"
+}
+
+sign_in() {
+    curl -s -o /dev/null -w '%{http_code}' -H "Origin: $URL" \
+        --data-urlencode username=admin --data-urlencode "password=correct horse battery" \
+        "$URL/login"
+}
+
 echo "== install $(basename "${OLDER:-$PACKAGE}")"
 install_package "${OLDER:-$PACKAGE}"
 check_layout
@@ -90,8 +107,18 @@ echo "correct horse battery" | lanpilot user create admin --password-stdin
 [ "$(stat -c '%U' /var/lib/lanpilot/lanpilot.db)" = "lanpilot" ] ||
     fail "the database created through the command line does not belong to the service user"
 
+# Data the upgrade has to carry over, in the schema the first version created (servers
+# and their map lists exist since its first release).
+database "INSERT INTO servers (name, adapter_id, host, port, settings, credentials, enabled,
+    created_at, updated_at) VALUES ('Upgrade test', 'demo', 'demo.lan', 27015, '{}', NULL, 1,
+    '2026-01-01 00:00:00', '2026-01-01 00:00:00')"
+database "INSERT INTO server_maps (server_id, key, name, game_type, source, extra, updated_at)
+    VALUES (1, 'de_dust2', NULL, '', 'protocol', '{}', '2026-01-01 00:00:00')"
+SCHEMA_BEFORE="$(lanpilot db current 2>/dev/null || true)"
+
 start_service
 curl -fsS "$URL/login" | grep -q "Sign in" || fail "the login page is not served"
+[ "$(sign_in)" = 303 ] || fail "signing in does not work"
 curl -fsS "$URL/static/vendor/htmx/htmx.min.js" >/dev/null || fail "static files are missing"
 stop_service
 
@@ -113,6 +140,12 @@ if [ -n "$OLDER" ]; then
     start_service
     lanpilot user list | grep -q '^admin ' || fail "the user is gone after the upgrade"
     lanpilot db current || fail "the database is not at the newest schema after the upgrade"
+    [ "$(sign_in)" = 303 ] || fail "signing in does not work after the upgrade"
+    [ "$(database "SELECT name, host FROM servers")" = "Upgrade test|demo.lan" ] ||
+        fail "the server entry did not survive the upgrade"
+    [ "$(database "SELECT key FROM server_maps")" = "de_dust2" ] ||
+        fail "the map list did not survive the upgrade"
+    echo "schema before the upgrade: $SCHEMA_BEFORE"
     stop_service
 fi
 

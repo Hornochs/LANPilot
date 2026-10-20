@@ -60,7 +60,8 @@ jobs:
             sed -i 's/^__version__ = .*/__version__ = "0.0.1"/' /tmp/older/src/lanpilot/__init__.py
           fi
           python -m build --wheel --outdir dist-older /tmp/older
-          tar -C /tmp/older -czf dist-older/packaging.tar.gz packaging LICENSE NOTICE.md
+          # Its whole tree: what its packaging reads (README, LICENSE, ...) changes over time.
+          tar -C /tmp/older -czf dist-older/source.tar.gz .
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: python
@@ -138,7 +139,7 @@ jobs:
           sh packaging/build.sh "$FORMAT" dist/lanpilot-*.whl packages
           # The older package is built with the packaging of its own version.
           mkdir -p /tmp/older
-          tar -C /tmp/older -xzf dist-older/packaging.tar.gz
+          tar -C /tmp/older -xzf dist-older/source.tar.gz
           sh /tmp/older/packaging/build.sh "$FORMAT" "$PWD"/dist-older/lanpilot-*.whl "$PWD/packages-older"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

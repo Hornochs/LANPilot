@@ -25,7 +25,7 @@ import contextlib
 import socket
 import struct
 from types import TracebackType
-from typing import Literal
+from typing import Literal, cast
 
 from lanpilot.testing.rcon_players import PlayerCommands, default_roster
 
@@ -55,8 +55,8 @@ class _Datagrams(asyncio.DatagramProtocol):
         self.transport: asyncio.DatagramTransport | None = None
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
-        assert isinstance(transport, asyncio.DatagramTransport)
-        self.transport = transport
+        # Python 3.11's selector transport does not derive from DatagramTransport.
+        self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         if self.server.silent or self.transport is None:

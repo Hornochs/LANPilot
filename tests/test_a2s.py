@@ -6,6 +6,7 @@ import socket
 import struct
 import time
 from collections.abc import Callable
+from typing import cast
 
 import pytest
 
@@ -60,8 +61,8 @@ class _Server(asyncio.DatagramProtocol):
         self.received: list[bytes] = []
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
-        assert isinstance(transport, asyncio.DatagramTransport)
-        self.transport = transport
+        # Python 3.11's selector transport does not derive from DatagramTransport.
+        self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         self.received.append(data)

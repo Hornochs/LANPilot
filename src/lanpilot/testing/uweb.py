@@ -24,7 +24,7 @@ import base64
 import html
 from dataclasses import dataclass
 from types import TracebackType
-from typing import Literal
+from typing import Literal, cast
 
 from aiohttp import web
 from aiohttp.typedefs import Handler
@@ -97,8 +97,8 @@ class _Query(asyncio.DatagramProtocol):
         self.transport: asyncio.DatagramTransport | None = None
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
-        assert isinstance(transport, asyncio.DatagramTransport)
-        self.transport = transport
+        # Python 3.11's selector transport does not derive from DatagramTransport.
+        self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         if self.transport is None or self.server.silent:

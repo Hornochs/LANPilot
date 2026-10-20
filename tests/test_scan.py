@@ -4,7 +4,7 @@ import asyncio
 import socket
 from collections.abc import Sequence
 from ipaddress import IPv4Network
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pytest
 from fastapi.testclient import TestClient
@@ -54,8 +54,8 @@ class _Echo(asyncio.DatagramProtocol):
         self.received: list[bytes] = []
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
-        assert isinstance(transport, asyncio.DatagramTransport)
-        self.transport = transport
+        # Python 3.11's selector transport does not derive from DatagramTransport.
+        self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         self.received.append(data)

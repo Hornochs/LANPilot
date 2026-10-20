@@ -319,6 +319,48 @@ class UnrealArchive(ImageSource):
         return url if isinstance(url, str) and fetcher.allows(url) else None
 
 
+LIANDRI_INDEX = "liandri.json.gz"
+LIANDRI_HOST = "unrealarchive.org"
+
+
+@functools.cache
+def liandri_index() -> tuple[str, dict[str, dict[str, str]]]:
+    """The bundled index (base URL, game -> lower-case map name -> path below the base),
+    built from the Liandri Archives mirror by scripts/build_liandri_index.py."""
+    try:
+        data = resources.files("lanpilot.catalog").joinpath(LIANDRI_INDEX).read_bytes()
+        document = json.loads(gzip.decompress(data))
+        base, games = document["base"], document["games"]
+    except (OSError, ValueError, KeyError):
+        return "", {}
+    if not isinstance(base, str) or not isinstance(games, dict):
+        return "", {}
+    return base, games
+
+
+class LiandriArchives(ImageSource):
+    """Screenshot from the Liandri Archives (the Unreal wiki), from the bundled index.
+
+    Looking up needs no request; only the image is fetched. Unlike Unreal Archive the wiki
+    describes the stock maps, but hardly any community maps.
+    """
+
+    id = "liandri"
+    title = "Liandri Archives"
+    hosts = frozenset({LIANDRI_HOST})
+
+    async def find(self, fetcher: Fetcher, lookup: Mapping[str, str], ref: MapRef) -> str | None:
+        game = lookup.get("liandri")
+        if not game:
+            return None
+        base, games = liandri_index()
+        path = games.get(game, {}).get(ref.key.split("?")[0].lower())
+        if not isinstance(path, str) or not re.fullmatch(r"w/images/[A-Za-z0-9_.\-]+", path):
+            return None
+        url = base + path
+        return url if fetcher.allows(url) else None
+
+
 SOURCES: dict[str, ImageSource] = {
     source.id: source
     for source in (
@@ -327,5 +369,6 @@ SOURCES: dict[str, ImageSource] = {
         GameTracker(),
         TrackmaniaExchange(),
         UnrealArchive(),
+        LiandriArchives(),
     )
 }

@@ -58,7 +58,10 @@ class UT2004Adapter(WebAdminAdapter):
     name = "Unreal Tournament 2004"
     connection_schema = UT2004Connection
     capabilities = WebAdminAdapter.capabilities | {Capability.DISCOVER}
-    image_lookup: ClassVar[Mapping[str, str]] = {"unreal_archive": "Unreal Tournament 2004"}
+    image_lookup: ClassVar[Mapping[str, str]] = {
+        "unreal_archive": "Unreal Tournament 2004",
+        "liandri": "Unreal Tournament 2004",
+    }
     # XWebAdmin's CheckBox(): value "True". Bots have a kick box but no ban box.
     kick_box = ("Kick", "True")
     ban_box = ("Ban", "True")

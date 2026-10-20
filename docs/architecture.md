@@ -472,7 +472,7 @@ Section `[polling]`:
 | `timeout_seconds` | how long LANPilot waits for an answer | `8` |
 
 Section `[images]` (step 2.4): `online` (`true`), `sources` (comma list of
-`steam_workshop`, `gamebanana`, `gametracker`, `tmx`, `unreal_archive`, in the order they are
+`steam_workshop`, `gamebanana`, `gametracker`, `tmx`, `unreal_archive`, `liandri`, in the order they are
 asked, all by default; unknown names are rejected), `retry_days` (`7`). See "Map images".
 
 Section `[scan]` (phase 6): `networks` (comma list of IPv4 networks,
@@ -794,6 +794,11 @@ Cards without an image show a coloured placeholder with the map name.
 
 ## Map images
 
+Images from online sources may be GIF (`map_images.SOURCE_FORMATS`, first frame only); uploads
+stay JPEG, PNG and WebP. Shipped indexes: `catalog/unreal-archive.json.gz` and
+`catalog/liandri.json.gz` (built by `scripts/build_unreal_index.py` and
+`scripts/build_liandri_index.py`).
+
 _State: storage, delivery, upload and display implemented (step 1.7, `core/map_images.py`,
 `web/routes_map_images.py`); online sources for Counter-Strike and the stock map catalogue
 implemented (step 2.4, `core/image_sources.py`, `core/image_lookup.py`, `core/catalog.py`);
@@ -842,6 +847,7 @@ games: adapters declare the identifiers a source needs in `GameAdapter.image_loo
 | `gametracker` | fixed thumbnail URL `…/160x120/<slug>/<map>.jpg` | `gametracker` (slug) |
 | `tmx` | `/api/tracks?uid=…` on each listed site; screenshot if `HasImages`, else thumbnail if `HasThumbnail` | `tmx` (comma-separated TMX sites) |
 | `unreal_archive` | the bundled index `catalog/unreal-archive.json.gz` (no request); then the image | `unreal_archive` (the game's name in the archive) |
+| `liandri` | the bundled index `catalog/liandri.json.gz` (no request); then the image from the Liandri Archives mirror on `unrealarchive.org`; covers stock maps | `liandri` (the game's name, as in the index) |
 
 Values from answers are checked before use (GameBanana's image must lie under its own image
 host with a plain file name; a TMX image URL is only built from the id TMX returned for

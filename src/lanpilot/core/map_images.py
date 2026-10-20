@@ -9,6 +9,7 @@ random names chosen by LANPilot; no path is ever built from external text.
 from __future__ import annotations
 
 import asyncio
+import functools
 import io
 import re
 import secrets
@@ -29,6 +30,8 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_PIXELS = 40_000_000
 MAX_SIZE = (1280, 720)
 ALLOWED_FORMATS = frozenset({"JPEG", "PNG", "WEBP"})
+# Online sources may also send GIF (the Liandri Archives do); only its first frame is used.
+SOURCE_FORMATS = ALLOWED_FORMATS | {"GIF"}
 OUTPUT_SUFFIX = ".webp"
 OUTPUT_MEDIA_TYPE = "image/webp"
 FILENAME_PATTERN = re.compile(r"[A-Za-z0-9_-]{20,40}\.webp")
@@ -51,7 +54,7 @@ def normalise_key(map_key: str) -> str:
     return map_key.strip().lower()
 
 
-def process(data: bytes) -> ProcessedImage:
+def process(data: bytes, *, formats: frozenset[str] = ALLOWED_FORMATS) -> ProcessedImage:
     """Decode, shrink and re-encode an image. Blocking; call it in a thread."""
     if not data:
         raise ImageError(M("Choose an image file."))
@@ -66,7 +69,7 @@ def process(data: bytes) -> ProcessedImage:
         with warnings.catch_warnings():
             # Pillow only warns about suspiciously large images up to twice its limit.
             warnings.simplefilter("error", Image.DecompressionBombWarning)
-            with Image.open(io.BytesIO(data), formats=sorted(ALLOWED_FORMATS)) as image:
+            with Image.open(io.BytesIO(data), formats=sorted(formats)) as image:
                 if image.width * image.height > MAX_PIXELS:
                     raise ImageError(M("The image has too many pixels."))
                 image.load()
@@ -168,7 +171,8 @@ class MapImageIndex:
     ) -> MapImage:
         """Process and save an image for a map, replacing an existing one. Commits."""
         key = normalise_key(map_key)
-        processed = await asyncio.to_thread(process, data)
+        formats = ALLOWED_FORMATS if provider == PROVIDER_UPLOAD else SOURCE_FORMATS
+        processed = await asyncio.to_thread(functools.partial(process, data, formats=formats))
         filename = await asyncio.to_thread(_write, directory, processed.data)
 
         row = (

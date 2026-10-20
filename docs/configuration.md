@@ -72,7 +72,7 @@ Servers that do not answer are asked less often, up to six times the interval.
 | Key | Meaning | Default |
 |---|---|---|
 | `online` | look for map images on the internet | `true` |
-| `sources` | which sources to ask, in this order | `["steam_workshop", "gamebanana", "gametracker", "tmx", "unreal_archive"]` |
+| `sources` | which sources to ask, in this order | `["steam_workshop", "gamebanana", "gametracker", "tmx", "unreal_archive", "liandri"]` |
 | `retry_days` | after no source had an image, wait this long before asking again | `7` |
 
 With `online` on, LANPilot looks for an image of the current map of every server by
@@ -88,6 +88,7 @@ directory and shown from there; the internet is only needed while looking.
 | `gametracker` | 160×120 thumbnails of stock and popular maps | other Counter-Strike maps |
 | `tmx` | TrackMania Exchange screenshots (320×240) or thumbnails | Trackmania tracks, found by their unique id |
 | `unreal_archive` | screenshots of maps uploaded to Unreal Archive | Unreal Tournament maps, looked up in an index shipped with LANPilot; mostly community maps, few stock maps |
+| `liandri` | screenshots from the Liandri Archives (the Unreal wiki) | Unreal Tournament stock maps, looked up in an index shipped with LANPilot; the wiki has hardly any community maps |
 
 GameBanana is not asked for stock maps, because it holds remakes, not the originals. The
 terms of use of GameBanana and GameTracker have not been confirmed; leave them out of

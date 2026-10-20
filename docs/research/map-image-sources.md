@@ -70,6 +70,20 @@ Best source for UT99, UT2003, UT2004 and UT3 (tens of thousands of maps).
 - Extracting the embedded screenshot from map packages would need file access and is out of
   scope (LANPilot is protocol-only).
 
+### Liandri Archives (stock maps)
+
+- 2026-10-20: <https://unrealarchive.org/wikis/the-liandri-archives/> is a static mirror of
+  the Unreal wiki (CC BY-SA 3.0). One page per map (`DM-Deck17.html`); the category pages
+  `Category:Unreal_Tournament_maps.html` (122 maps), `Category:UT2004_maps.html` (111) and
+  `Category:Unreal_Tournament_3_maps.html` (58) list them. [verified]
+- Images lie under `w/images/` on the same host, mostly GIF (UT2004, 512×256), JPEG for
+  UT99/UT3; the file names are irregular (`DM-Deck17.gif`, `Antalus-Screenshot.gif`), so the
+  page must be read. Weapon plans (`*-Pickups.png`) and `Placeholder.png` are not
+  screenshots. [verified]
+- `scripts/build_liandri_index.py` builds `catalog/liandri.json.gz` from these pages. The
+  originals at liandri.beyondunreal.com answer 403 and Fandom answers 402. [verified]
+- Not covered: community map packs and UT99 `DM-Deck16][` (page without image).
+
 ## Counter-Strike
 
 Ranked, best first:

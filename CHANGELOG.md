@@ -6,6 +6,13 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Map image source `liandri`: screenshots of Unreal Tournament stock maps from the Liandri
+  Archives (index shipped with LANPilot, built by `scripts/build_liandri_index.py`). It is
+  on by default; an installation that lists `images.sources` itself must add it. Online
+  sources may now deliver GIF images (first frame); uploads still accept JPEG, PNG and WebP.
+
 ## [1.0.0] - 2026-10-20
 
 The first release.

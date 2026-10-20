@@ -58,7 +58,10 @@ class UT99Adapter(WebAdminAdapter):
     name = "Unreal Tournament (UT99)"
     connection_schema = UT99Connection
     capabilities = WebAdminAdapter.capabilities | {Capability.DISCOVER}
-    image_lookup: ClassVar[Mapping[str, str]] = {"unreal_archive": "Unreal Tournament"}
+    image_lookup: ClassVar[Mapping[str, str]] = {
+        "unreal_archive": "Unreal Tournament",
+        "liandri": "Unreal Tournament",
+    }
     map_extension = ".unr"
     # Bots have neither box: UT99's WebAdmin cannot remove them. A ban is by IP address.
     kick_box = ("KickPlayer", "kick")

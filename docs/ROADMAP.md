@@ -39,6 +39,9 @@ and 34 of the 38 stock CS:GO maps through "look for all missing images" (GameTra
 Steam Workshop and GameBanana lookups were checked with a workshop map and two community
 maps.
 
+Unreal Tournament stock maps now get images from the Liandri Archives (source `liandri`): 174
+of the 230 maps on the UT2004 test server are covered together with Unreal Archive.
+
 The TrackMania Forever adapter was run against a TMNF server (build 2011-02-21): status,
 track list, track change, both restarts, a change while loading and a wrong password behaved
 as [games/trackmania.md](games/trackmania.md) describes. The TrackMania Sunrise adapter was run against a Sunrise eXtreme server

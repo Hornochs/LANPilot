@@ -290,10 +290,22 @@ and the player must be gone from the answer.
 
 ## Map images
 
-All three adapters look their maps up in the Unreal Archive index shipped with LANPilot
-(image source `unreal_archive`, see [configuration.md](../configuration.md)). The archive holds community
-maps; for the test servers it had images for 33 of 81 UT99, 66 of 230 UT2004 and 1 of 60
-UT3 maps. Stock maps need an uploaded image.
+All three adapters look their maps up in two indexes shipped with LANPilot (see
+[configuration.md](../configuration.md)):
+
+- `unreal_archive`: Unreal Archive uploads, i.e. community maps. For the test servers it had
+  images for 33 of 81 UT99, 66 of 230 UT2004 and 1 of 60 UT3 maps; stock maps are mostly
+  missing.
+- `liandri`: the Liandri Archives (the Unreal wiki, mirrored on unrealarchive.org), which
+  describe the stock maps. Measured on 2026-10-20: 86 of 122 UT99, 111 of 111 UT2004 and 56
+  of 58 UT3 pages have a screenshot. With both sources 174 of the 230 maps on the UT2004
+  test server get an image; the rest are community map packs (CBP, UCMP). DM-Deck17 is
+  covered, DM-Deck16][ (UT99) is not.
+
+The wiki has one page per map name, so a map that exists in several games shows the same
+picture in all of them. Its images are mostly GIF (UT2004) or small JPEG (UT99, 250 px wide);
+LANPilot uses the first frame. Plans such as `…-Pickups.png` are skipped. Anything still
+missing needs an uploaded image.
 
 ## Simulators
 

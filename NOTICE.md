@@ -35,4 +35,5 @@ sources an administrator enables and stay the property of their respective owner
 | Path | Origin | License |
 |---|---|---|
 | `src/lanpilot/catalog/unreal-archive.json.gz` | index (map file name → first screenshot URL and title) built by `scripts/build_unreal_index.py` from the metadata in [unreal-archive-data](https://github.com/unreal-archive/unreal-archive-data); the revision is stored in the file | Unlicense (public domain) |
+| `src/lanpilot/catalog/liandri.json.gz` | index (map name → screenshot path) built by `scripts/build_liandri_index.py` from the [Liandri Archives](https://unrealarchive.org/wikis/the-liandri-archives/) mirror; only names and paths are stored, the images are fetched at run time and re-encoded | CC BY-SA 3.0 (wiki text); the screenshots show Epic Games content and are not redistributed |
 | `src/lanpilot/catalog/counterstrike.toml` | stock map names, written for LANPilot | MIT, like LANPilot |

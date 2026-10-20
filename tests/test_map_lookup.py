@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from lanpilot.auth.roles import Role
 from lanpilot.config import ConfigError, Settings, load_settings
-from lanpilot.core import catalog, image_lookup, image_sources
+from lanpilot.core import catalog, image_lookup, image_sources, map_images
 from lanpilot.core.adapters import MapRef
 from lanpilot.core.adapters.registry import load_registry
 from lanpilot.core.image_lookup import ImageLookup, Outcome, Reach, Wanted
@@ -31,6 +31,7 @@ from lanpilot.core.image_sources import (
     GameBanana,
     GameTracker,
     ImageSource,
+    LiandriArchives,
     SteamWorkshop,
     TrackmaniaExchange,
     UnrealArchive,
@@ -145,6 +146,7 @@ def test_image_settings(base_env: dict[str, str]) -> None:
         "gametracker",
         "tmx",
         "unreal_archive",
+        "liandri",
     ]
     assert list(SOURCES) == defaults.sources  # every source is configurable
 
@@ -858,6 +860,70 @@ def test_the_bundled_unreal_index_loads() -> None:
     assert len(index["Unreal Tournament"]) > 1000
     url, title = index["Unreal Tournament"]["ctf-face"]
     assert url.startswith("https://unreal-archive-img.") and title == "Facing Worlds"
+
+
+async def test_liandri_looks_up_the_bundled_index(monkeypatch: pytest.MonkeyPatch) -> None:
+    base = "https://unrealarchive.org/wikis/the-liandri-archives/"
+    index = {
+        "Unreal Tournament 2004": {
+            "dm-deck17": "w/images/DM-Deck17.gif",
+            "dm-evil": "../../evil.gif",
+        }
+    }
+    monkeypatch.setattr(image_sources, "liandri_index", lambda: (base, index))
+    source = LiandriArchives()
+    fetcher = Fetcher(source.hosts)
+    lookup = {"liandri": "Unreal Tournament 2004"}
+    expected = base + "w/images/DM-Deck17.gif"
+
+    assert await source.find(fetcher, lookup, MapRef("DM-Deck17")) == expected
+    assert await source.find(fetcher, lookup, MapRef("DM-Deck17?LinkSetup=Default")) == expected
+    assert await source.find(fetcher, lookup, MapRef("DM-Evil")) is None  # not a plain file path
+    assert await source.find(fetcher, lookup, MapRef("DM-Missing")) is None
+    assert await source.find(fetcher, {}, MapRef("DM-Deck17")) is None
+
+
+def test_sources_may_send_gif_but_uploads_may_not() -> None:
+    buffer = io.BytesIO()
+    Image.new("P", (64, 32)).save(buffer, "GIF")
+
+    assert map_images.process(buffer.getvalue(), formats=map_images.SOURCE_FORMATS).width == 64
+    with pytest.raises(map_images.ImageError):
+        map_images.process(buffer.getvalue())
+
+
+def test_the_bundled_liandri_index_loads() -> None:
+    base, index = image_sources.liandri_index()
+
+    assert base.startswith("https://unrealarchive.org/")
+    assert set(index) == {"Unreal Tournament", "Unreal Tournament 2004", "Unreal Tournament 3"}
+    assert index["Unreal Tournament 2004"]["dm-deck17"] == "w/images/DM-Deck17.gif"
+    assert all(path.startswith("w/images/") for maps in index.values() for path in maps.values())
+
+
+def test_liandri_index_builder() -> None:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "build_liandri_index", Path(__file__).parent.parent / "scripts" / "build_liandri_index.py"
+    )
+    assert spec is not None and spec.loader is not None
+    builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(builder)
+
+    category = (
+        '<a href="./Category:Stubs.html">x</a><a href="./Unreal_Tournament_2004.html">x</a>'
+        '<a href="./DM-Deck17.html">a</a><a href="./DM-Deck16%5D%5B.html">b</a>'
+        '<a href="./Help:Contents.html">c</a>'
+    )
+    assert builder.members(category) == ["DM-Deck17", "DM-Deck16]["]
+
+    page = (
+        '<a href="w/images/Placeholder.png">p</a><a href="w/images/Deck17-Pickups.png">w</a>'
+        '<a href="w/images/DM-Deck17.gif">s</a>'
+    )
+    assert builder.screenshot(page) == builder.BASE + "w/images/DM-Deck17.gif"
+    assert builder.screenshot('<a href="w/images/Placeholder.png">p</a>') is None
 
 
 def test_unreal_index_builder(tmp_path: Path) -> None:

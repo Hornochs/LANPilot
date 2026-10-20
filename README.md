@@ -13,6 +13,10 @@ into each machine.
 > 2004 and 3** (player management not yet on CS2). More games come next.
 > Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
+![The LANPilot dashboard with a card for each server](docs/images/dashboard.png)
+
+![A server page: status, map preview, players and map change](docs/images/server.png)
+
 ## What LANPilot does
 
 - **Dashboard** with one card per server: game, current map with a preview image, player

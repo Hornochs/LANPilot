@@ -115,7 +115,10 @@ class UT3Adapter(GameAdapter):
         }
     )
     connection_schema = UT3Connection
-    image_lookup: ClassVar[Mapping[str, str]] = {"unreal_archive": "Unreal Tournament 3"}
+    image_lookup: ClassVar[Mapping[str, str]] = {
+        "unreal_archive": "Unreal Tournament 3",
+        "liandri": "Unreal Tournament 3",
+    }
 
     def __init__(self, connection: ConnectionSettings) -> None:
         super().__init__(connection)

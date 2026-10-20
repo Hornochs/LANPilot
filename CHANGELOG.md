@@ -6,6 +6,10 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-20
+
+The first release.
+
 ### Added
 
 - Project foundation: packaging metadata, lint/type/test tooling, contributor documentation,

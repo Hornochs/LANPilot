@@ -50,7 +50,11 @@ jobs:
         run: |
           # The newest release before this one, with its own packaging, so the upgrade runs
           # the old install scripts and the migrations since then on real data.
-          base="$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || echo "$UPGRADE_BASE")"
+          # Without a release tag: UPGRADE_BASE, or, if the history does not contain it (a
+          # squash merge), the first commit that built packages.
+          base="$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null ||
+            git rev-parse --verify --quiet "$UPGRADE_BASE^{commit}" ||
+            git log --reverse --format=%H -- packaging/build.sh | head -n 1)"
           echo "The upgrade test starts from $base."
           mkdir -p /tmp/older dist-older
           git archive "$base" | tar -x -C /tmp/older

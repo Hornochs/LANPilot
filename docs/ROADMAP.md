@@ -69,7 +69,7 @@ The security review (8.1) and its fixes are summed up in [security.md](security.
 A2S client that replaced opengsq's was checked against CS2 and CS 1.6, the package with the
 hash-pinned dependencies was built and inspected locally.
 
-**In progress:** phase 8: 8.5 (release 1.0).
+**In progress:** phase 8: 8.5 (release 1.0): version 1.0.0 set; to do: merge into `main`, tag `v1.0.0`.
 
 **Next:** 8.5; phase 7 (more games) when test servers exist. 3.3 (TM2/TM2020) is
 postponed: no test servers.
@@ -229,7 +229,8 @@ Player management should be checked with real players at the next LAN party (see
   (`tests/test_i18n.py` keeps the catalogue complete).
 - **8.4** ✔ Documentation complete: a guide for organisers ([lan-party-guide.md](lan-party-guide.md)),
   every document checked against the code.
-- **8.5** Release 1.0.
+- **8.5** Release 1.0: version 1.0.0, CHANGELOG section, merge into `main`, tag `v1.0.0` (the
+  release workflow builds, tests and publishes the packages).
 
 ## Open points
 

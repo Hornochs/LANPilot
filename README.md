@@ -4,7 +4,7 @@ A web interface for monitoring and remote-controlling game servers at LAN partie
 server on one dashboard, change the map, restart a match and manage players without logging
 into each machine.
 
-> **Status: approaching 1.0.** Accounts, server management, live dashboard, map changes and
+> **Status: 1.0.** Accounts, server management, live dashboard, map changes and
 > restarts, player list with kick and ban, an optional console for administrators, map
 > images (uploaded or found online), an on-demand LAN scan that finds servers without
 > passwords, an English and German interface, and distribution packages. Working games:

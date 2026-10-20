@@ -2,7 +2,7 @@ name: Packages
 
 # Builds the wheel and the distribution packages, installs and upgrades every package in a
 # clean container, and attaches them to the GitHub release when one is published (the tag
-# of the release is the version, v1.2.3). The release itself, with its notes, is created
+# of the release is the version, 1.2.3 or v1.2.3). The release itself, with its notes, is created
 # in the GitHub web interface.
 on:
   release:
@@ -37,7 +37,7 @@ jobs:
         if: github.event_name == 'release'
         run: |
           version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' src/lanpilot/__init__.py)"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          if [ "$version" != "${GITHUB_REF_NAME#v}" ]; then
             echo "::error::tag $GITHUB_REF_NAME does not match version $version in src/lanpilot/__init__.py"
             exit 1
           fi
@@ -54,7 +54,7 @@ jobs:
           # the old install scripts and the migrations since then on real data.
           # Without a release tag: UPGRADE_BASE, or, if the history does not contain it (a
           # squash merge), the first commit that built packages.
-          base="$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null ||
+          base="$(git describe --tags --abbrev=0 --match '[v0-9]*' HEAD^ 2>/dev/null ||
             git rev-parse --verify --quiet "$UPGRADE_BASE^{commit}" ||
             git log --reverse --format=%H -- packaging/build.sh | head -n 1)"
           echo "The upgrade test starts from $base."

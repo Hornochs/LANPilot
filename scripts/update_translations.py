@@ -17,6 +17,7 @@ Usage: python3 scripts/update_translations.py
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -40,6 +41,9 @@ def babel(*arguments: str) -> None:
 
 
 def main() -> None:
+    # Relative paths, so the catalogues name source files as src/lanpilot/... and not by
+    # where the repository happens to be checked out.
+    os.chdir(ROOT)
     mapping = LOCALE / "babel.cfg"
     mapping.write_text(MAPPING)
     try:
@@ -53,7 +57,7 @@ def main() -> None:
             "--project", "LANPilot",
             "--copyright-holder", "LANPilot contributors",
             "--output-file", str(TEMPLATE),
-            str(PACKAGE),
+            str(PACKAGE.relative_to(ROOT)),
         )  # fmt: skip
     finally:
         mapping.unlink()

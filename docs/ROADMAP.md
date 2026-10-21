@@ -6,7 +6,7 @@ as done, and [architecture.md](architecture.md) describes any structural change 
 
 ## Current status
 
-_Last updated: 2026-10-20_
+_Last updated: 2026-10-21_
 
 | Phase | State |
 |---|---|
@@ -17,11 +17,11 @@ _Last updated: 2026-10-20_
 | 4 – Unreal Tournament | done |
 | 5 – Player management and console | done |
 | 6 – On-demand LAN scan | done |
-| 7 – More games | not started |
-| 8 – Hardening and 1.0 | in progress |
+| 7 – More games | in progress |
+| 8 – Hardening and 1.0 | done |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2 and 8.1–8.4, which completes
-phases 0, 1, 2, 4, 5 and 6; 3.1, 3.2, 3.4 and 3.5.
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1 and 8.1–8.5, which completes
+phases 0, 1, 2, 4, 5, 6 and 8; 3.1, 3.2, 3.4 and 3.5. Version 1.0.0 is released.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
 all seven distribution packages and ran the install, upgrade, reinstall and removal test for
@@ -72,9 +72,17 @@ The security review (8.1) and its fixes are summed up in [security.md](security.
 A2S client that replaced opengsq's was checked against CS2 and CS 1.6, the package with the
 hash-pinned dependencies was built and inspected locally.
 
-**In progress:** phase 8: 8.5 (release 1.0): version 1.0.0 set; to do: merge into `main`, publish the GitHub release `v1.0.0` (creates the tag).
+The Quake 3 family adapters (7.1) were run against real servers (Quake III Arena 1.32c,
+Call of Duty 1.5, CoD4X 1.8, World at War 1.7): status, map list per game type, map and game type change,
+both restarts, kick (bots), console, a wrong password and the LAN scan behaved as
+[games/quake3.md](games/quake3.md) describes; Quake 3, CoD and CoD4 were also added from
+the scan, WaW through the form, and all four used through the web interface. Bans and human players could not be tried.
 
-**Next:** 8.5; phase 7 (more games) when test servers exist. 3.3 (TM2/TM2020) is
+**In progress:** release 1.0.1 (with 7.1), prepared on its own branch; releases are
+published by the maintainer.
+
+**Next:** 7.2 (Battlefield 2, Renegade X, ElDewrito) and 7.3 (monitoring only) when
+test servers exist. 3.3 (TM2/TM2020) is
 postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
@@ -211,8 +219,11 @@ Player management should be checked with real players at the next LAN party (see
 
 ### Phase 7 – More games (v0.7+)
 
-- **7.1** Quake 3 RCON family: Call of Duty 1/4/5, Quake 3, Jedi Knight (map list from
-  catalogue and rotation).
+- **7.1** ✔ Quake 3 RCON family: transport (`getstatus`, RCON with the 500 ms limit of Quake 3
+  and CoD 1), adapters `q3a`, `cod`, `cod4`, `codwaw` with maps per game type (CoD4 and WaW:
+  catalogue and rotation), players, kick (Quake 3 also ban by IP), console and LAN scan, verified against
+  real servers. Jedi Knight is left out (no test server: LinuxGSM installs no game data);
+  CoD 2 and United Offensive are not measured.
 - **7.2** Battlefield 2, Renegade X, ElDewrito, each after verifying the protocol.
 - **7.3** Monitoring only: Age of Empires 1/2, Alien vs Predator 2, C&C Generals, F.E.A.R. 2,
   FlatOut 2, Halo 1, Serious Sam, Stronghold, Supreme Commander, Toxikk, Warcraft III.
@@ -232,7 +243,7 @@ Player management should be checked with real players at the next LAN party (see
   (`tests/test_i18n.py` keeps the catalogue complete).
 - **8.4** ✔ Documentation complete: a guide for organisers ([lan-party-guide.md](lan-party-guide.md)),
   every document checked against the code.
-- **8.5** Release 1.0: version 1.0.0, CHANGELOG section, merge into `main`, publish the
+- **8.5** ✔ Release 1.0: version 1.0.0, CHANGELOG section, merge into `main`, publish the
   GitHub release `v1.0.0` (the release workflow builds, tests and attaches the packages).
 
 ## Open points

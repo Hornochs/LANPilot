@@ -39,6 +39,7 @@ text):
 | TrackMania Forever, Sunrise | `<authorization_levels>` in `dedicated_cfg.txt`; `xmlrpc_allowremote` for LANPilot's address | TCP XML-RPC port (5000) |
 | UT99, UT2004 | WebAdmin (`UWeb.WebServer`, `ListenPort`), `AdminPassword` | TCP WebAdmin port, UDP GameSpy query port (UT99: game port + 1, UT2004: + 10) |
 | UT3 | WebAdmin with `bHttpAuth=true` | TCP WebAdmin port |
+| Quake III Arena, Call of Duty, Call of Duty 4, World at War | `rconpassword` (CoD4 and WaW: `rcon_password`) in the server's config, without spaces or quotes | UDP game port (27960, 28960) |
 
 Details per game, as measured: [games/](games/).
 
@@ -54,6 +55,7 @@ the scan sends:
 | UT99 | UDP broadcast to 8777–8786, then the GameSpy query |
 | UT2004 | UDP broadcast to 10777; the answer and a follow-up query use the query port (game port + 1) |
 | UT3 | UDP broadcast from and to 14001 |
+| Quake III Arena, Call of Duty, Call of Duty 4, World at War | UDP broadcast to 27960–27963 and 28960–28963 |
 
 A firewall on the game servers has to let these in; on the LANPilot host the answers are
 replies and pass a stateful firewall.

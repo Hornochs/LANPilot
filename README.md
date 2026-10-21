@@ -9,8 +9,9 @@ into each machine.
 > images (uploaded or found online), an on-demand LAN scan that finds servers without
 > passwords, an English and German interface, and distribution packages. Working games:
 > **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
-> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, and **Unreal Tournament 99,
-> 2004 and 3** (player management not yet on CS2). More games come next.
+> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, **Unreal Tournament 99,
+> 2004 and 3**, and **Quake III Arena and Call of Duty 1, 4 and World at War** (player
+> management not yet on CS2). More games come next.
 > Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ![The LANPilot dashboard with a card for each server](docs/images/dashboard.png)
@@ -53,7 +54,8 @@ into each machine.
 | TrackMania Nations/United Forever, TrackMania Original, Sunrise (eXtreme), Nations ESWC | GBXRemote / XML-RPC | **supported** ([details](docs/games/trackmania.md)) |
 | TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | planned, high priority |
 | Unreal Tournament 99, 2004, 3 | WebAdmin (HTTP) + GameSpy query | **supported** ([details](docs/games/unreal-tournament.md)) |
-| Call of Duty 1/4/5, Quake 3, Jedi Knight | Quake 3 RCON (UDP) | planned |
+| Quake III Arena, Call of Duty, Call of Duty 4 (CoD4X), World at War | Quake 3 RCON + getstatus (UDP) | **supported** ([details](docs/games/quake3.md)) |
+| Jedi Knight | Quake 3 RCON (UDP) | planned |
 | Battlefield 2, Renegade X, ElDewrito | game-specific | planned |
 | Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | planned |
 

@@ -61,6 +61,9 @@ lanpilot = "lanpilot.cli:main"
 # Game adapters are discovered through this entry point group; third-party packages add
 # their own entries to it.
 [project.entry-points."lanpilot.adapters"]
+cod = "lanpilot.games.quake3.callofduty:CallOfDutyAdapter"
+cod4 = "lanpilot.games.quake3.callofduty:CallOfDuty4Adapter"
+codwaw = "lanpilot.games.quake3.callofduty:CallOfDutyWorldAtWarAdapter"
 cs16 = "lanpilot.games.counterstrike.goldsrc:CounterStrike16Adapter"
 cs2 = "lanpilot.games.counterstrike.source:CounterStrike2Adapter"
 csgo = "lanpilot.games.counterstrike.source:CounterStrikeGlobalOffensiveAdapter"
@@ -70,6 +73,7 @@ tmsunrise = "lanpilot.games.trackmania.sunrise:TrackmaniaSunriseAdapter"
 ut2004 = "lanpilot.games.unreal.ut2004:UT2004Adapter"
 ut3 = "lanpilot.games.unreal.ut3:UT3Adapter"
 ut99 = "lanpilot.games.unreal.ut99:UT99Adapter"
+q3a = "lanpilot.games.quake3.quake3:Quake3ArenaAdapter"
 demo = "lanpilot.games.demo:DemoAdapter"
 
 [project.urls]

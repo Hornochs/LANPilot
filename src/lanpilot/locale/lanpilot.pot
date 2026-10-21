@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-20 18:53+0200\n"
+"POT-Creation-Date: 2026-10-21 13:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,1654 +17,1673 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:55
+#: src/lanpilot/app.py:56
 msgid "Bad request"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:56
+#: src/lanpilot/app.py:57
 msgid "Not allowed"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:57
+#: src/lanpilot/app.py:58
 msgid "Page not found"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:58
+#: src/lanpilot/app.py:59
 msgid "Method not allowed"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:83
+#: src/lanpilot/app.py:84
 msgid "You are not allowed to do this."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:91
+#: src/lanpilot/app.py:92
 #, python-brace-format
 msgid "Error {code}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:92
+#: src/lanpilot/app.py:93
 msgid "The request could not be completed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:94
+#: src/lanpilot/app.py:95
 msgid "This page does not exist."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/passwords.py:32
+#: src/lanpilot/auth/passwords.py:32
 #, python-brace-format
 msgid "The password must have at least {minimum} characters."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/passwords.py:36
+#: src/lanpilot/auth/passwords.py:36
 #, python-brace-format
 msgid "The password must have at most {maximum} characters."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/passwords.py:39
+#: src/lanpilot/auth/passwords.py:39
 msgid "The password must differ from the user name."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/roles.py:27
+#: src/lanpilot/auth/roles.py:27
 msgid "Viewer"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/roles.py:27
+#: src/lanpilot/auth/roles.py:27
 msgid "Operator"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/roles.py:27
+#: src/lanpilot/auth/roles.py:27
 msgid "Administrator"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/users.py:24
+#: src/lanpilot/auth/users.py:24
 msgid "This is the last active administrator; LANPilot would be left without one."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/users.py:36
+#: src/lanpilot/auth/users.py:36
 msgid "User names have 3 to 64 characters: letters, digits, dot, dash and underscore, starting with a letter or digit."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/users.py:62
+#: src/lanpilot/auth/users.py:62
 #, python-brace-format
 msgid "A user named {name} already exists."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/auth/users.py:77
+#: src/lanpilot/auth/users.py:77
 msgid "This language is not available."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:132
+#: src/lanpilot/core/actions.py:132
 #, python-brace-format
 msgid "This needs the {role} role."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:135
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:156
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:266
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:282
+#: src/lanpilot/core/actions.py:135 src/lanpilot/core/actions.py:156
+#: src/lanpilot/core/actions.py:266 src/lanpilot/core/actions.py:282
 msgid "This server does not exist."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:137
+#: src/lanpilot/core/actions.py:137
 msgid "This server is disabled."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:139
+#: src/lanpilot/core/actions.py:139
 msgid "This server is not set up correctly."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:142
+#: src/lanpilot/core/actions.py:142
 #, python-brace-format
 msgid "{adapter_name} does not support this."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:151
+#: src/lanpilot/core/actions.py:151
 #, python-brace-format
 msgid "The server did not answer within {seconds} seconds."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:172
+#: src/lanpilot/core/actions.py:172
 msgid "Pick a map from this server's list."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:215
+#: src/lanpilot/core/actions.py:215
 msgid "Enter the map's file name as the server knows it."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:218
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/maps.py:117
+#: src/lanpilot/core/actions.py:218 src/lanpilot/core/maps.py:117
 msgid "This map is already in the list."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:269
+#: src/lanpilot/core/actions.py:269
 #, python-brace-format
 msgid "{adapter_name} cannot list players."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:278
+#: src/lanpilot/core/actions.py:278
 msgid "The server did not answer in time."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:302
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:347
+#: src/lanpilot/core/actions.py:302 src/lanpilot/games/trackmania/common.py:347
 msgid "This player is no longer on the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:306
+#: src/lanpilot/core/actions.py:306
 #, python-brace-format
 msgid "{name} cannot be banned on this server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:308
+#: src/lanpilot/core/actions.py:308
 #, python-brace-format
 msgid "{name} cannot be kicked on this server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:334
+#: src/lanpilot/core/actions.py:334
 msgid "The console is switched off (enable_console in the configuration)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:338
+#: src/lanpilot/core/actions.py:338
 msgid "Enter one line of at most 500 printable characters."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:148
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:48
+#: src/lanpilot/core/adapters/base.py:148 src/lanpilot/games/demo.py:48
 msgid "Host"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:149
+#: src/lanpilot/core/adapters/base.py:149
 msgid "IP address or host name of the game server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:153
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:61
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:71
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:52
+#: src/lanpilot/core/adapters/base.py:153
+#: src/lanpilot/games/counterstrike/goldsrc.py:61
+#: src/lanpilot/games/counterstrike/source.py:71 src/lanpilot/games/demo.py:52
+#: src/lanpilot/games/quake3/callofduty.py:34
+#: src/lanpilot/games/quake3/common.py:74
 msgid "Port"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:160
+#: src/lanpilot/core/adapters/base.py:160
 msgid "must be a host name or an IP address, without scheme or path"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:217
+#: src/lanpilot/core/adapters/base.py:217
 #, python-brace-format
 msgid "{game} cannot list maps"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:221
+#: src/lanpilot/core/adapters/base.py:221
 #, python-brace-format
 msgid "{game} cannot change the map"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:224
+#: src/lanpilot/core/adapters/base.py:224
 #, python-brace-format
 msgid "{game} cannot restart"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:227
+#: src/lanpilot/core/adapters/base.py:227
 #, python-brace-format
 msgid "{game} cannot list players"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:230
+#: src/lanpilot/core/adapters/base.py:230
 #, python-brace-format
 msgid "{game} cannot kick players"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:233
+#: src/lanpilot/core/adapters/base.py:233
 #, python-brace-format
 msgid "{game} cannot ban players"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:239
+#: src/lanpilot/core/adapters/base.py:239
 #, python-brace-format
 msgid "{game} cannot add maps by hand"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:243
+#: src/lanpilot/core/adapters/base.py:243
 #, python-brace-format
 msgid "{game} has no console"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:256
+#: src/lanpilot/core/adapters/base.py:256
 #, python-brace-format
 msgid "{game} cannot be discovered"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/schema.py:127
+#: src/lanpilot/core/adapters/schema.py:127
 msgid "Field required"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/schema.py:129
+#: src/lanpilot/core/adapters/schema.py:129
 #, python-brace-format
 msgid "Input should be greater than or equal to {limit}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/schema.py:131
+#: src/lanpilot/core/adapters/schema.py:131
 #, python-brace-format
 msgid "Input should be less than or equal to {limit}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/schema.py:133
+#: src/lanpilot/core/adapters/schema.py:133
 #, python-brace-format
 msgid "String should have at most {limit} characters"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/schema.py:135
+#: src/lanpilot/core/adapters/schema.py:135
 msgid "Input should be a valid integer, unable to parse string as an integer"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/schema.py:137
+#: src/lanpilot/core/adapters/schema.py:137
 #, python-brace-format
 msgid "Input should be {expected}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:57
+#: src/lanpilot/core/map_images.py:60
 msgid "Choose an image file."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:61
+#: src/lanpilot/core/map_images.py:64
 #, python-brace-format
 msgid "The file is larger than {megabytes} MB."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:71
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:78
+#: src/lanpilot/core/map_images.py:74 src/lanpilot/core/map_images.py:81
 msgid "The image has too many pixels."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:80
+#: src/lanpilot/core/map_images.py:83
 msgid "This is not a JPEG, PNG or WebP image."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/maps.py:114
+#: src/lanpilot/core/maps.py:114
 msgid "This map name cannot be stored."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:44
+#: src/lanpilot/core/runtime.py:44
 msgid "Internal error while talking to the server; see the LANPilot log."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:154
+#: src/lanpilot/core/runtime.py:154
 msgid "The adapter for this game is not installed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:273
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:291
+#: src/lanpilot/core/runtime.py:273 src/lanpilot/core/servers.py:291
 #, python-brace-format
 msgid "No answer within {seconds} seconds."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/secrets.py:52
+#: src/lanpilot/core/secrets.py:52
 msgid "Unknown format of stored credentials. Enter the server's passwords again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/secrets.py:55
+#: src/lanpilot/core/secrets.py:55
 msgid "Stored credentials have an unexpected structure. Enter the server's passwords again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/secrets.py:59
+#: src/lanpilot/core/secrets.py:59
 msgid "Stored credentials cannot be decrypted; the key changed or the entry was altered. Enter the server's passwords again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/secrets.py:66
+#: src/lanpilot/core/secrets.py:66
 msgid "Unknown format of stored credentials. Edit the server and enter its passwords again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/secrets.py:70
+#: src/lanpilot/core/secrets.py:70
 msgid "Stored credentials have an unexpected structure. Edit the server and enter its passwords again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/secrets.py:74
+#: src/lanpilot/core/secrets.py:74
 msgid "Stored credentials cannot be decrypted; the key changed or the entry was altered. Edit the server and enter its passwords again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:41
+#: src/lanpilot/core/servers.py:41
 msgid "The address changed, so this has to be entered again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:49
+#: src/lanpilot/core/servers.py:49
 msgid "Please correct the marked fields."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:80
+#: src/lanpilot/core/servers.py:80
 msgid "Give the server a name."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:84
+#: src/lanpilot/core/servers.py:84
 #, python-brace-format
 msgid "The name must have at most {maximum} characters."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:89
+#: src/lanpilot/core/servers.py:89
 msgid "The name must not contain control characters."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:98
+#: src/lanpilot/core/servers.py:98
 #, python-brace-format
 msgid "A server named {name} already exists."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:239
+#: src/lanpilot/core/servers.py:239
 msgid "The stored settings no longer fit this game; edit the server and save it again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:265
+#: src/lanpilot/core/servers.py:265
 msgid "unknown map"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:267
+#: src/lanpilot/core/servers.py:267
 #, python-brace-format
 msgid "{players}/{max_players} players"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:273
+#: src/lanpilot/core/servers.py:273
 #, python-brace-format
 msgid "Status: “{name}”, {map}, {occupancy}."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:284
+#: src/lanpilot/core/servers.py:284
 #, python-brace-format
 msgid "Remote control works: the server lists {count} maps."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:288
+#: src/lanpilot/core/servers.py:288
 #, python-brace-format
 msgid "Remote control failed: {reason}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:294
+#: src/lanpilot/core/servers.py:294
 #, python-brace-format
 msgid "Status query failed: {reason}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:60
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:77
+#: src/lanpilot/core/transports/a2s.py:60
+#: src/lanpilot/core/transports/a2s.py:77
 msgid "The server's status answer is truncated."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:90
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:96
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:189
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/common.py:57
+#: src/lanpilot/core/transports/a2s.py:90
+#: src/lanpilot/core/transports/a2s.py:96
+#: src/lanpilot/core/transports/a2s.py:189
+#: src/lanpilot/core/transports/quake3.py:94
+#: src/lanpilot/games/unreal/common.py:57
 msgid "The server's status answer could not be read."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:167
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:121
+#: src/lanpilot/core/transports/a2s.py:167
+#: src/lanpilot/core/transports/goldsrc_rcon.py:121
+#: src/lanpilot/core/transports/quake3.py:135
 msgid "The server's address cannot be reached."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:175
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:134
+#: src/lanpilot/core/transports/a2s.py:175
+#: src/lanpilot/core/transports/goldsrc_rcon.py:134
+#: src/lanpilot/core/transports/quake3.py:148
 msgid "Nothing answers on the server's port."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:177
+#: src/lanpilot/core/transports/a2s.py:177
 msgid "The server sent a split status answer."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/a2s.py:186
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/common.py:55
+#: src/lanpilot/core/transports/a2s.py:186
+#: src/lanpilot/games/unreal/common.py:55
 msgid "The server did not answer the status query."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:99
+#: src/lanpilot/core/transports/gbxremote.py:99
 msgid "The server refused the password. Edit the server to enter another one."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:116
+#: src/lanpilot/core/transports/gbxremote.py:116
 msgid "The server stopped answering."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:119
+#: src/lanpilot/core/transports/gbxremote.py:119
 msgid "The connection was closed by the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:134
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:142
+#: src/lanpilot/core/transports/gbxremote.py:134
+#: src/lanpilot/core/transports/gbxremote.py:142
 msgid "The server's answer to a batch of calls is malformed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:151
+#: src/lanpilot/core/transports/gbxremote.py:151
 msgid "The server does not speak GBXRemote."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:155
+#: src/lanpilot/core/transports/gbxremote.py:155
 msgid "Nothing answers with GBXRemote on that port."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:161
+#: src/lanpilot/core/transports/gbxremote.py:161
 msgid "The server speaks an unsupported protocol version."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:170
+#: src/lanpilot/core/transports/gbxremote.py:170
 msgid "The server refused the login or password."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:189
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:221
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:246
+#: src/lanpilot/core/transports/gbxremote.py:189
+#: src/lanpilot/core/transports/source_rcon.py:221
+#: src/lanpilot/core/transports/source_rcon.py:246
 msgid "The server's answer is too long."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:194
+#: src/lanpilot/core/transports/gbxremote.py:194
 msgid "The server sent too many unexpected messages."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:203
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:205
+#: src/lanpilot/core/transports/gbxremote.py:203
+#: src/lanpilot/core/transports/gbxremote.py:205
 msgid "The server's answer is not valid XML-RPC."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:103
+#: src/lanpilot/core/transports/goldsrc_rcon.py:103
 msgid "The RCON password is empty or contains a quote or line break, which the protocol cannot carry."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:141
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:108
+#: src/lanpilot/core/transports/goldsrc_rcon.py:141
+#: src/lanpilot/core/transports/quake3.py:157 src/lanpilot/games/demo.py:108
 msgid "The server did not answer."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:150
+#: src/lanpilot/core/transports/goldsrc_rcon.py:150
 msgid "The server did not send an RCON challenge."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:159
+#: src/lanpilot/core/transports/goldsrc_rcon.py:159
 msgid "The command is empty or contains a line break."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:163
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:170
+#: src/lanpilot/core/transports/goldsrc_rcon.py:163
+#: src/lanpilot/core/transports/quake3.py:225
+#: src/lanpilot/core/transports/source_rcon.py:170
 msgid "The server refused the RCON password. Edit the server to enter another one."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:176
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:147
+#: src/lanpilot/core/transports/goldsrc_rcon.py:176
+#: src/lanpilot/core/transports/quake3.py:244
+#: src/lanpilot/core/transports/source_rcon.py:147
 msgid "The server refused the RCON password."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/goldsrc_rcon.py:178
+#: src/lanpilot/core/transports/goldsrc_rcon.py:178
 msgid "The server keeps rejecting the RCON challenge."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:91
-msgid "The RCON password is empty or contains a null character, which the protocol cannot carry."
+#: src/lanpilot/core/transports/quake3.py:195
+msgid "The RCON password is empty or contains a space or a quote, which the protocol cannot carry."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:125
-msgid "The server sent a malformed RCON packet."
-msgstr ""
-
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:136
-msgid "Nothing accepts RCON connections on that port."
-msgstr ""
-
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:151
-msgid "The server did not confirm the RCON login."
-msgstr ""
-
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:165
+#: src/lanpilot/core/transports/quake3.py:220
+#: src/lanpilot/core/transports/source_rcon.py:165
 msgid "The command is empty, too long or contains a line break."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:190
+#: src/lanpilot/core/transports/source_rcon.py:91
+msgid "The RCON password is empty or contains a null character, which the protocol cannot carry."
+msgstr ""
+
+#: src/lanpilot/core/transports/source_rcon.py:125
+msgid "The server sent a malformed RCON packet."
+msgstr ""
+
+#: src/lanpilot/core/transports/source_rcon.py:136
+msgid "Nothing accepts RCON connections on that port."
+msgstr ""
+
+#: src/lanpilot/core/transports/source_rcon.py:151
+msgid "The server did not confirm the RCON login."
+msgstr ""
+
+#: src/lanpilot/core/transports/source_rcon.py:190
 msgid "The server stopped answering over RCON."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:194
+#: src/lanpilot/core/transports/source_rcon.py:194
 msgid "The RCON connection was closed by the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:106
+#: src/lanpilot/core/transports/uweb.py:106
 msgid "The WebAdmin's page is too large to read."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:378
+#: src/lanpilot/core/transports/uweb.py:378
 msgid "The server refused the user name or password. Edit the server to enter other ones."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:400
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:150
+#: src/lanpilot/core/transports/uweb.py:400
+#: src/lanpilot/games/unreal/ut3.py:153
 msgid "The server refused the WebAdmin user name or password."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:406
+#: src/lanpilot/core/transports/uweb.py:406
 #, python-brace-format
 msgid "The WebAdmin answered with HTTP {status}."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:412
+#: src/lanpilot/core/transports/uweb.py:412
 msgid "The WebAdmin's page is too large."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:414
+#: src/lanpilot/core/transports/uweb.py:414
 msgid "The WebAdmin cannot be reached."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:416
+#: src/lanpilot/core/transports/uweb.py:416
 msgid "The WebAdmin's answer could not be read."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:176
+#: src/lanpilot/games/counterstrike/common.py:176
+#: src/lanpilot/games/quake3/common.py:390
 msgid "The server did not report this player's IP address, so it cannot ban it."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:185
+#: src/lanpilot/games/counterstrike/common.py:185
+#: src/lanpilot/games/quake3/common.py:335
 msgid "This player cannot be named in a command."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:63
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:77
+#: src/lanpilot/games/counterstrike/goldsrc.py:63
+#: src/lanpilot/games/counterstrike/source.py:77
+#: src/lanpilot/games/quake3/common.py:80
 msgid "RCON password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:64
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:78
+#: src/lanpilot/games/counterstrike/goldsrc.py:64
+#: src/lanpilot/games/counterstrike/source.py:78
 msgid "The value of rcon_password in the server's configuration (server.cfg)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:127
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:148
+#: src/lanpilot/games/counterstrike/goldsrc.py:127
+#: src/lanpilot/games/counterstrike/source.py:148
+#: src/lanpilot/games/quake3/common.py:279
 msgid "This map name cannot be sent to the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:130
+#: src/lanpilot/games/counterstrike/goldsrc.py:130
+#: src/lanpilot/games/quake3/common.py:300
 #, python-brace-format
 msgid "The server does not have the map {key}."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:72
+#: src/lanpilot/games/counterstrike/source.py:72
 msgid "The game port. RCON uses the same port over TCP."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:152
+#: src/lanpilot/games/counterstrike/source.py:152
 #, python-brace-format
 msgid "The server does not have the map {name}."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:156
+#: src/lanpilot/games/counterstrike/source.py:156
 msgid "The server is still loading a map and ignored the change. Try again in a few seconds."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:169
+#: src/lanpilot/games/counterstrike/source.py:169
 msgid "The server did not report which map is running."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:49
+#: src/lanpilot/games/demo.py:49
 msgid "Only a label: the simulation does not connect anywhere."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:54
+#: src/lanpilot/games/demo.py:54
 msgid "Remote-control password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:56
+#: src/lanpilot/games/demo.py:56
 #, python-brace-format
 msgid "The simulated server accepts the password '{DEMO_PASSWORD}'."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:62
+#: src/lanpilot/games/demo.py:62
 msgid "Behaviour"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:63
+#: src/lanpilot/games/demo.py:63
 msgid "'slow' answers after a delay, 'offline' does not answer at all."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:65
+#: src/lanpilot/games/demo.py:65
 msgid "Simulated players"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:112
+#: src/lanpilot/games/demo.py:112
 msgid "The server refused the remote-control password."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:135
+#: src/lanpilot/games/demo.py:135
 #, python-brace-format
 msgid "The server has no map named {key}."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:151
+#: src/lanpilot/games/demo.py:151
 msgid "That player is not on the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:61
+#: src/lanpilot/games/quake3/callofduty.py:35
+#: src/lanpilot/games/quake3/common.py:75
+msgid "The game port; status and RCON use it too."
+msgstr ""
+
+#: src/lanpilot/games/quake3/common.py:81
+msgid "The value of rconpassword (rcon_password on CoD4) in the server's config."
+msgstr ""
+
+#: src/lanpilot/games/quake3/common.py:309
+msgid "The server did not report its current map."
+msgstr ""
+
+#: src/lanpilot/games/quake3/common.py:339
+msgid "The player is no longer on the server."
+msgstr ""
+
+#: src/lanpilot/games/trackmania/common.py:61
 msgid "XML-RPC port"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:63
+#: src/lanpilot/games/trackmania/common.py:63
 msgid "xmlrpc_port in the dedicated server's configuration; xmlrpc_allowremote must allow LANPilot."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:71
+#: src/lanpilot/games/trackmania/common.py:71
 msgid "Login"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:73
+#: src/lanpilot/games/trackmania/common.py:73
 msgid "Admin can change tracks and restart; SuperAdmin could also stop the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:77
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:68
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/login.html:14
+#: src/lanpilot/games/trackmania/common.py:77
+#: src/lanpilot/web/templates/admin/users.html:68
+#: src/lanpilot/web/templates/login.html:14
 msgid "Password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:79
+#: src/lanpilot/games/trackmania/common.py:79
 msgid "The password of that login in the <authorization_levels> of the dedicated server's configuration."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:168
+#: src/lanpilot/games/trackmania/common.py:168
 msgid "The server's status answer has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:185
+#: src/lanpilot/games/trackmania/common.py:185
 msgid "The server's track list has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:197
+#: src/lanpilot/games/trackmania/common.py:197
 msgid "Enter the track's file name relative to the server's Tracks directory, e.g. Challenges/My Challenges/Fun.Challenge.Gbx."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:210
+#: src/lanpilot/games/trackmania/common.py:210
 #, python-brace-format
 msgid "The server cannot run this track: {fault}"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:214
+#: src/lanpilot/games/trackmania/common.py:214
 msgid "The server's answer about this track has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:227
+#: src/lanpilot/games/trackmania/common.py:227
 msgid "The server did not report which track is running."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:240
+#: src/lanpilot/games/trackmania/common.py:240
 msgid "The server's player list has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:256
+#: src/lanpilot/games/trackmania/common.py:256
 msgid "This player cannot be removed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:262
+#: src/lanpilot/games/trackmania/common.py:262
 msgid "This track name cannot be sent to the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:341
+#: src/lanpilot/games/trackmania/common.py:341
 msgid "The server does not have this track."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:344
+#: src/lanpilot/games/trackmania/common.py:344
 msgid "The server is still loading a track and ignored this. Try again in a few seconds."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:349
+#: src/lanpilot/games/trackmania/common.py:349
 msgid "The login is not allowed to do this; use the Admin login."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:28
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:79
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:28
+#: src/lanpilot/games/unreal/ut2004.py:28 src/lanpilot/games/unreal/ut3.py:79
+#: src/lanpilot/games/unreal/ut99.py:28
 msgid "WebAdmin port"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:30
+#: src/lanpilot/games/unreal/ut2004.py:30
 msgid "ListenPort in [UWeb.WebServer] of the server's ini file (LinuxGSM: 8075; the game's own default is 80)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:38
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:38
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:68
+#: src/lanpilot/games/unreal/ut2004.py:38 src/lanpilot/games/unreal/ut99.py:38
+#: src/lanpilot/games/unreal/webadmin.py:68
 msgid "Query port"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:39
+#: src/lanpilot/games/unreal/ut2004.py:39
 msgid "The GameSpy query port: the game port plus 10 (7787 for game port 7777)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:45
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:86
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:45
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:69
+#: src/lanpilot/games/unreal/ut2004.py:45 src/lanpilot/games/unreal/ut3.py:86
+#: src/lanpilot/games/unreal/ut99.py:45
+#: src/lanpilot/games/unreal/webadmin.py:69
 msgid "WebAdmin user"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:46
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:87
+#: src/lanpilot/games/unreal/ut2004.py:46 src/lanpilot/games/unreal/ut3.py:87
 msgid "With the standard access control the user is admin."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:51
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:92
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:51
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:70
+#: src/lanpilot/games/unreal/ut2004.py:51 src/lanpilot/games/unreal/ut3.py:92
+#: src/lanpilot/games/unreal/ut99.py:51
+#: src/lanpilot/games/unreal/webadmin.py:70
 msgid "WebAdmin password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:52
+#: src/lanpilot/games/unreal/ut2004.py:52
 msgid "AdminPassword in [Engine.AccessControl] of the server's ini file."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:87
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:222
+#: src/lanpilot/games/unreal/ut2004.py:90 src/lanpilot/games/unreal/ut3.py:225
 msgid "The WebAdmin did not tell which game is running."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:80
+#: src/lanpilot/games/unreal/ut3.py:80
 msgid "ListenPort in [IpDrv.WebServer] of UTWeb.ini (the game's default is 8080)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:94
+#: src/lanpilot/games/unreal/ut3.py:94
 msgid "AdminPassword in [Engine.AccessControl] of UTGame.ini. The WebAdmin needs bHttpAuth=true in [WebAdmin.WebAdmin]."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:158
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:295
+#: src/lanpilot/games/unreal/ut3.py:161 src/lanpilot/games/unreal/ut3.py:298
 msgid "The WebAdmin's status page has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:178
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:120
+#: src/lanpilot/games/unreal/ut3.py:181
+#: src/lanpilot/games/unreal/webadmin.py:120
 msgid "The WebAdmin did not list any game types."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:218
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:154
+#: src/lanpilot/games/unreal/ut3.py:221
+#: src/lanpilot/games/unreal/webadmin.py:154
 #, python-brace-format
 msgid "{game} cannot restart only the round"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:267
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:168
+#: src/lanpilot/games/unreal/ut3.py:270
+#: src/lanpilot/games/unreal/webadmin.py:168
 msgid "This player cannot be removed over the WebAdmin."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:275
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:176
+#: src/lanpilot/games/unreal/ut3.py:278
+#: src/lanpilot/games/unreal/webadmin.py:176
 msgid "The server did not remove the player."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:282
+#: src/lanpilot/games/unreal/ut3.py:285
 msgid "The WebAdmin's console is switched off (bConsoleEnabled in UTWeb.ini)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:286
+#: src/lanpilot/games/unreal/ut3.py:289
 msgid "The WebAdmin's console page has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:311
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:181
+#: src/lanpilot/games/unreal/ut3.py:314
+#: src/lanpilot/games/unreal/webadmin.py:181
 msgid "The WebAdmin's player page has an unexpected format."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:331
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:262
+#: src/lanpilot/games/unreal/ut3.py:334
+#: src/lanpilot/games/unreal/webadmin.py:262
 msgid "The WebAdmin did not tell which game type is running."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:348
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:279
+#: src/lanpilot/games/unreal/ut3.py:351
+#: src/lanpilot/games/unreal/webadmin.py:279
 msgid "This map or game type cannot be sent to the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:361
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:285
+#: src/lanpilot/games/unreal/ut3.py:364
+#: src/lanpilot/games/unreal/webadmin.py:285
 msgid "The WebAdmin did not accept the change."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:30
+#: src/lanpilot/games/unreal/ut99.py:30
 msgid "ListenPort in [UWeb.WebServer] of the server's ini file (LinuxGSM: 8076; the game's own default is 80)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:39
+#: src/lanpilot/games/unreal/ut99.py:39
 msgid "The GameSpy query port: the game port plus 1 (7778 for game port 7777)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:46
+#: src/lanpilot/games/unreal/ut99.py:46
 msgid "AdminUsername in [UTServerAdmin.UTServerAdmin] of the server's ini file."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut99.py:52
+#: src/lanpilot/games/unreal/ut99.py:52
 msgid "AdminPassword in [UTServerAdmin.UTServerAdmin] of the server's ini file."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:212
+#: src/lanpilot/games/unreal/webadmin.py:212
 msgid "The WebAdmin's player page does not add up; a player name may be forged."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/deps.py:99
+#: src/lanpilot/web/deps.py:99
 #, python-brace-format
 msgid "This page requires the {value} role."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/deps.py:115
+#: src/lanpilot/web/deps.py:115
 msgid "The form has expired. Reload the page and try again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:72
+#: src/lanpilot/web/routes_account.py:72
 msgid "Too many wrong passwords. Try again later."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:85
+#: src/lanpilot/web/routes_account.py:85
 msgid "The current password is wrong."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:88
+#: src/lanpilot/web/routes_account.py:88
 msgid "The two new passwords do not match."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_admin_scan.py:78
+#: src/lanpilot/web/routes_admin_scan.py:78
 msgid "No networks are configured for the scan."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_admin_scan.py:83
+#: src/lanpilot/web/routes_admin_scan.py:83
 msgid "A scan is already running. Try again in a moment."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_admin_users.py:150
+#: src/lanpilot/web/routes_admin_users.py:150
 msgid "Change your own password on the account page."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_admin_users.py:177
+#: src/lanpilot/web/routes_admin_users.py:177
 msgid "You cannot delete your own account."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_auth.py:20
+#: src/lanpilot/web/routes_auth.py:20
 msgid "Wrong user name or password."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_auth.py:87
+#: src/lanpilot/web/routes_auth.py:87
 #, python-brace-format
 msgid "Too many failed attempts. Try again in about {minutes} minute(s)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_map_images.py:29
+#: src/lanpilot/web/routes_map_images.py:29
 msgid "Looking for images online is switched off (images.online in the configuration)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_card.html:19
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:25
+#: src/lanpilot/web/templates/_card.html:19
+#: src/lanpilot/web/templates/_players.html:4
+#: src/lanpilot/web/templates/_server_live.html:25
 msgid "Players"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_card.html:27
+#: src/lanpilot/web/templates/_card.html:27
 msgid "Remote control is not working."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_grid.html:8
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:50
+#: src/lanpilot/web/templates/_grid.html:8
+#: src/lanpilot/web/templates/admin/servers.html:50
 msgid "No game servers have been added yet."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_grid.html:10
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_new.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_new.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:54
+#: src/lanpilot/web/templates/_grid.html:10
+#: src/lanpilot/web/templates/admin/server_form.html:2
+#: src/lanpilot/web/templates/admin/server_form.html:4
+#: src/lanpilot/web/templates/admin/server_new.html:2
+#: src/lanpilot/web/templates/admin/server_new.html:4
+#: src/lanpilot/web/templates/admin/servers.html:54
 msgid "Add a server"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_grid.html:12
+#: src/lanpilot/web/templates/_grid.html:12
 msgid "An administrator can add them under “Server setup”."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:8
+#: src/lanpilot/web/templates/_players.html:8
 msgid "The player list is shown while the server is online."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:10
+#: src/lanpilot/web/templates/_players.html:10
 msgid "Nobody is playing."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:16
+#: src/lanpilot/web/templates/_players.html:16
 msgid "Score"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:16
+#: src/lanpilot/web/templates/_players.html:16
 msgid "Ping"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:16
+#: src/lanpilot/web/templates/_players.html:16
 msgid "Team"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:16
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:29
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:19
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:19
+#: src/lanpilot/web/templates/_players.html:16
+#: src/lanpilot/web/templates/admin/scan.html:29
+#: src/lanpilot/web/templates/admin/server_form.html:19
+#: src/lanpilot/web/templates/admin/servers.html:19
 msgid "Name"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:22
+#: src/lanpilot/web/templates/_players.html:22
 msgid "(bot)"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:32
+#: src/lanpilot/web/templates/_players.html:32
 msgid "Kick"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:37
+#: src/lanpilot/web/templates/_players.html:37
 msgid "Ban"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:41
+#: src/lanpilot/web/templates/_players.html:41
 msgid "Reason (optional)"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:42
+#: src/lanpilot/web/templates/_players.html:42
 #, python-format
 msgid "Reason for banning %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:43
+#: src/lanpilot/web/templates/_players.html:43
 #, python-format
 msgid "Ban %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:10
+#: src/lanpilot/web/templates/_server_live.html:10
 #, python-format
 msgid "Status works, but remote control does not: %(error)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:20
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:29
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:19
+#: src/lanpilot/web/templates/_server_live.html:20
+#: src/lanpilot/web/templates/admin/scan.html:29
+#: src/lanpilot/web/templates/admin/servers.html:19
 msgid "Game"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:21
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:29
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:19
+#: src/lanpilot/web/templates/_server_live.html:21
+#: src/lanpilot/web/templates/admin/scan.html:29
+#: src/lanpilot/web/templates/admin/servers.html:19
 msgid "Address"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:23
+#: src/lanpilot/web/templates/_server_live.html:23
 msgid "Server name"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:24
+#: src/lanpilot/web/templates/_server_live.html:24
 msgid "unknown"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:24
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:21
+#: src/lanpilot/web/templates/_server_live.html:24
+#: src/lanpilot/web/templates/server.html:21
 msgid "Map"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_server_live.html:31
+#: src/lanpilot/web/templates/_server_live.html:31
 msgid "Last answer"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_status.html:3
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:27
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:29
+#: src/lanpilot/web/templates/_status.html:3
+#: src/lanpilot/web/templates/admin/servers.html:27
+#: src/lanpilot/web/templates/admin/users.html:29
 msgid "disabled"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_status.html:4
+#: src/lanpilot/web/templates/_status.html:4
 msgid "needs attention"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_status.html:5
+#: src/lanpilot/web/templates/_status.html:5
 msgid "checking…"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_status.html:6
+#: src/lanpilot/web/templates/_status.html:6
 msgid "online"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_status.html:7
+#: src/lanpilot/web/templates/_status.html:7
 msgid "offline"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:4
+#: src/lanpilot/web/templates/account.html:2
+#: src/lanpilot/web/templates/account.html:4
 msgid "Account"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:7
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:11
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:65
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/login.html:11
+#: src/lanpilot/web/templates/account.html:7
+#: src/lanpilot/web/templates/admin/users.html:11
+#: src/lanpilot/web/templates/admin/users.html:65
+#: src/lanpilot/web/templates/login.html:11
 msgid "User name"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:8
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:11
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:71
+#: src/lanpilot/web/templates/account.html:8
+#: src/lanpilot/web/templates/admin/users.html:11
+#: src/lanpilot/web/templates/admin/users.html:71
 msgid "Role"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:12
+#: src/lanpilot/web/templates/account.html:12
 msgid "Language"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:15
+#: src/lanpilot/web/templates/account.html:15
 msgid "Language of the user interface"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:17
+#: src/lanpilot/web/templates/account.html:17
 msgid "As the browser prefers"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:22
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:74
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:26
+#: src/lanpilot/web/templates/account.html:22
+#: src/lanpilot/web/templates/admin/server_form.html:74
+#: src/lanpilot/web/templates/admin/users.html:26
 msgid "Save"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:26
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:42
+#: src/lanpilot/web/templates/account.html:26
+#: src/lanpilot/web/templates/account.html:42
 msgid "Change password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:32
+#: src/lanpilot/web/templates/account.html:32
 msgid "Current password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:35
+#: src/lanpilot/web/templates/account.html:35
 msgid "New password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:38
+#: src/lanpilot/web/templates/account.html:38
 msgid "New password, again"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:41
+#: src/lanpilot/web/templates/account.html:41
 msgid "At least 10 characters. Changing it signs out your other sessions."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/audit.html:9
 msgid "Time (UTC)"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/audit.html:9
 msgid "Who"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/audit.html:9
 msgid "Action"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/audit.html:9
 msgid "Target"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/audit.html:9
 msgid "Details"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/audit.html:9
 msgid "From"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:9
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:25
+#: src/lanpilot/web/templates/admin/audit.html:9
+#: src/lanpilot/web/templates/admin/scan.html:25
 msgid "Result"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:18
+#: src/lanpilot/web/templates/admin/audit.html:18
 msgid "ok"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:18
+#: src/lanpilot/web/templates/admin/audit.html:18
 msgid "failed"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:25
+#: src/lanpilot/web/templates/admin/audit.html:25
 #, python-format
 msgid "Showing the newest %(num)d entries at most."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:27
+#: src/lanpilot/web/templates/admin/audit.html:27
 msgid "Nothing has been recorded yet."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:55
+#: src/lanpilot/web/templates/admin/scan.html:2
+#: src/lanpilot/web/templates/admin/scan.html:4
+#: src/lanpilot/web/templates/admin/servers.html:55
 msgid "Scan the network"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:10
+#: src/lanpilot/web/templates/admin/scan.html:10
 #, python-format
 msgid "No networks are configured for the scan. Set %(setting)s in the %(section)s section of the configuration, for example %(example)s, and restart LANPilot."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:14
+#: src/lanpilot/web/templates/admin/scan.html:14
 #, python-format
 msgid "Looks once for game servers in %(networks)s, without passwords. Found servers can be added; their passwords are entered in the form."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:15
+#: src/lanpilot/web/templates/admin/scan.html:15
 #, python-format
 msgid "Games: %(games)s."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:15
+#: src/lanpilot/web/templates/admin/scan.html:15
 msgid "none can be found by a scan"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:16
+#: src/lanpilot/web/templates/admin/scan.html:16
 msgid "Scanning…"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:18
+#: src/lanpilot/web/templates/admin/scan.html:18
 msgid "Scan again"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:18
+#: src/lanpilot/web/templates/admin/scan.html:18
 msgid "Scan now"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:20
+#: src/lanpilot/web/templates/admin/scan.html:20
 msgid "A scan takes a few seconds."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:29
+#: src/lanpilot/web/templates/admin/scan.html:29
 msgid "Game type"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:29
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:19
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:11
+#: src/lanpilot/web/templates/admin/scan.html:29
+#: src/lanpilot/web/templates/admin/servers.html:19
+#: src/lanpilot/web/templates/admin/users.html:11
 msgid "Actions"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:39
+#: src/lanpilot/web/templates/admin/scan.html:39
 msgid "already added"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:40
+#: src/lanpilot/web/templates/admin/scan.html:40
 msgid "Add"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:47
+#: src/lanpilot/web/templates/admin/scan.html:47
 msgid "No game servers were found."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:50
+#: src/lanpilot/web/templates/admin/scan.html:50
 #, python-format
 msgid "The scan for %(games)s did not finish; see the log."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:52
+#: src/lanpilot/web/templates/admin/scan.html:52
 #, python-format
 msgid "Took %(seconds)s s."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:4
+#: src/lanpilot/web/templates/admin/server_form.html:2
+#: src/lanpilot/web/templates/admin/server_form.html:4
 #, python-format
 msgid "Edit %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:9
+#: src/lanpilot/web/templates/admin/server_form.html:9
 msgid "The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:17
+#: src/lanpilot/web/templates/admin/server_form.html:17
 #, python-format
 msgid "Game: %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:21
+#: src/lanpilot/web/templates/admin/server_form.html:21
 msgid "Shown on the dashboard."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:23
+#: src/lanpilot/web/templates/admin/server_form.html:23
 msgid "Connection"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:42
+#: src/lanpilot/web/templates/admin/server_form.html:42
 msgid "unchanged"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:63
+#: src/lanpilot/web/templates/admin/server_form.html:63
 msgid "Leave empty to keep the stored value. It has to be entered again when host or port change."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:67
+#: src/lanpilot/web/templates/admin/server_form.html:67
 msgid "Options"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:70
+#: src/lanpilot/web/templates/admin/server_form.html:70
 msgid "Enabled"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:72
+#: src/lanpilot/web/templates/admin/server_form.html:72
 msgid "Disabled servers stay configured but are not queried."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:74
+#: src/lanpilot/web/templates/admin/server_form.html:74
 msgid "Add server"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:75
+#: src/lanpilot/web/templates/admin/server_form.html:75
 msgid "Cancel"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:4
+#: src/lanpilot/web/templates/admin/server_maps.html:2
+#: src/lanpilot/web/templates/admin/server_maps.html:4
 #, python-format
 msgid "Maps of %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:10
+#: src/lanpilot/web/templates/admin/server_maps.html:10
 msgid "Add a map the server does not list"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:11
+#: src/lanpilot/web/templates/admin/server_maps.html:11
 msgid "For a track file that is on the server but not in its playlist. Enter its path relative to the server's Tracks directory; LANPilot asks the server whether it has it. Changing to it puts it into the playlist."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:14
+#: src/lanpilot/web/templates/admin/server_maps.html:14
 msgid "File name"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:17
+#: src/lanpilot/web/templates/admin/server_maps.html:17
 msgid "Add map"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:21
+#: src/lanpilot/web/templates/admin/server_maps.html:21
 msgid "Images"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:22
+#: src/lanpilot/web/templates/admin/server_maps.html:22
 #, python-format
 msgid "An image is used for every server of this game that has a map with the same name. JPEG, PNG or WebP, up to %(megabytes)s MB; it is scaled down and stored without metadata."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:24
+#: src/lanpilot/web/templates/admin/server_maps.html:24
 msgid "LANPilot looks for an image of the current map online by itself. Images it finds keep a note of their source. An image you remove is not fetched again automatically."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:28
+#: src/lanpilot/web/templates/admin/server_maps.html:28
 msgid "Look for all missing images online"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:32
+#: src/lanpilot/web/templates/admin/server_maps.html:32
 msgid "Looking for images online is switched off."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:45
+#: src/lanpilot/web/templates/admin/server_maps.html:45
 msgid "added by hand"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:46
+#: src/lanpilot/web/templates/admin/server_maps.html:46
 #, python-format
 msgid "image from %(provider)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:47
+#: src/lanpilot/web/templates/admin/server_maps.html:47
 msgid "image removed"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:47
+#: src/lanpilot/web/templates/admin/server_maps.html:47
 msgid "nothing found online"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:53
+#: src/lanpilot/web/templates/admin/server_maps.html:53
 #, python-format
 msgid "Image for %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:54
+#: src/lanpilot/web/templates/admin/server_maps.html:54
 msgid "Replace image"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:54
+#: src/lanpilot/web/templates/admin/server_maps.html:54
 msgid "Upload image"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:60
+#: src/lanpilot/web/templates/admin/server_maps.html:60
 msgid "Look online"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:67
+#: src/lanpilot/web/templates/admin/server_maps.html:67
 msgid "Remove from the list"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:74
+#: src/lanpilot/web/templates/admin/server_maps.html:74
 msgid "Remove image"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_new.html:6
+#: src/lanpilot/web/templates/admin/server_new.html:6
 msgid "Which game?"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_new.html:14
+#: src/lanpilot/web/templates/admin/server_new.html:14
 msgid "No game adapters are installed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_new.html:17
+#: src/lanpilot/web/templates/admin/server_new.html:17
 msgid "Back to server setup"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:7
+#: src/lanpilot/web/templates/admin/servers.html:7
 #, python-format
 msgid "Connection test for %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:19
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:11
+#: src/lanpilot/web/templates/admin/servers.html:19
+#: src/lanpilot/web/templates/admin/users.html:11
 msgid "Status"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:25
+#: src/lanpilot/web/templates/admin/servers.html:25
 #, python-format
 msgid "not installed (%(id)s)"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:27
+#: src/lanpilot/web/templates/admin/servers.html:27
 msgid "enabled"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:30
+#: src/lanpilot/web/templates/admin/servers.html:30
 msgid "Edit"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:31
+#: src/lanpilot/web/templates/admin/servers.html:31
 msgid "Map images"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:34
+#: src/lanpilot/web/templates/admin/servers.html:34
 msgid "Test connection"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:38
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:48
+#: src/lanpilot/web/templates/admin/servers.html:38
+#: src/lanpilot/web/templates/admin/users.html:48
 msgid "Delete"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:41
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:51
+#: src/lanpilot/web/templates/admin/servers.html:41
+#: src/lanpilot/web/templates/admin/users.html:51
 #, python-format
 msgid "Delete %(name)s for good"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:57
+#: src/lanpilot/web/templates/admin/servers.html:57
 msgid "No game adapters are installed, so no server can be added."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:11
+#: src/lanpilot/web/templates/admin/users.html:11
 msgid "Last sign-in"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:17
+#: src/lanpilot/web/templates/admin/users.html:17
 msgid "(you)"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:21
+#: src/lanpilot/web/templates/admin/users.html:21
 #, python-format
 msgid "Role of %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:29
+#: src/lanpilot/web/templates/admin/users.html:29
 msgid "active"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:30
+#: src/lanpilot/web/templates/admin/users.html:30
 msgid "never"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:35
+#: src/lanpilot/web/templates/admin/users.html:35
 msgid "Disable"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:35
+#: src/lanpilot/web/templates/admin/users.html:35
 msgid "Enable"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:39
+#: src/lanpilot/web/templates/admin/users.html:39
 msgid "Set password"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:43
+#: src/lanpilot/web/templates/admin/users.html:43
 #, python-format
 msgid "New password for %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:44
+#: src/lanpilot/web/templates/admin/users.html:44
 msgid "Set"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:62
+#: src/lanpilot/web/templates/admin/users.html:62
 msgid "Add a user"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:77
+#: src/lanpilot/web/templates/admin/users.html:77
 msgid "viewer: see servers. operator: also change maps and restart. admin: also manage users and servers."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:78
+#: src/lanpilot/web/templates/admin/users.html:78
 msgid "Add user"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/base.html:25
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/home.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/home.html:4
+#: src/lanpilot/web/templates/base.html:25
+#: src/lanpilot/web/templates/home.html:2
+#: src/lanpilot/web/templates/home.html:4
 msgid "Servers"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/base.html:27
+#: src/lanpilot/web/templates/admin/servers.html:2
+#: src/lanpilot/web/templates/admin/servers.html:4
+#: src/lanpilot/web/templates/base.html:27
 msgid "Server setup"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/base.html:28
+#: src/lanpilot/web/templates/admin/users.html:2
+#: src/lanpilot/web/templates/admin/users.html:4
+#: src/lanpilot/web/templates/base.html:28
 msgid "Users"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/audit.html:4
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/base.html:29
+#: src/lanpilot/web/templates/admin/audit.html:2
+#: src/lanpilot/web/templates/admin/audit.html:4
+#: src/lanpilot/web/templates/base.html:29
 msgid "Audit log"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/base.html:34
+#: src/lanpilot/web/templates/base.html:34
 msgid "Sign out"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/base.html:41
+#: src/lanpilot/web/templates/base.html:41
 msgid "This LANPilot is not reached over HTTPS. Passwords and session cookies travel unencrypted."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:4
+#: src/lanpilot/web/templates/console.html:2
+#: src/lanpilot/web/templates/console.html:4
 #, python-format
 msgid "Console of %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:9
+#: src/lanpilot/web/templates/console.html:9
 msgid "Commands are sent to the server as they are and recorded in the audit log, together with who sent them. What the server answers is shown below."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:12
+#: src/lanpilot/web/templates/console.html:12
 msgid "Command"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:15
+#: src/lanpilot/web/templates/console.html:15
 msgid "Send"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:19
+#: src/lanpilot/web/templates/console.html:19
 msgid "Answer"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:20
+#: src/lanpilot/web/templates/console.html:20
 msgid "(no output)"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:25
+#: src/lanpilot/web/templates/console.html:25
 #, python-format
 msgid "The console is switched off. An administrator of the LANPilot installation can switch it on with %(setting)s in the configuration."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:85
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/console.html:28
+#: src/lanpilot/web/templates/admin/server_maps.html:85
+#: src/lanpilot/web/templates/console.html:28
 #, python-format
 msgid "Back to %(name)s"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/error.html:7
+#: src/lanpilot/web/templates/error.html:7
 msgid "Back to the start page"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/login.html:2
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/login.html:5
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/login.html:17
+#: src/lanpilot/web/templates/login.html:2
+#: src/lanpilot/web/templates/login.html:5
+#: src/lanpilot/web/templates/login.html:17
 msgid "Sign in"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:17
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:32
+#: src/lanpilot/web/templates/server.html:17
+#: src/lanpilot/web/templates/server.html:32
 msgid "Change map"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:22
+#: src/lanpilot/web/templates/server.html:22
 msgid "Type to search…"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_maps.html:82
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:35
+#: src/lanpilot/web/templates/admin/server_maps.html:82
+#: src/lanpilot/web/templates/server.html:35
 msgid "No maps are known for this server yet."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:40
+#: src/lanpilot/web/templates/server.html:40
 msgid "Read the map list from the server again"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:48
+#: src/lanpilot/web/templates/server.html:48
 msgid "Restart"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:53
+#: src/lanpilot/web/templates/server.html:53
 msgid "Restart the match"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:54
+#: src/lanpilot/web/templates/server.html:54
 msgid "Scores are reset; players stay connected."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:59
+#: src/lanpilot/web/templates/server.html:59
 msgid "Reload the level"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:63
+#: src/lanpilot/web/templates/server.html:63
 msgid "The current level is loaded again from scratch. Depending on the game, players are briefly disconnected."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:64
+#: src/lanpilot/web/templates/server.html:64
 msgid "Reload the level now"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:71
+#: src/lanpilot/web/templates/server.html:71
 msgid "Back to all servers"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:73
+#: src/lanpilot/web/templates/server.html:73
 msgid "Maps and images"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:74
+#: src/lanpilot/web/templates/server.html:74
 msgid "Edit server"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/server.html:76
+#: src/lanpilot/web/templates/server.html:76
 msgid "Console"
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:24
+#: src/lanpilot/web/templating.py:24
 msgid "You have been signed out."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:25
+#: src/lanpilot/web/templating.py:25
 msgid "Your password has been changed. Other sessions were signed out."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:26
+#: src/lanpilot/web/templating.py:26
 msgid "The language has been changed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:27
+#: src/lanpilot/web/templating.py:27
 msgid "The user has been created."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:28
+#: src/lanpilot/web/templating.py:28
 msgid "The user has been updated."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:29
+#: src/lanpilot/web/templating.py:29
 msgid "The user has been deleted."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:30
+#: src/lanpilot/web/templating.py:30
 msgid "The password has been set. The user's sessions were signed out."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:31
+#: src/lanpilot/web/templating.py:31
 msgid "The server has been added."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:32
+#: src/lanpilot/web/templating.py:32
 msgid "The server has been saved."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:33
+#: src/lanpilot/web/templating.py:33
 msgid "The server has been deleted."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:34
+#: src/lanpilot/web/templating.py:34
 msgid "The map change was sent to the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:35
+#: src/lanpilot/web/templating.py:35
 msgid "The match was restarted."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:36
+#: src/lanpilot/web/templating.py:36
 msgid "The level was reloaded."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:37
+#: src/lanpilot/web/templating.py:37
 msgid "The map list was read from the server again."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:38
+#: src/lanpilot/web/templating.py:38
 msgid "The map image has been saved."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:39
+#: src/lanpilot/web/templating.py:39
 msgid "The map image has been removed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:40
+#: src/lanpilot/web/templating.py:40
 msgid "The player was kicked."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:41
+#: src/lanpilot/web/templating.py:41
 msgid "The player was banned."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:42
+#: src/lanpilot/web/templating.py:42
 msgid "The map was added to the list."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:43
+#: src/lanpilot/web/templating.py:43
 msgid "The map was removed from the list. The server's own list is unchanged."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templating.py:45
+#: src/lanpilot/web/templating.py:45
 msgid "LANPilot is looking for images online. They appear as they are found; reload this page in a moment."
 msgstr ""
 

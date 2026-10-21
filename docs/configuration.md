@@ -106,7 +106,8 @@ is stored. An image an administrator removes is not fetched again automatically.
 Administrators start a scan under "Server setup" → "Scan the network" (or with
 `lanpilot scan`); it runs once, never in the background, and takes a few seconds. It
 finds Counter-Strike 1.6, CS:Source, CS:GO, CS2, TrackMania Forever, TrackMania
-Original/Sunrise/Nations ESWC, UT99, UT2004 and UT3 servers without a password and lists
+Original/Sunrise/Nations ESWC, UT99, UT2004, UT3, Quake III Arena, Call of Duty, Call of Duty
+4 and World at War servers without a password and lists
 name, game, game type and address; "Add" opens the server form with these values, and the
 passwords are entered there.
 

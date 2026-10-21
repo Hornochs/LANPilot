@@ -6,12 +6,24 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-21
+
 ### Added
 
 - Map image source `liandri`: screenshots of Unreal Tournament stock maps from the Liandri
   Archives (index shipped with LANPilot, built by `scripts/build_liandri_index.py`). It is
   on by default; an installation that lists `images.sources` itself must add it. Online
   sources may now deliver GIF images (first frame); uploads still accept JPEG, PNG and WebP.
+- Quake III Arena (`q3a`), Call of Duty (`cod`), Call of Duty 4 (`cod4`, CoD4X) and Call of
+  Duty: World at War (`codwaw`) over the Quake 3 protocol: status without password, maps per
+  game type (CoD4 and WaW: stock maps and the map rotation), map and game type change, both
+  restarts, players with kick (Quake 3 also ban by IP address), console and LAN scan. Map
+  names for their stock maps; images from GameTracker.
+
+### Changed
+
+- The translation catalogues name source files by their path in the repository
+  (`src/lanpilot/...`) instead of the absolute path of the checkout they were extracted in.
 
 ## [1.0.0] - 2026-10-20
 

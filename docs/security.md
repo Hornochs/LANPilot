@@ -126,6 +126,7 @@ Accepted, and what the operator can do about them:
 | Plain HTTP between browsers and LANPilot | HTTPS through the reverse proxy |
 | A hostile player on UT99 can make the player list unusable (it is refused, not guessed) | kick through the game's own WebAdmin or console |
 | UT3 discovery shares UDP 14001 for the scan's wait (2 s); unicast datagrams to a UT3 server on the same host land on LANPilot during that time | run UT3 servers on another host |
+| Quake 3, Call of Duty 1 and World at War accept one RCON packet per 500 ms from anyone, wrong passwords included, so whoever floods the game port with RCON packets keeps LANPilot's commands from being answered ("The server did not answer") | find and remove the sender; the status (`getstatus`) keeps working |
 | After a refused password, editing or re-testing the server, or a restart, sends it once more | correct the password before testing again |
 | An administrator can point a server entry at any host and port | administrators are trusted |
 | Release packages are not signed with a distribution key | verify the attestation (`gh attestation verify`, see [installation.md](installation.md)) |

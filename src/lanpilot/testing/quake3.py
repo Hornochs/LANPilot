@@ -1,5 +1,5 @@
 """Simulator of Quake 3 engine servers for tests: Quake 3 Arena 1.32c, Call of Duty 1.5,
-CoD4X 1.8 and Call of Duty: World at War 1.7.
+United Offensive 1.51, Call of Duty 2 1.3, CoD4X 1.8 and Call of Duty: World at War 1.7.
 
 Speaks what LANPilot uses: ``getstatus`` and RCON. Its answers follow what the real servers
 sent when they were measured (docs/games/quake3.md), including the differences between
@@ -44,6 +44,10 @@ class Flavour:
     maps: tuple[str, ...]
     status_banner: str = ""
     cvar_format: str = '"{name}" is:"{value}^7" default:"{default}^7"\n'
+    map_extension: str = "bsp"
+    #: ``clientkick <slot> <reason>`` prints the usage and kicks nobody (CoD2, WaW).
+    kick_refuses_reason: bool = False
+    needpass_key: str | None = "pswrd"  # the getstatus key of the join password flag
 
 
 QUAKE3 = Flavour(
@@ -57,6 +61,7 @@ QUAKE3 = Flavour(
     rate_limited=True,
     clears_pending=True,
     maps=("q3dm1", "q3dm17", "q3tourney2", "q3ctf1", "pro-q3dm6"),
+    needpass_key="g_needpass",
 )
 CALL_OF_DUTY = Flavour(
     gamename="Call of Duty",
@@ -70,6 +75,33 @@ CALL_OF_DUTY = Flavour(
     clears_pending=True,
     maps=("mp_carentan", "mp_harbor", "mp_brecourt", "mp_powcamp"),
 )
+UNITED_OFFENSIVE = Flavour(
+    gamename="CoD:United Offensive",
+    version="",
+    before_name=("num", "score", "ping", "guid"),
+    refused="Bad rconpassword.\n",
+    game_types=("dm", "tdm", "sd", "re", "bel", "hq", "bas", "ctf", "dom"),
+    map_folder="maps/mp",
+    fast_restart=False,
+    rate_limited=True,
+    clears_pending=True,
+    maps=("mp_cassino", "mp_foy", "mp_sicily", "mp_carentan"),
+)
+CALL_OF_DUTY_2 = Flavour(
+    gamename="Call of Duty 2",
+    version="",
+    before_name=("num", "score", "ping", "guid"),
+    refused="Invalid password.\n",
+    game_types=("dm", "tdm", "sd", "hq", "ctf"),
+    map_folder="maps/mp",
+    fast_restart=True,
+    rate_limited=True,
+    clears_pending=True,
+    maps=("mp_leningrad", "mp_toujane", "mp_carentan", "mp_breakout"),
+    cvar_format='"{name}" is: "{value}^7" default: "{default}^7"\n  Domain is any text\n',
+    map_extension="d3dbsp",
+    kick_refuses_reason=True,
+)
 COD4X = Flavour(
     gamename="Call of Duty 4",
     version="CoD4 X - linux-i386 build 1154 May  1 2022",
@@ -82,6 +114,7 @@ COD4X = Flavour(
     clears_pending=False,
     # The stock maps (LANPilot's catalogue lists them, CoD4 cannot) and a custom map.
     maps=(*catalog.load().keys("cod4"), "mp_custom_dust"),
+    needpass_key=None,  # CoD4X sends pswrd only when a password is set
     status_banner=(
         "hostname: {hostname}\nversion : CoD4 X - linux-i386 build 1154 May  1 2022\n"
         "udp/ip  : 0.0.0.0:28960\nos      : linux\ntype    : dedicated server\n"
@@ -103,6 +136,7 @@ WORLD_AT_WAR = Flavour(
     # The stock maps (LANPilot's catalogue lists them, WaW cannot) and a custom map.
     maps=(*catalog.load().keys("codwaw"), "mp_custom_tank"),
     cvar_format='"{name}" is: "{value}^7" default: "{default}^7"\n  Domain is any text\n',
+    kick_refuses_reason=True,
 )
 
 
@@ -150,6 +184,11 @@ class Quake3Simulator(asyncio.DatagramProtocol):
     silent: bool = False
     #: The rate limit of rate-limited flavours (measured: 500 ms); tests may shorten it.
     rate_limit_seconds: float = 0.5
+    #: How long ``map`` takes before it answers (measured on UO and CoD2: 2-3 s).
+    load_seconds: float = 0.0
+    #: (map, game type) pairs the map is not made for: the server falls back to the first
+    #: game type, as United Offensive did with mp_sicily and Base Assault.
+    unsupported: set[tuple[str, str]] = field(default_factory=set)
 
     def __post_init__(self) -> None:
         self.maps = list(self.flavour.maps)
@@ -208,10 +247,8 @@ class Quake3Simulator(asyncio.DatagramProtocol):
         }
         if self.flavour.version:
             info["version"] = self.flavour.version
-        if self.flavour is QUAKE3:
-            info["g_needpass"] = "0"
-        elif self.flavour in (CALL_OF_DUTY, WORLD_AT_WAR):
-            info["pswrd"] = "0"
+        if self.flavour.needpass_key:
+            info[self.flavour.needpass_key] = "0"
         text = "".join(f"\\{key}\\{value}" for key, value in info.items()) + "\n"
         text += "".join(f'{c.score} {c.ping} "{c.name}"\n' for c in self.clients)
         return HEADER + b"statusResponse\n" + text.encode()
@@ -232,10 +269,16 @@ class Quake3Simulator(asyncio.DatagramProtocol):
             return
         command = match.group(3).strip()
         self.commands.append(command)
-        self._print(self._run(command), addr)
+        answer = self._run(command)
+        if self.load_seconds and command.lower().startswith("map "):
+            # The level is loaded before the answer; the state already changed above.
+            asyncio.get_running_loop().call_later(self.load_seconds, self._print, answer, addr)
+        else:
+            self._print(answer, addr)
 
     def _print(self, text: str, addr: tuple[str, int]) -> None:
-        assert self._transport is not None
+        if self._transport is None:
+            return
         data = text.encode()
         chunks = [data[i : i + PRINT_LIMIT] for i in range(0, len(data), PRINT_LIMIT)] or [b""]
         for chunk in chunks:
@@ -250,9 +293,10 @@ class Quake3Simulator(asyncio.DatagramProtocol):
         if name == "status":
             return self._status()
         if name == "dir" and self.flavour.map_folder is not None:
-            folder = argument.partition(" ")[0]
-            mine = folder == self.flavour.map_folder
-            listing = "".join(f"{m}.bsp\n" for m in self.maps) if mine else ""
+            folder, _, extension = argument.partition(" ")
+            ext = self.flavour.map_extension
+            mine = folder == self.flavour.map_folder and extension.strip(".") == ext
+            listing = "".join(f"{m}.{ext}\n" for m in self.maps) if mine else ""
             return f"Directory of {argument}\n---------------\n{listing}\n"
         if name == "g_gametype":
             return self._set_game_type(argument)
@@ -329,16 +373,18 @@ class Quake3Simulator(asyncio.DatagramProtocol):
                     f"^1Error: Can't find map {argument}\n"
                     "^1Error: A mod is required to run custom maps\n"
                 )
-            return f"Can't find map {folder}/{argument}.bsp\n"
+            return f"Can't find map {folder}/{argument}.{self.flavour.map_extension}\n"
         if argument == self.current_map:
             self.restarts.append("hard")
         self.current_map = argument
         self._apply_pending()
+        if (argument, self.game_type) in self.unsupported:
+            self.game_type = self.flavour.game_types[0]
         return "==== ShutdownGame ====\n------ Server Initialization ------\n" + "x" * 2500 + "\n"
 
     def _kick(self, argument: str) -> str:
         slot, _, reason = argument.partition(" ")
-        if reason and self.flavour is WORLD_AT_WAR:
+        if reason and self.flavour.kick_refuses_reason:
             return "Usage: clientkick <client number>\n"  # and nobody is kicked
         client = next((c for c in self.clients if str(c.slot) == slot), None)
         if client is None:

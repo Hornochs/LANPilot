@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-21 13:03+0200\n"
+"POT-Creation-Date: 2026-10-21 13:24+0200\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -176,8 +176,8 @@ msgstr "IP-Adresse oder Hostname des Gameservers."
 #: src/lanpilot/core/adapters/base.py:153
 #: src/lanpilot/games/counterstrike/goldsrc.py:61
 #: src/lanpilot/games/counterstrike/source.py:71 src/lanpilot/games/demo.py:52
-#: src/lanpilot/games/quake3/callofduty.py:34
-#: src/lanpilot/games/quake3/common.py:74
+#: src/lanpilot/games/quake3/callofduty.py:35
+#: src/lanpilot/games/quake3/common.py:75
 msgid "Port"
 msgstr "Port"
 
@@ -475,13 +475,13 @@ msgid "The command is empty or contains a line break."
 msgstr "Der Befehl ist leer oder enthält einen Zeilenumbruch."
 
 #: src/lanpilot/core/transports/goldsrc_rcon.py:163
-#: src/lanpilot/core/transports/quake3.py:225
+#: src/lanpilot/core/transports/quake3.py:228
 #: src/lanpilot/core/transports/source_rcon.py:170
 msgid "The server refused the RCON password. Edit the server to enter another one."
 msgstr "Der Server hat das RCON-Passwort abgelehnt. Den Server bearbeiten, um ein anderes einzugeben."
 
 #: src/lanpilot/core/transports/goldsrc_rcon.py:176
-#: src/lanpilot/core/transports/quake3.py:244
+#: src/lanpilot/core/transports/quake3.py:247
 #: src/lanpilot/core/transports/source_rcon.py:147
 msgid "The server refused the RCON password."
 msgstr "Der Server hat das RCON-Passwort abgelehnt."
@@ -494,7 +494,7 @@ msgstr "Der Server weist die RCON-Challenge immer wieder zurück."
 msgid "The RCON password is empty or contains a space or a quote, which the protocol cannot carry."
 msgstr "Das RCON-Passwort ist leer oder enthält ein Leerzeichen oder ein Anführungszeichen, was das Protokoll nicht übertragen kann."
 
-#: src/lanpilot/core/transports/quake3.py:220
+#: src/lanpilot/core/transports/quake3.py:223
 #: src/lanpilot/core/transports/source_rcon.py:165
 msgid "The command is empty, too long or contains a line break."
 msgstr "Der Befehl ist leer, zu lang oder enthält einen Zeilenumbruch."
@@ -554,18 +554,18 @@ msgid "The WebAdmin's answer could not be read."
 msgstr "Die Antwort des WebAdmin konnte nicht gelesen werden."
 
 #: src/lanpilot/games/counterstrike/common.py:176
-#: src/lanpilot/games/quake3/common.py:390
+#: src/lanpilot/games/quake3/common.py:409
 msgid "The server did not report this player's IP address, so it cannot ban it."
 msgstr "Der Server hat die IP-Adresse dieses Spielers nicht gemeldet, daher kann sie nicht gebannt werden."
 
 #: src/lanpilot/games/counterstrike/common.py:185
-#: src/lanpilot/games/quake3/common.py:335
+#: src/lanpilot/games/quake3/common.py:354
 msgid "This player cannot be named in a command."
 msgstr "Dieser Spieler kann nicht in einem Befehl angegeben werden."
 
 #: src/lanpilot/games/counterstrike/goldsrc.py:63
 #: src/lanpilot/games/counterstrike/source.py:77
-#: src/lanpilot/games/quake3/common.py:80
+#: src/lanpilot/games/quake3/common.py:81
 msgid "RCON password"
 msgstr "RCON-Passwort"
 
@@ -576,12 +576,12 @@ msgstr "Der Wert von rcon_password in der Konfiguration des Servers (server.cfg)
 
 #: src/lanpilot/games/counterstrike/goldsrc.py:127
 #: src/lanpilot/games/counterstrike/source.py:148
-#: src/lanpilot/games/quake3/common.py:279
+#: src/lanpilot/games/quake3/common.py:282
 msgid "This map name cannot be sent to the server."
 msgstr "Dieser Map-Name kann nicht an den Server gesendet werden."
 
 #: src/lanpilot/games/counterstrike/goldsrc.py:130
-#: src/lanpilot/games/quake3/common.py:300
+#: src/lanpilot/games/quake3/common.py:319
 #, python-brace-format
 msgid "The server does not have the map {key}."
 msgstr "Der Server hat die Map {key} nicht."
@@ -641,20 +641,25 @@ msgstr "Der Server hat keine Map namens {key}."
 msgid "That player is not on the server."
 msgstr "Dieser Spieler ist nicht auf dem Server."
 
-#: src/lanpilot/games/quake3/callofduty.py:35
-#: src/lanpilot/games/quake3/common.py:75
+#: src/lanpilot/games/quake3/callofduty.py:36
+#: src/lanpilot/games/quake3/common.py:76
 msgid "The game port; status and RCON use it too."
 msgstr "Der Spiel-Port; Status und RCON nutzen ihn ebenfalls."
 
-#: src/lanpilot/games/quake3/common.py:81
+#: src/lanpilot/games/quake3/common.py:82
 msgid "The value of rconpassword (rcon_password on CoD4) in the server's config."
 msgstr "Der Wert von rconpassword (bei CoD4 rcon_password) in der Konfiguration des Servers."
 
-#: src/lanpilot/games/quake3/common.py:309
+#: src/lanpilot/games/quake3/common.py:308
+#, python-brace-format
+msgid "The map {key} was loaded, but not as {wanted}: the server runs {running}, probably because the map is not made for that game type."
+msgstr "Die Map {key} wurde geladen, aber nicht als {wanted}: Der Server läuft mit {running}, wahrscheinlich weil die Map nicht für diesen Spielmodus gemacht ist."
+
+#: src/lanpilot/games/quake3/common.py:328
 msgid "The server did not report its current map."
 msgstr "Der Server hat nicht gemeldet, welche Map läuft."
 
-#: src/lanpilot/games/quake3/common.py:339
+#: src/lanpilot/games/quake3/common.py:358
 msgid "The player is no longer on the server."
 msgstr "Der Spieler ist nicht mehr auf dem Server."
 

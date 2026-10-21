@@ -4,9 +4,11 @@
 |---|---|---|
 | Quake III Arena (1.32c; ioquake3 and similar should behave alike) | `q3a` | implemented, verified against a real server |
 | Call of Duty (1.5) | `cod` | implemented, verified against a real server |
+| Call of Duty: United Offensive (1.51) | `coduo` | implemented, verified against a real server |
+| Call of Duty 2 (1.3) | `cod2` | implemented, verified against a real server |
 | Call of Duty 4: Modern Warfare (CoD4X 1.8) | `cod4` | implemented, verified against a real server |
 | Call of Duty: World at War (1.7) | `codwaw` | implemented, verified against a real server |
-| Jedi Knight, Call of Duty 2, United Offensive | – | see [Not implemented](#not-implemented) |
+| Jedi Knight | – | see [Not implemented](#not-implemented) |
 
 All of them speak the out-of-band UDP protocol of id Tech 3 on the game port: a status query
 without password (`getstatus`) and RCON. The commands, the output of `status` and the way a
@@ -179,6 +181,40 @@ num score ping name            lastmsg address               qport rate
   reason to letters, digits, spaces and `.,!?()_-`, at most 64 characters. Quake 3 and
   CoD 1 take no reason.
 
+## Call of Duty: United Offensive and Call of Duty 2
+
+Measured on 2026-10-21 against LinuxGSM's United Offensive 1.51 (`coduo_lnxded`, protocol
+22) and Call of Duty 2 1.3 (`cod2_lnxded`, protocol 118). Both need `libstdc++.so.5` like
+CoD 1. They use the protocol, `status` columns (with `guid`) and cvar answers described
+above; what differs:
+
+| | United Offensive (`coduo`) | Call of Duty 2 (`cod2`) |
+|---|---|---|
+| `gamename` | `CoD:United Offensive` (`shortversion` 1.51) | `Call of Duty 2` (`shortversion` 1.3) |
+| RCON password | `rconpassword` | **`rcon_password`**: LinuxGSM's template sets `rconpassword`, and every command is then answered `The server must set 'rcon_password' …` |
+| wrong password | `Bad rconpassword.` | `Invalid password.` |
+| rate limit | 500 ms, as CoD 1 (lost up to 450 ms, answered from 500 ms) | the same |
+| list maps | `dir maps/mp bsp`: 27 maps, its own 11 and the 16 of CoD 1 | `dir maps/mp d3dbsp`: 15 maps (`.d3dbsp` files) |
+| unknown map | `Can't find map maps/mp/<name>.bsp` | `Can't find map maps/mp/<name>.d3dbsp` |
+| game types | CoD 1's plus `bas` (Base Assault), `ctf` (Capture The Flag), `dom` (Domination) | `dm`, `tdm`, `sd`, `hq`, `ctf` |
+| restarts | `map_restart` only, as CoD 1 | `fast_restart` and `map_restart`, as CoD4 |
+| kick | `clientkick <slot>` | `clientkick <slot>`; with a reason it prints `Usage: clientkick <client number>` |
+| pending game type | cleared by setting the running one | the same |
+
+- **A level load answers only when it is done**: `map` was answered after 2.1–2.8 s
+  (United Offensive, mp_kursk, mp_carentan, mp_berlin) and 2.2–2.8 s (CoD 2); one change to
+  UO's mp_foy took longer than 3 s. LANPilot waits up to 15 s for the first packet of a map
+  change or restart (3 s for other commands). Because the command returns after the load,
+  the status read right after it is current.
+- **A map that is not made for the game type falls back to Deathmatch**: UO loaded
+  mp_sicily with Base Assault as `dm` (its arena file lists `dom ctf dm tdm sd re bel hq`
+  for mp_sicily; Base Assault only for mp_foy, mp_italy, mp_kursk, mp_ponyri and
+  mp_rhinevalley). WaW does the same with an unknown game type. LANPilot reads the status
+  after a change and reports such a fallback as an error instead of success.
+- Names in the catalogue: UO's maps by the places they show (its strings name them only in
+  single-player texts); CoD 2's from `mp/CoD2maps.arena` (`longname` "Toujane, Tunisia").
+- No bots on either; player rows are unmeasured.
+
 ## Console
 
 The raw console sends the command as it is, one per packet. Long answers arrive complete.
@@ -187,8 +223,8 @@ The raw console sends the command as it is, one per packet. Long answers arrive 
 
 - The in-game browsers ask the first four ports from the default one. LANPilot broadcasts
   `getstatus` to UDP 27960–27963 and 28960–28963 once per scan and tells the games apart by
-  the answer: `gamename` `Call of Duty`, `Call of Duty 4` or `Call of Duty: World at War`,
-  otherwise a `version` starting
+  the answer: `gamename` `Call of Duty`, `CoD:United Offensive`, `Call of Duty 2`,
+  `Call of Duty 4` or `Call of Duty: World at War`, otherwise a `version` starting
   with `Q3 ` or `ioq3` for Quake 3 (other id Tech 3 games, such as Enemy Territory, are not
   reported).
 - Measured on the development instance over a /23: all servers on the LANPilot host were
@@ -199,5 +235,3 @@ The raw console sends the command as it is, one per packet. Long answers arrive 
 
 - **Jedi Knight II / Jedi Academy**: LinuxGSM installs the engine (`jk2mvded` from JK2MV) but
   not the game's assets (`base/assets0.pk3`), which come only with the game; no test server.
-- **Call of Duty 2 and United Offensive** use the same protocol and probably the commands of
-  CoD 1; not measured.

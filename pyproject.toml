@@ -62,7 +62,9 @@ lanpilot = "lanpilot.cli:main"
 # their own entries to it.
 [project.entry-points."lanpilot.adapters"]
 cod = "lanpilot.games.quake3.callofduty:CallOfDutyAdapter"
+cod2 = "lanpilot.games.quake3.callofduty:CallOfDuty2Adapter"
 cod4 = "lanpilot.games.quake3.callofduty:CallOfDuty4Adapter"
+coduo = "lanpilot.games.quake3.callofduty:CallOfDutyUnitedOffensiveAdapter"
 codwaw = "lanpilot.games.quake3.callofduty:CallOfDutyWorldAtWarAdapter"
 cs16 = "lanpilot.games.counterstrike.goldsrc:CounterStrike16Adapter"
 cs2 = "lanpilot.games.counterstrike.source:CounterStrike2Adapter"

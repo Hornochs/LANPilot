@@ -2,7 +2,9 @@
 #
 # Quake III Arena: the long names from the arena scripts in baseq3/pak*.pk3 (1.32c,
 # including the point-release maps). Call of Duty: the maps of maps/mp in the 1.5 server;
-# its arena script names them only by key. Call of Duty 4: the stock maps in zone/english
+# its arena script names them only by key. United Offensive: the maps of maps/mp in the
+# 1.51 server (its own and Call of Duty's), named after the places they show. Call of Duty 2:
+# the long names from mp/CoD2maps.arena of the 1.3 server. Call of Duty 4: the stock maps in zone/english
 # of the CoD4X 1.8 server. World at War: the multiplayer fast files of the 1.7 server, named
 # as the game's localized strings (PATCH_* where the release renamed a map, else MPUI_*).
 # CoD4 and WaW cannot list maps over RCON, so their tables are also their map lists (with
@@ -62,6 +64,52 @@ mp_rocket = "Rocket"
 mp_ship = "Ship"
 mp_stalingrad = "Stalingrad"
 mp_tigertown = "Tigertown"
+
+[coduo]
+mp_arnhem = "Arnhem"
+mp_berlin = "Berlin"
+mp_bocage = "Bocage"
+mp_brecourt = "Brecourt"
+mp_carentan = "Carentan"
+mp_cassino = "Cassino"
+mp_chateau = "Chateau"
+mp_dawnville = "Dawnville"
+mp_depot = "Depot"
+mp_foy = "Foy"
+mp_harbor = "Harbor"
+mp_hurtgen = "Hurtgen"
+mp_italy = "Italy"
+mp_kharkov = "Kharkov"
+mp_kursk = "Kursk"
+mp_neuville = "Neuville"
+mp_pavlov = "Pavlov"
+mp_ponyri = "Ponyri"
+mp_powcamp = "P.O.W. Camp"
+mp_railyard = "Railyard"
+mp_rhinevalley = "Rhine Valley"
+mp_rocket = "Rocket"
+mp_ship = "Ship"
+mp_sicily = "Sicily"
+mp_stalingrad = "Stalingrad"
+mp_tigertown = "Tigertown"
+mp_uo_stanjel = "Stanjel"
+
+[cod2]
+mp_breakout = "Villers-Bocage, France"
+mp_brecourt = "Brecourt, France"
+mp_burgundy = "Burgundy, France"
+mp_carentan = "Carentan, France"
+mp_dawnville = "St. Mere Eglise, France"
+mp_decoy = "El Alamein, Egypt"
+mp_downtown = "Moscow, Russia"
+mp_farmhouse = "Beltot, France"
+mp_harbor = "Rostov, Russia"
+mp_leningrad = "Leningrad, Russia"
+mp_matmata = "Matmata, Tunisia"
+mp_railyard = "Stalingrad, Russia"
+mp_rhine = "Wallendar, Germany"
+mp_toujane = "Toujane, Tunisia"
+mp_trainstation = "Caen, France"
 
 [cod4]
 mp_backlot = "Backlot"

@@ -36,9 +36,11 @@ from lanpilot.core.transports.quake3 import (
 )
 from lanpilot.games.quake3 import common
 from lanpilot.games.quake3.callofduty import (
+    CallOfDuty2Adapter,
     CallOfDuty4Adapter,
     CallOfDutyAdapter,
     CallOfDutyConnection,
+    CallOfDutyUnitedOffensiveAdapter,
     CallOfDutyWorldAtWarAdapter,
 )
 from lanpilot.games.quake3.common import (
@@ -55,8 +57,10 @@ from lanpilot.games.quake3.quake3 import Quake3ArenaAdapter
 from lanpilot.testing.contract import check_adapter
 from lanpilot.testing.quake3 import (
     CALL_OF_DUTY,
+    CALL_OF_DUTY_2,
     COD4X,
     QUAKE3,
+    UNITED_OFFENSIVE,
     WORLD_AT_WAR,
     Flavour,
     Quake3Simulator,
@@ -67,10 +71,19 @@ PASSWORD = "rcon-s3cret"
 ADAPTERS: dict[str, type[Quake3FamilyAdapter]] = {
     "q3a": Quake3ArenaAdapter,
     "cod": CallOfDutyAdapter,
+    "coduo": CallOfDutyUnitedOffensiveAdapter,
+    "cod2": CallOfDuty2Adapter,
     "cod4": CallOfDuty4Adapter,
     "codwaw": CallOfDutyWorldAtWarAdapter,
 }
-FLAVOURS = {"q3a": QUAKE3, "cod": CALL_OF_DUTY, "cod4": COD4X, "codwaw": WORLD_AT_WAR}
+FLAVOURS = {
+    "q3a": QUAKE3,
+    "cod": CALL_OF_DUTY,
+    "coduo": UNITED_OFFENSIVE,
+    "cod2": CALL_OF_DUTY_2,
+    "cod4": COD4X,
+    "codwaw": WORLD_AT_WAR,
+}
 
 
 @pytest.fixture(autouse=True)
@@ -266,7 +279,9 @@ async def test_without_the_interval_quake3_drops_commands(q3: Quake3Simulator) -
 
 
 @pytest.mark.parametrize(
-    "flavour", [QUAKE3, COD4X, WORLD_AT_WAR], ids=["quake3", "cod4x", "world-at-war"]
+    "flavour",
+    [QUAKE3, CALL_OF_DUTY_2, COD4X, WORLD_AT_WAR],
+    ids=["quake3", "cod2", "cod4x", "world-at-war"],
 )
 async def test_wrong_password_is_sent_only_once(flavour: Flavour) -> None:
     server = await simulator(flavour)
@@ -382,6 +397,35 @@ async def test_failed_change_does_not_leave_the_game_type_pending(q3: Quake3Simu
     assert q3.commands == ["g_gametype 4", "map q3dm99", "g_gametype 0"]
 
 
+async def test_a_map_not_made_for_the_game_type_is_reported() -> None:
+    server = await simulator(UNITED_OFFENSIVE, unsupported={("mp_sicily", "bas")})
+    game_adapter = adapter("coduo", server)
+
+    with pytest.raises(CommandRejectedError, match=r"not as Base Assault.*Deathmatch"):
+        await game_adapter.change_map(MapRef("mp_sicily", None, None, {GAME_TYPE_KEY: "bas"}))
+    await game_adapter.change_map(MapRef("mp_foy", None, None, {GAME_TYPE_KEY: "bas"}))
+    server.stop()
+
+    assert (server.current_map, server.game_type) == ("mp_foy", "bas")
+
+
+async def test_a_slow_level_load_is_waited_for() -> None:
+    server = await simulator(CALL_OF_DUTY_2, load_seconds=0.4)
+    quick = rcon(server)  # waits 0.5 s for a first answer
+    quick._first_answer_seconds = 0.2
+    with pytest.raises(ServerUnreachableError):
+        await quick.execute("map mp_toujane")
+    await asyncio.sleep(0.5)
+    assert "Shutdown" in await quick.execute("map mp_carentan", first_answer_seconds=1.0)
+    await asyncio.sleep(0.5)
+
+    await adapter("cod2", server).change_map(
+        MapRef("mp_breakout", None, None, {GAME_TYPE_KEY: "sd"})
+    )
+    server.stop()
+    assert (server.current_map, server.game_type) == ("mp_breakout", "sd")
+
+
 @pytest.mark.parametrize(
     "target",
     [
@@ -405,6 +449,8 @@ async def test_unsafe_targets_never_reach_the_server(q3: Quake3Simulator, target
     [
         ("q3a", ["map_restart"], ["map q3dm1"]),
         ("cod", ["map_restart"], ["map mp_carentan"]),
+        ("coduo", ["map_restart"], ["map mp_cassino"]),
+        ("cod2", ["fast_restart"], ["map_restart"]),
         ("cod4", ["fast_restart"], ["map_restart"]),
         ("codwaw", ["fast_restart"], ["map_restart"]),
     ],

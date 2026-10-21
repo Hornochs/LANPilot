@@ -1,12 +1,13 @@
-"""Call of Duty (1.5), Call of Duty 4 (CoD4X 1.8, which LAN parties run instead of the
-stock 1.7 server) and Call of Duty: World at War (1.7).
+"""Call of Duty (1.5), United Offensive (1.51), Call of Duty 2 (1.3), Call of Duty 4 (CoD4X
+1.8, which LAN parties run instead of the stock 1.7 server) and World at War (1.7).
 
-Call of Duty keeps its multiplayer maps as bsp files in ``maps/mp``, so ``dir maps/mp bsp``
-lists them. Call of Duty 4 and World at War load maps from fast files and cannot list them
-(CoD4X has no ``dir``, WaW's finds nothing): their list is the stock maps from the
-catalogue plus every map named in ``sv_mapRotation`` (where custom maps are configured).
-None offers a ban: they ban by player id, which LAN players without a key share (measured
-on CoD4X: bots all have id 0). Facts: docs/games/quake3.md.
+Call of Duty and United Offensive keep their multiplayer maps as bsp files in ``maps/mp``,
+Call of Duty 2 as d3dbsp files there, so ``dir`` lists them. Call of Duty 4 and World at War
+load maps from fast files and cannot list them (CoD4X has no ``dir``, WaW's finds nothing):
+their list is the stock maps from the catalogue plus every map named in ``sv_mapRotation``
+(where custom maps are configured). None offers a ban: they ban by player id, which LAN
+players without a key share (measured on CoD4X: bots all have id 0). Facts:
+docs/games/quake3.md.
 """
 
 from __future__ import annotations
@@ -59,6 +60,51 @@ class CallOfDutyAdapter(Quake3FamilyAdapter):
     @classmethod
     def _is_mine(cls, info: Mapping[str, str]) -> bool:
         return info.get("gamename", "").lower() == "call of duty"
+
+
+class CallOfDutyUnitedOffensiveAdapter(CallOfDutyAdapter):
+    """United Offensive (1.51): the commands of Call of Duty 1, with three more game types;
+    ``dir maps/mp bsp`` lists its maps and those of Call of Duty."""
+
+    id = "coduo"
+    name = "Call of Duty: United Offensive"
+    game_types: ClassVar[Mapping[str, str]] = {
+        **CallOfDutyAdapter.game_types,
+        "bas": "Base Assault",
+        "ctf": "Capture the Flag",
+        "dom": "Domination",
+    }
+    image_lookup: ClassVar[Mapping[str, str]] = {"gametracker": "uo"}
+
+    @classmethod
+    def _is_mine(cls, info: Mapping[str, str]) -> bool:
+        return info.get("gamename", "").lower() == "cod:united offensive"
+
+
+class CallOfDuty2Adapter(Quake3FamilyAdapter):
+    """Call of Duty 2 (1.3): maps are ``.d3dbsp`` files in ``maps/mp``; restarts as on
+    CoD4; the kick takes the slot only."""
+
+    id = "cod2"
+    name = "Call of Duty 2"
+    connection_schema = CallOfDutyConnection
+    game_types: ClassVar[Mapping[str, str]] = {
+        "dm": "Deathmatch",
+        "tdm": "Team Deathmatch",
+        "sd": "Search and Destroy",
+        "hq": "Headquarters",
+        "ctf": "Capture the Flag",
+    }
+    image_lookup: ClassVar[Mapping[str, str]] = {"gametracker": "cod2"}
+    soft_restart = "fast_restart"
+    hard_restart = "map_restart"
+
+    async def _reported_maps(self) -> list[str]:
+        return directory_maps(await self._execute("dir maps/mp d3dbsp"), "d3dbsp")
+
+    @classmethod
+    def _is_mine(cls, info: Mapping[str, str]) -> bool:
+        return info.get("gamename", "").lower() == "call of duty 2"
 
 
 async def stock_and_rotation_maps(adapter: Quake3FamilyAdapter) -> list[str]:

@@ -205,8 +205,11 @@ class Quake3Rcon:
         self._last_sent: float | None = None
         self._refused = False
 
-    async def execute(self, command: str) -> str:
+    async def execute(self, command: str, *, first_answer_seconds: float | None = None) -> str:
         """Run a console command and return what the server printed.
+
+        ``first_answer_seconds`` overrides how long to wait for the first packet: a server
+        prints the answer to ``map`` only once the level is loaded.
 
         ``command`` is sent as one line. Callers that build it from parts must validate the
         parts; this method only rejects what would break the line itself.
@@ -235,7 +238,7 @@ class Quake3Rcon:
                 self._host,
                 self._port,
                 line.encode(),
-                first_answer_seconds=self._first_answer_seconds,
+                first_answer_seconds=first_answer_seconds or self._first_answer_seconds,
                 quiet_seconds=self._quiet_seconds,
             )
         )

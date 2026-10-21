@@ -20,7 +20,7 @@ _Last updated: 2026-10-21_
 | 7 – More games | in progress |
 | 8 – Hardening and 1.0 | done |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1 and 8.1–8.5, which completes
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1, 7.4 and 8.1–8.5, which completes
 phases 0, 1, 2, 4, 5, 6 and 8; 3.1, 3.2, 3.4 and 3.5. Version 1.0.0 is released.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
@@ -73,16 +73,16 @@ A2S client that replaced opengsq's was checked against CS2 and CS 1.6, the packa
 hash-pinned dependencies was built and inspected locally.
 
 The Quake 3 family adapters (7.1) were run against real servers (Quake III Arena 1.32c,
-Call of Duty 1.5, CoD4X 1.8, World at War 1.7): status, map list per game type, map and game type change,
+Call of Duty 1.5, CoD4X 1.8, World at War 1.7; in 7.4 United Offensive 1.51 and Call of
+Duty 2 1.3): status, map list per game type, map and game type change,
 both restarts, kick (bots), console, a wrong password and the LAN scan behaved as
 [games/quake3.md](games/quake3.md) describes; Quake 3, CoD and CoD4 were also added from
 the scan, WaW through the form, and all four used through the web interface. Bans and human players could not be tried.
 
-**In progress:** release 1.0.1 (with 7.1), prepared on its own branch; releases are
+**In progress:** release 1.0.1 (with 7.1 and 7.4), prepared on its own branch; releases are
 published by the maintainer.
 
-**Next:** 7.2 (Battlefield 2, Renegade X, ElDewrito) and 7.3 (monitoring only) when
-test servers exist. 3.3 (TM2/TM2020) is
+**Next:** 7.2 (Battlefield 2, Renegade X, ElDewrito, Halo 1, Serious Sam) and 7.3 (monitoring only) when test servers exist. 3.3 (TM2/TM2020) is
 postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
@@ -222,11 +222,14 @@ Player management should be checked with real players at the next LAN party (see
 - **7.1** ✔ Quake 3 RCON family: transport (`getstatus`, RCON with the 500 ms limit of Quake 3
   and CoD 1), adapters `q3a`, `cod`, `cod4`, `codwaw` with maps per game type (CoD4 and WaW:
   catalogue and rotation), players, kick (Quake 3 also ban by IP), console and LAN scan, verified against
-  real servers. Jedi Knight is left out (no test server: LinuxGSM installs no game data);
-  CoD 2 and United Offensive are not measured.
-- **7.2** Battlefield 2, Renegade X, ElDewrito, each after verifying the protocol.
+  real servers. Jedi Knight is left out (no test server: LinuxGSM installs no game data).
+- **7.2** Battlefield 2, Renegade X, ElDewrito, Halo 1, Serious Sam, each after verifying the
+  protocol.
 - **7.3** Monitoring only: Age of Empires 1/2, Alien vs Predator 2, C&C Generals, F.E.A.R. 2,
-  FlatOut 2, Halo 1, Serious Sam, Stronghold, Supreme Commander, Toxikk, Warcraft III.
+  FlatOut 2, Stronghold, Supreme Commander, Toxikk, Warcraft III.
+- **7.4** ✔ Call of Duty 2 and United Offensive: adapters `cod2` and `coduo` on the Quake 3
+  family of 7.1, verified against real servers; map changes wait for the level load and
+  report a game type the map fell back from.
 
 ### Phase 8 – Hardening and 1.0
 

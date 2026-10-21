@@ -54,6 +54,7 @@ GAME_TYPE_CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
 SLOT = re.compile(r"[0-9]{1,3}", re.ASCII)
 GAME_TYPE_KEY = "gametype"  # MapRef.extra: the g_gametype value to set
 QUERY_TIMEOUT_SECONDS = 3.0
+LEVEL_LOAD_SECONDS = 15.0
 MAX_NAME_LENGTH = 100
 MAX_MAPS = 2000
 MAX_STATUS_COLUMNS = 8  # fields on either side of the name in a status row (CoD4X: 5 and 4)
@@ -153,12 +154,12 @@ def rotation_maps(rotation: str) -> list[str]:
     return list(names)
 
 
-def directory_maps(listing: str) -> list[str]:
-    """Map names from the answer to ``dir <folder> bsp``, in the server's order."""
+def directory_maps(listing: str, extension: str = "bsp") -> list[str]:
+    """Map names from the answer to ``dir <folder> <extension>``, in the server's order."""
     names: dict[str, None] = {}
     for line in listing.splitlines():
-        name, dot, extension = line.strip().rpartition(".")
-        if dot and extension.lower() == "bsp" and MAP_NAME.fullmatch(name):
+        name, dot, found = line.strip().rpartition(".")
+        if dot and found.lower() == extension and MAP_NAME.fullmatch(name):
             names.setdefault(name)
     return list(names)
 
@@ -234,8 +235,10 @@ class Quake3FamilyAdapter(GameAdapter):
             )
         return self._rcon_client
 
-    async def _execute(self, command: str) -> str:
-        return await self._rcon().execute(command)
+    async def _execute(self, command: str, *, loads_level: bool = False) -> str:
+        # A level load answers only once it is done (United Offensive: 2-3 s and more).
+        wait = LEVEL_LOAD_SECONDS if loads_level else None
+        return await self._rcon().execute(command, first_answer_seconds=wait)
 
     # --- status ------------------------------------------------------------------------
 
@@ -293,16 +296,32 @@ class Quake3FamilyAdapter(GameAdapter):
                 # Not left for the next restart. CoD4X keeps it pending nonetheless.
                 await self._execute(f"g_gametype {previous}")
             raise
+        # The map command loads the level before it answers, so the status is current. A
+        # map made without that game type falls back to another one (United Offensive's
+        # mp_sicily and Base Assault became Deathmatch).
+        running = (await get_status(self._host, self._port, QUERY_TIMEOUT_SECONDS)).info.get(
+            "g_gametype", ""
+        )
+        if running and running.lower() != code:
+            raise CommandRejectedError(
+                M(
+                    "The map {key} was loaded, but not as {wanted}: the server runs "
+                    "{running}, probably because the map is not made for that game type.",
+                    key=target.key,
+                    wanted=self.game_types[code],
+                    running=self._game_type_name(running),
+                )
+            )
 
     async def _load(self, name: str) -> None:
-        answer = await self._execute(f"map {name}")
+        answer = await self._execute(f"map {name}", loads_level=True)
         if MISSING_MAP in answer:
             raise CommandRejectedError(M("The server does not have the map {key}.", key=name))
 
     async def restart(self, mode: RestartMode) -> None:
         command = self.soft_restart if mode is RestartMode.SOFT else self.hard_restart
         if command is not None:
-            await self._execute(command)
+            await self._execute(command, loads_level=True)
             return
         current = (await self.query()).map
         if current is None:

@@ -113,7 +113,7 @@ src/lanpilot/
   testing/uweb.py ✔         simulators of the UT99/UT2004 WebAdmin + GameSpy query, and UT3
   testing/lan.py ✔          simulators of the LAN discovery answers of Trackmania and Unreal
   testing/rcon_players.py ✔ players, kicks and bans for the RCON simulators
-  testing/quake3.py ✔       simulator of Quake 3, Call of Duty, CoD4X and WaW servers
+  testing/quake3.py ✔       simulator of Quake 3 and the Call of Duty servers
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -140,7 +140,7 @@ src/lanpilot/
   games/unreal/discovery.py ✔       LAN beacons of UT99, UT2004 and UT3
   games/quake3/common.py ✔          Quake3FamilyAdapter, IpBanAdapter, status parsing, LAN scan
   games/quake3/quake3.py ✔          Quake III Arena
-  games/quake3/callofduty.py ✔      Call of Duty, Call of Duty 4, World at War
+  games/quake3/callofduty.py ✔      Call of Duty 1, UO, 2, 4, World at War
   games/ (planned)  monitor_only
   catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
                     Unreal Archive image index (package data)
@@ -258,7 +258,8 @@ able to switch to every map `look_up_map()` returned.
 
 ## Protocols
 
-_State: the Quake 3 transport and the `q3a`, `cod`, `cod4` and `codwaw` adapters are implemented and
+_State: the Quake 3 transport and the `q3a`, `cod`, `coduo`, `cod2`, `cod4` and `codwaw` adapters
+are implemented and
 verified against real servers (step 7.1). GoldSrc RCON and the Counter-Strike 1.6 adapter are implemented and verified against
 a real server (steps 2.1, 2.2). Source RCON and the CS:Source, CS:GO and CS2 adapters are
 implemented and verified against real servers (step 2.3). GBXRemote and the TrackMania
@@ -275,7 +276,7 @@ measured._
 | GBXRemote / XML-RPC (TCP 5000) | Trackmania | `core/transports/gbxremote.py`, encoding via `xmlrpc.client` | ✔ (TMNF measured) |
 | UWeb WebAdmin (HTTP) | UT99, UT2004, UT3 | `core/transports/uweb.py` (aiohttp, `html.parser`) | ✔ |
 | GameSpy query (UDP) | UT99, UT2004 | `opengsq` `GameSpy1` | used by `ut99`, `ut2004` |
-| Quake 3 RCON + getstatus (UDP) | Quake III Arena, Call of Duty 1, 4, World at War | `core/transports/quake3.py` | ✔ |
+| Quake 3 RCON + getstatus (UDP) | Quake III Arena, Call of Duty 1, UO, 2, 4, World at War | `core/transports/quake3.py` | ✔ |
 
 **Layers.** A *transport* (`core/transports/`) speaks one protocol and knows nothing about
 games; it turns protocol failures into the adapter errors. An *adapter* (`games/`) knows the
@@ -388,20 +389,23 @@ sends `getstatus` (one datagram, info string and player lines, parsed by its own
 parser) and RCON as `rcon "<password>" <command>` on the game port; output is the `print`
 packets that arrive until 300 ms pass without one. It refuses passwords with spaces or
 quotes and commands with line breaks, never sends a refused password again, and keeps a
-minimum interval between commands (Quake 3, CoD 1 and WaW drop RCON packets less than
-500 ms apart; the adapters use 700 ms, CoD4X needs none). `Quake3FamilyAdapter` holds
-everything; `q3a`, `cod`, `cod4` and `codwaw` set `game_types` (`g_gametype` code → name), the restart commands
+minimum interval between commands (Quake 3, CoD 1, UO, CoD 2 and WaW drop RCON packets less
+than 500 ms apart; the adapters use 700 ms, CoD4X needs none). `Quake3FamilyAdapter` holds
+everything; `q3a`, `cod`, `coduo`, `cod2`, `cod4` and `codwaw` set `game_types` (`g_gametype` code → name), the restart commands
 (`None` = load the current map again), whether the kick takes a reason, and
-`_reported_maps()`: `dir maps bsp` (Quake 3), `dir maps/mp bsp` (CoD 1), the catalogue's
+`_reported_maps()`: `dir maps bsp` (Quake 3), `dir maps/mp bsp` (CoD 1, UO), `dir maps/mp
+d3dbsp` (CoD 2), the catalogue's
 stock maps plus the maps of `sv_mapRotation` (CoD4 and WaW, which cannot list maps). The map list
 holds every map once per game type with `extra["gametype"]` = the code, as the Unreal
 adapters do; a change sends `g_gametype <code>` and `map <name>` and sets the previous game
-type back if the map is missing. Players come from `status`, whose header says how many
+type back if the map is missing. Map changes and restarts wait up to 15 s for the first
+answer (the level loads before the server answers); afterwards the status is read, and a
+different game type (the map is not made for the requested one) is reported as an error. Players come from `status`, whose header says how many
 fields stand before and after the name; the player id is the slot, and kick and ban read
 `status` again and act only if the slot still holds a player of that name. `IpBanAdapter`
 (Quake 3) bans with `addip <ip>` and a kick; Call of Duty bans by player id, which LAN
 players may share, so it has no ban. The LAN scan broadcasts `getstatus` to 27960–27963 and
-28960–28963 once for all four adapters (`find_servers()`, shared like the Counter-Strike
+28960–28963 once for all six adapters (`find_servers()`, shared like the Counter-Strike
 one) and sorts the answers by `gamename` and `version`.
 
 Research results for the games not yet implemented, including what is unverified, are in
@@ -430,7 +434,7 @@ server-supplied names to 64 printable characters. Packets and parsers come from 
 | `ut99` | `REPORTQUERY` to 8777–8786, then GameSpy on the announced query port |
 | `ut2004` | LAN query to 10777, then the Unreal 2 details; GameSpy port = game port + 10 |
 | `ut3` | UDK LAN beacon from UDP 14001 (`SO_REUSEADDR`) |
-| `q3a`, `cod`, `cod4`, `codwaw` | `getstatus` broadcast to 27960–27963 and 28960–28963; `gamename`/`version` pick the game; one shared broadcast per scan |
+| `q3a`, `cod`, `coduo`, `cod2`, `cod4`, `codwaw` | `getstatus` broadcast to 27960–27963 and 28960–28963; `gamename`/`version` pick the game; one shared broadcast per scan |
 
 **Scanner** (`core/scan.py`, `app.state.scanner`). `Scanner.run()` calls every registered
 adapter with `DISCOVER` (not the demo) concurrently, each with a limit of `timeout_seconds` +

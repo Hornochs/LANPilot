@@ -14,11 +14,13 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Archives (index shipped with LANPilot, built by `scripts/build_liandri_index.py`). It is
   on by default; an installation that lists `images.sources` itself must add it. Online
   sources may now deliver GIF images (first frame); uploads still accept JPEG, PNG and WebP.
-- Quake III Arena (`q3a`), Call of Duty (`cod`), Call of Duty 4 (`cod4`, CoD4X) and Call of
-  Duty: World at War (`codwaw`) over the Quake 3 protocol: status without password, maps per
+- Quake III Arena (`q3a`), Call of Duty (`cod`), United Offensive (`coduo`), Call of Duty 2
+  (`cod2`), Call of Duty 4 (`cod4`, CoD4X) and Call of Duty: World at War (`codwaw`) over the
+  Quake 3 protocol: status without password, maps per
   game type (CoD4 and WaW: stock maps and the map rotation), map and game type change, both
   restarts, players with kick (Quake 3 also ban by IP address), console and LAN scan. Map
-  names for their stock maps; images from GameTracker.
+  names for their stock maps; images from GameTracker. A map change that the server loads
+  with another game type (the map is not made for it) is reported as an error.
 
 ### Changed
 

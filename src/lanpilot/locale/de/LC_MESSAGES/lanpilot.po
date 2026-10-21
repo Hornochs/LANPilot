@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-21 13:24+0200\n"
+"POT-Creation-Date: 2026-10-21 21:38+0200\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -383,6 +383,10 @@ msgstr "Die Status-Antwort des Servers ist abgeschnitten."
 #: src/lanpilot/core/transports/a2s.py:90
 #: src/lanpilot/core/transports/a2s.py:96
 #: src/lanpilot/core/transports/a2s.py:189
+#: src/lanpilot/core/transports/dewrito.py:77
+#: src/lanpilot/core/transports/dewrito.py:81
+#: src/lanpilot/core/transports/dewrito.py:85
+#: src/lanpilot/core/transports/dewrito.py:87
 #: src/lanpilot/core/transports/quake3.py:94
 #: src/lanpilot/games/unreal/common.py:57
 msgid "The server's status answer could not be read."
@@ -408,6 +412,65 @@ msgstr "Der Server hat eine geteilte Status-Antwort gesendet."
 #: src/lanpilot/games/unreal/common.py:55
 msgid "The server did not answer the status query."
 msgstr "Der Server hat die Statusabfrage nicht beantwortet."
+
+#: src/lanpilot/core/transports/dewrito.py:71
+#, python-brace-format
+msgid "The status server answered with HTTP {status}."
+msgstr "Der Status-Server antwortete mit HTTP {status}."
+
+#: src/lanpilot/core/transports/dewrito.py:79
+msgid "The server's status port cannot be reached."
+msgstr "Der Status-Port des Servers ist nicht erreichbar."
+
+#: src/lanpilot/core/transports/dewrito.py:97
+#: src/lanpilot/core/transports/dewrito.py:146
+#: src/lanpilot/core/transports/goldsrc_rcon.py:176
+#: src/lanpilot/core/transports/quake3.py:247
+#: src/lanpilot/core/transports/source_rcon.py:147
+msgid "The server refused the RCON password."
+msgstr "Der Server hat das RCON-Passwort abgelehnt."
+
+#: src/lanpilot/core/transports/dewrito.py:129
+#: src/lanpilot/core/transports/source_rcon.py:136
+msgid "Nothing accepts RCON connections on that port."
+msgstr "Auf diesem Port nimmt nichts RCON-Verbindungen an."
+
+#: src/lanpilot/core/transports/dewrito.py:134
+#: src/lanpilot/core/transports/dewrito.py:139
+msgid "The server's RCON port does not speak ElDewrito's RCON protocol."
+msgstr "Auf dem RCON-Port des Servers läuft nicht das RCON-Protokoll von ElDewrito."
+
+#: src/lanpilot/core/transports/dewrito.py:149
+#: src/lanpilot/core/transports/source_rcon.py:151
+msgid "The server did not confirm the RCON login."
+msgstr "Der Server hat die RCON-Anmeldung nicht bestätigt."
+
+#: src/lanpilot/core/transports/dewrito.py:160
+msgid "The server sent a malformed RCON answer."
+msgstr "Der Server hat eine fehlerhafte RCON-Antwort geschickt."
+
+#: src/lanpilot/core/transports/dewrito.py:175
+#: src/lanpilot/core/transports/quake3.py:223
+#: src/lanpilot/core/transports/source_rcon.py:165
+msgid "The command is empty, too long or contains a line break."
+msgstr "Der Befehl ist leer, zu lang oder enthält einen Zeilenumbruch."
+
+#: src/lanpilot/core/transports/dewrito.py:180
+#: src/lanpilot/core/transports/goldsrc_rcon.py:163
+#: src/lanpilot/core/transports/quake3.py:228
+#: src/lanpilot/core/transports/source_rcon.py:170
+msgid "The server refused the RCON password. Edit the server to enter another one."
+msgstr "Der Server hat das RCON-Passwort abgelehnt. Den Server bearbeiten, um ein anderes einzugeben."
+
+#: src/lanpilot/core/transports/dewrito.py:200
+#: src/lanpilot/core/transports/source_rcon.py:190
+msgid "The server stopped answering over RCON."
+msgstr "Der Server antwortet nicht mehr über RCON."
+
+#: src/lanpilot/core/transports/dewrito.py:204
+#: src/lanpilot/core/transports/source_rcon.py:194
+msgid "The RCON connection was closed by the server."
+msgstr "Die RCON-Verbindung wurde vom Server geschlossen."
 
 #: src/lanpilot/core/transports/gbxremote.py:99
 msgid "The server refused the password. Edit the server to enter another one."
@@ -474,18 +537,6 @@ msgstr "Der Server hat keine RCON-Challenge gesendet."
 msgid "The command is empty or contains a line break."
 msgstr "Der Befehl ist leer oder enthält einen Zeilenumbruch."
 
-#: src/lanpilot/core/transports/goldsrc_rcon.py:163
-#: src/lanpilot/core/transports/quake3.py:228
-#: src/lanpilot/core/transports/source_rcon.py:170
-msgid "The server refused the RCON password. Edit the server to enter another one."
-msgstr "Der Server hat das RCON-Passwort abgelehnt. Den Server bearbeiten, um ein anderes einzugeben."
-
-#: src/lanpilot/core/transports/goldsrc_rcon.py:176
-#: src/lanpilot/core/transports/quake3.py:247
-#: src/lanpilot/core/transports/source_rcon.py:147
-msgid "The server refused the RCON password."
-msgstr "Der Server hat das RCON-Passwort abgelehnt."
-
 #: src/lanpilot/core/transports/goldsrc_rcon.py:178
 msgid "The server keeps rejecting the RCON challenge."
 msgstr "Der Server weist die RCON-Challenge immer wieder zurück."
@@ -494,11 +545,6 @@ msgstr "Der Server weist die RCON-Challenge immer wieder zurück."
 msgid "The RCON password is empty or contains a space or a quote, which the protocol cannot carry."
 msgstr "Das RCON-Passwort ist leer oder enthält ein Leerzeichen oder ein Anführungszeichen, was das Protokoll nicht übertragen kann."
 
-#: src/lanpilot/core/transports/quake3.py:223
-#: src/lanpilot/core/transports/source_rcon.py:165
-msgid "The command is empty, too long or contains a line break."
-msgstr "Der Befehl ist leer, zu lang oder enthält einen Zeilenumbruch."
-
 #: src/lanpilot/core/transports/source_rcon.py:91
 msgid "The RCON password is empty or contains a null character, which the protocol cannot carry."
 msgstr "Das RCON-Passwort ist leer oder enthält ein Nullzeichen, was das Protokoll nicht übertragen kann."
@@ -506,22 +552,6 @@ msgstr "Das RCON-Passwort ist leer oder enthält ein Nullzeichen, was das Protok
 #: src/lanpilot/core/transports/source_rcon.py:125
 msgid "The server sent a malformed RCON packet."
 msgstr "Der Server hat ein fehlerhaftes RCON-Paket gesendet."
-
-#: src/lanpilot/core/transports/source_rcon.py:136
-msgid "Nothing accepts RCON connections on that port."
-msgstr "Auf diesem Port nimmt nichts RCON-Verbindungen an."
-
-#: src/lanpilot/core/transports/source_rcon.py:151
-msgid "The server did not confirm the RCON login."
-msgstr "Der Server hat die RCON-Anmeldung nicht bestätigt."
-
-#: src/lanpilot/core/transports/source_rcon.py:190
-msgid "The server stopped answering over RCON."
-msgstr "Der Server antwortet nicht mehr über RCON."
-
-#: src/lanpilot/core/transports/source_rcon.py:194
-msgid "The RCON connection was closed by the server."
-msgstr "Die RCON-Verbindung wurde vom Server geschlossen."
 
 #: src/lanpilot/core/transports/uweb.py:106
 msgid "The WebAdmin's page is too large to read."
@@ -553,22 +583,6 @@ msgstr "Das WebAdmin ist nicht erreichbar."
 msgid "The WebAdmin's answer could not be read."
 msgstr "Die Antwort des WebAdmin konnte nicht gelesen werden."
 
-#: src/lanpilot/games/counterstrike/common.py:176
-#: src/lanpilot/games/quake3/common.py:409
-msgid "The server did not report this player's IP address, so it cannot ban it."
-msgstr "Der Server hat die IP-Adresse dieses Spielers nicht gemeldet, daher kann sie nicht gebannt werden."
-
-#: src/lanpilot/games/counterstrike/common.py:185
-#: src/lanpilot/games/quake3/common.py:354
-msgid "This player cannot be named in a command."
-msgstr "Dieser Spieler kann nicht in einem Befehl angegeben werden."
-
-#: src/lanpilot/games/counterstrike/goldsrc.py:63
-#: src/lanpilot/games/counterstrike/source.py:77
-#: src/lanpilot/games/quake3/common.py:81
-msgid "RCON password"
-msgstr "RCON-Passwort"
-
 #: src/lanpilot/games/counterstrike/goldsrc.py:64
 #: src/lanpilot/games/counterstrike/source.py:78
 msgid "The value of rcon_password in the server's configuration (server.cfg)."
@@ -579,12 +593,6 @@ msgstr "Der Wert von rcon_password in der Konfiguration des Servers (server.cfg)
 #: src/lanpilot/games/quake3/common.py:282
 msgid "This map name cannot be sent to the server."
 msgstr "Dieser Map-Name kann nicht an den Server gesendet werden."
-
-#: src/lanpilot/games/counterstrike/goldsrc.py:130
-#: src/lanpilot/games/quake3/common.py:319
-#, python-brace-format
-msgid "The server does not have the map {key}."
-msgstr "Der Server hat die Map {key} nicht."
 
 #: src/lanpilot/games/counterstrike/source.py:72
 msgid "The game port. RCON uses the same port over TCP."
@@ -641,6 +649,76 @@ msgstr "Der Server hat keine Map namens {key}."
 msgid "That player is not on the server."
 msgstr "Dieser Spieler ist nicht auf dem Server."
 
+#: src/lanpilot/games/eldewrito.py:118
+msgid "RCON port"
+msgstr "RCON-Port"
+
+#: src/lanpilot/games/eldewrito.py:119
+msgid "Game.RconPort in the server's dewrito_prefs.cfg (default 11776, TCP)."
+msgstr "Game.RconPort in der dewrito_prefs.cfg des Servers (Standard 11776, TCP)."
+
+#: src/lanpilot/games/eldewrito.py:125
+msgid "Status port"
+msgstr "Status-Port"
+
+#: src/lanpilot/games/eldewrito.py:127
+msgid "Server.Port in the server's dewrito_prefs.cfg: its HTTP status server (default 11775, TCP)."
+msgstr "Server.Port in der dewrito_prefs.cfg des Servers: sein HTTP-Status-Server (Standard 11775, TCP)."
+
+#: src/lanpilot/games/counterstrike/goldsrc.py:63
+#: src/lanpilot/games/counterstrike/source.py:77
+#: src/lanpilot/games/eldewrito.py:134 src/lanpilot/games/quake3/common.py:81
+msgid "RCON password"
+msgstr "RCON-Passwort"
+
+#: src/lanpilot/games/eldewrito.py:135
+msgid "Server.RconPassword in the server's dewrito_prefs.cfg."
+msgstr "Server.RconPassword in der dewrito_prefs.cfg des Servers."
+
+#: src/lanpilot/games/eldewrito.py:259 src/lanpilot/games/unreal/ut3.py:351
+#: src/lanpilot/games/unreal/webadmin.py:279
+msgid "This map or game type cannot be sent to the server."
+msgstr "Diese Map oder dieser Spielmodus kann nicht an den Server gesendet werden."
+
+#: src/lanpilot/games/eldewrito.py:265
+#, python-brace-format
+msgid "The server cannot load the game type {name}."
+msgstr "Der Server kann den Spielmodus {name} nicht laden."
+
+#: src/lanpilot/games/counterstrike/goldsrc.py:130
+#: src/lanpilot/games/eldewrito.py:269 src/lanpilot/games/quake3/common.py:319
+#, python-brace-format
+msgid "The server does not have the map {key}."
+msgstr "Der Server hat die Map {key} nicht."
+
+#: src/lanpilot/games/eldewrito.py:292
+msgid "The server did not return to the lobby."
+msgstr "Der Server ist nicht in die Lobby zurückgekehrt."
+
+#: src/lanpilot/games/eldewrito.py:302
+msgid "The server could not start the game."
+msgstr "Der Server konnte das Spiel nicht starten."
+
+#: src/lanpilot/games/counterstrike/common.py:185
+#: src/lanpilot/games/eldewrito.py:364 src/lanpilot/games/quake3/common.py:354
+msgid "This player cannot be named in a command."
+msgstr "Dieser Spieler kann nicht in einem Befehl angegeben werden."
+
+#: src/lanpilot/games/eldewrito.py:368 src/lanpilot/games/quake3/common.py:358
+msgid "The player is no longer on the server."
+msgstr "Der Spieler ist nicht mehr auf dem Server."
+
+#: src/lanpilot/games/eldewrito.py:375 src/lanpilot/games/eldewrito.py:386
+#: src/lanpilot/games/unreal/ut3.py:278
+#: src/lanpilot/games/unreal/webadmin.py:176
+msgid "The server did not remove the player."
+msgstr "Der Server hat den Spieler nicht entfernt."
+
+#: src/lanpilot/games/counterstrike/common.py:176
+#: src/lanpilot/games/eldewrito.py:381 src/lanpilot/games/quake3/common.py:409
+msgid "The server did not report this player's IP address, so it cannot ban it."
+msgstr "Der Server hat die IP-Adresse dieses Spielers nicht gemeldet, daher kann sie nicht gebannt werden."
+
 #: src/lanpilot/games/quake3/callofduty.py:36
 #: src/lanpilot/games/quake3/common.py:76
 msgid "The game port; status and RCON use it too."
@@ -658,10 +736,6 @@ msgstr "Die Map {key} wurde geladen, aber nicht als {wanted}: Der Server läuft 
 #: src/lanpilot/games/quake3/common.py:328
 msgid "The server did not report its current map."
 msgstr "Der Server hat nicht gemeldet, welche Map läuft."
-
-#: src/lanpilot/games/quake3/common.py:358
-msgid "The player is no longer on the server."
-msgstr "Der Spieler ist nicht mehr auf dem Server."
 
 #: src/lanpilot/games/trackmania/common.py:61
 msgid "XML-RPC port"
@@ -808,11 +882,6 @@ msgstr "{game} kann die Runde nicht allein neu starten"
 msgid "This player cannot be removed over the WebAdmin."
 msgstr "Dieser Spieler kann über das WebAdmin nicht entfernt werden."
 
-#: src/lanpilot/games/unreal/ut3.py:278
-#: src/lanpilot/games/unreal/webadmin.py:176
-msgid "The server did not remove the player."
-msgstr "Der Server hat den Spieler nicht entfernt."
-
 #: src/lanpilot/games/unreal/ut3.py:285
 msgid "The WebAdmin's console is switched off (bConsoleEnabled in UTWeb.ini)."
 msgstr "Die Konsole des WebAdmin ist ausgeschaltet (bConsoleEnabled in der UTWeb.ini)."
@@ -830,11 +899,6 @@ msgstr "Die Spielerseite des WebAdmin hat ein unerwartetes Format."
 #: src/lanpilot/games/unreal/webadmin.py:262
 msgid "The WebAdmin did not tell which game type is running."
 msgstr "Das WebAdmin hat nicht mitgeteilt, welcher Spielmodus läuft."
-
-#: src/lanpilot/games/unreal/ut3.py:351
-#: src/lanpilot/games/unreal/webadmin.py:279
-msgid "This map or game type cannot be sent to the server."
-msgstr "Diese Map oder dieser Spielmodus kann nicht an den Server gesendet werden."
 
 #: src/lanpilot/games/unreal/ut3.py:364
 #: src/lanpilot/games/unreal/webadmin.py:285

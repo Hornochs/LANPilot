@@ -21,7 +21,7 @@ _Last updated: 2026-10-21_
 | 8 – Hardening and 1.0 | done |
 
 **Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1, 7.4 and 8.1–8.5, which completes
-phases 0, 1, 2, 4, 5, 6 and 8; 3.1, 3.2, 3.4 and 3.5. Version 1.0.0 is released.
+phases 0, 1, 2, 4, 5, 6 and 8; 3.1, 3.2, 3.4 and 3.5; of 7.2 ElDewrito. Version 1.0.0 is released.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
 all seven distribution packages and ran the install, upgrade, reinstall and removal test for
@@ -79,11 +79,18 @@ both restarts, kick (bots), console, a wrong password and the LAN scan behaved a
 [games/quake3.md](games/quake3.md) describes; Quake 3, CoD and CoD4 were also added from
 the scan, WaW through the form, and all four used through the web interface. Bans and human players could not be tried.
 
-**In progress:** release 1.0.1 (with 7.1 and 7.4), prepared on its own branch; releases are
+The ElDewrito adapter (7.2) was run against an ElDewrito 0.7.1 server without players:
+status, map list per game variant, map and game type change (also through the web interface
+of the development instance), hard restart in the lobby, console with the password hidden,
+the LAN scan (command line and web page) and a wrong password behaved as [games/eldewrito.md](games/eldewrito.md) describes. A running
+game, the player list with players, kick and ban follow ElDewrito's source and still need a
+player.
+
+**In progress:** release 1.0.1 (with 7.1, 7.4 and ElDewrito of 7.2), prepared on its own branch; releases are
 published by the maintainer.
 
-**Next:** 7.2 (Battlefield 2, Renegade X, ElDewrito, Halo 1, Serious Sam) and 7.3 (monitoring only) when test servers exist. 3.3 (TM2/TM2020) is
-postponed: no test servers.
+**Next:** the rest of 7.2 (Battlefield 2, Renegade X, Halo 1, Serious Sam) and 7.3 (monitoring
+only) when test servers exist. 3.3 (TM2/TM2020) is postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
 
@@ -224,7 +231,10 @@ Player management should be checked with real players at the next LAN party (see
   catalogue and rotation), players, kick (Quake 3 also ban by IP), console and LAN scan, verified against
   real servers. Jedi Knight is left out (no test server: LinuxGSM installs no game data).
 - **7.2** Battlefield 2, Renegade X, ElDewrito, Halo 1, Serious Sam, each after verifying the
-  protocol.
+  protocol. ✔ ElDewrito: adapter `eldewrito` (HTTP status, RCON over the `dew-rcon`
+  WebSocket), maps per game variant, map change through the lobby, hard restart, players
+  with kick and ban by slot, console and LAN scan; verified against a 0.7.1 server without
+  players.
 - **7.3** Monitoring only: Age of Empires 1/2, Alien vs Predator 2, C&C Generals, F.E.A.R. 2,
   FlatOut 2, Stronghold, Supreme Commander, Toxikk, Warcraft III.
 - **7.4** ✔ Call of Duty 2 and United Offensive: adapters `cod2` and `coduo` on the Quake 3
@@ -265,5 +275,8 @@ Player management should be checked with real players at the next LAN party (see
   with human players (none of the test servers had any). To check at the next LAN party,
   per game: the player list, a kick, a ban and that the ban holds after a reconnect.
 - CS2 player management: needs the `status` format of a CS2 server with players.
+- ElDewrito with a player: whether `Game.Start` starts the game set up in the lobby, the
+  status while a game runs, and the `Server.ListPlayers` format, kick and ban (taken from the
+  0.6 source); see [games/eldewrito.md](games/eldewrito.md#open).
 - GameTracker and GameBanana: terms of use not confirmed; these image sources are therefore
   low priority and can be disabled individually.

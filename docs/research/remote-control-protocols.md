@@ -145,7 +145,7 @@ Sources: <https://www.4netplayers.com/de/wiki/call-of-duty-4/rcon-commands/>,
 | Game | Remote control | State |
 |---|---|---|
 | Battlefield 2 | RCON over TCP 4711 with a digest seed challenge; `admin.runNextLevel`, `admin.restartMap` | partly verified |
-| ElDewrito | WebSocket RCON, default port 11776 | port verified |
+| ElDewrito | WebSocket RCON (`dew-rcon`), default port 11776; status as JSON over HTTP on 11775 | implemented (`eldewrito`), see [../games/eldewrito.md](../games/eldewrito.md) |
 | Renegade X | own RCON over TCP | unverified |
 | Halo: Combat Evolved | RCON inside the game protocol, or SAPP | unverified |
 | Serious Sam | remote control exists (per the maintainer); protocol to be found | unverified |

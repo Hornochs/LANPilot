@@ -1,0 +1,17 @@
+# Stock maps of ElDewrito 0.7.1: map key (as Game.ListMaps names it) = display name (as the
+# status server reports it after Game.Map). All twelve were loaded and read back on a real
+# server. See docs/games/eldewrito.md.
+
+[eldewrito]
+bunkerworld = "Standoff"
+chill = "Narrows"
+cyberdyne = "The Pit"
+deadlock = "High Ground"
+guardian = "Guardian"
+riverworld = "Valhalla"
+s3d_avalanche = "Diamondback"
+s3d_edge = "Edge"
+s3d_reactor = "Reactor"
+s3d_turf = "Icebox"
+shrine = "Sandtrap"
+zanzibar = "Last Resort"

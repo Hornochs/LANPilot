@@ -21,6 +21,10 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   restarts, players with kick (Quake 3 also ban by IP address), console and LAN scan. Map
   names for their stock maps; images from GameTracker. A map change that the server loads
   with another game type (the map is not made for it) is reported as an error.
+- ElDewrito (`eldewrito`, Halo Online): status from the server's HTTP status server, control
+  over its RCON WebSocket (`dew-rcon`): maps per built-in game variant, map and game type
+  change, hard restart, players with kick and ban by IP address, and the console (which hides
+  the RCON password that `help` prints), and LAN scan. Map names for the twelve stock maps.
 
 ### Changed
 

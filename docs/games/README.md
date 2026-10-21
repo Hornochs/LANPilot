@@ -14,6 +14,7 @@ unverified starting point.
 | [`trackmania.md`](trackmania.md) | TrackMania Forever, Sunrise, Nations ESWC (verified), Original; TM2, Trackmania (2020) (planned) | 3.2 ✔, 3.5 ✔ |
 | [`unreal-tournament.md`](unreal-tournament.md) | UT99, UT2004, UT3 (verified); UT2003 dropped | 4.1 ✔ |
 | [`quake3.md`](quake3.md) | Quake III Arena, Call of Duty, United Offensive, Call of Duty 2, Call of Duty 4 (CoD4X), World at War (verified) | 7.1 ✔, 7.4 ✔ |
+| [`eldewrito.md`](eldewrito.md) | ElDewrito 0.7.1 (verified, without players) | 7.2 (ElDewrito ✔) |
 
 Player lists, kick and ban (phase 5) could not be tried with real players on any of the test
 servers; each file says what was measured and what was taken from the game's own code or

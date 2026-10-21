@@ -10,8 +10,8 @@ into each machine.
 > passwords, an English and German interface, and distribution packages. Working games:
 > **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
 > Forever** and **TrackMania Original/Sunrise/Nations ESWC**, **Unreal Tournament 99,
-> 2004 and 3**, and **Quake III Arena and Call of Duty 1, United Offensive, 2, 4 and World at
-> War** (player management not yet on CS2). More games come next.
+> 2004 and 3**, **Quake III Arena and Call of Duty 1, United Offensive, 2, 4 and World at
+> War**, and **ElDewrito** (player management not yet on CS2). More games come next.
 > Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ![The LANPilot dashboard with a card for each server](docs/images/dashboard.png)
@@ -56,7 +56,8 @@ into each machine.
 | Unreal Tournament 99, 2004, 3 | WebAdmin (HTTP) + GameSpy query | **supported** ([details](docs/games/unreal-tournament.md)) |
 | Quake III Arena, Call of Duty, United Offensive, Call of Duty 2, Call of Duty 4 (CoD4X), World at War | Quake 3 RCON + getstatus (UDP) | **supported** ([details](docs/games/quake3.md)) |
 | Jedi Knight | Quake 3 RCON (UDP) | planned |
-| Battlefield 2, Renegade X, ElDewrito, Halo 1, Serious Sam | game-specific | planned |
+| ElDewrito (Halo Online) | WebSocket RCON + HTTP status | **supported** ([details](docs/games/eldewrito.md)) |
+| Battlefield 2, Renegade X, Halo 1, Serious Sam | game-specific | planned |
 | Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | planned |
 
 ## Documentation

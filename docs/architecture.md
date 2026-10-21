@@ -105,6 +105,7 @@ src/lanpilot/
     transports/gbxremote.py ✔     GBXRemote 2 (XML-RPC over TCP) for Trackmania
     transports/uweb.py ✔          WebAdmin of Unreal servers: HTTP Basic auth, form parsing
     transports/quake3.py ✔        getstatus and RCON of id Tech 3 servers (UDP)
+    transports/dewrito.py ✔       ElDewrito: HTTP status server, RCON over a WebSocket (aiohttp)
   games/demo.py ✔           simulated server
   testing/contract.py ✔     check_adapter() for adapter authors
   testing/goldsrc.py ✔      simulator of a GoldSrc server (status query and RCON)
@@ -114,6 +115,7 @@ src/lanpilot/
   testing/lan.py ✔          simulators of the LAN discovery answers of Trackmania and Unreal
   testing/rcon_players.py ✔ players, kicks and bans for the RCON simulators
   testing/quake3.py ✔       simulator of Quake 3 and the Call of Duty servers
+  testing/eldewrito.py ✔    simulator of an ElDewrito server (status server and RCON WebSocket)
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -141,6 +143,7 @@ src/lanpilot/
   games/quake3/common.py ✔          Quake3FamilyAdapter, IpBanAdapter, status parsing, LAN scan
   games/quake3/quake3.py ✔          Quake III Arena
   games/quake3/callofduty.py ✔      Call of Duty 1, UO, 2, 4, World at War
+  games/eldewrito.py ✔              ElDewrito (Halo Online)
   games/ (planned)  monitor_only
   catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
                     Unreal Archive image index (package data)
@@ -258,7 +261,8 @@ able to switch to every map `look_up_map()` returned.
 
 ## Protocols
 
-_State: the Quake 3 transport and the `q3a`, `cod`, `coduo`, `cod2`, `cod4` and `codwaw` adapters
+_State: the ElDewrito transport and adapter are implemented and verified against a real
+server without players (step 7.2). The Quake 3 transport and the `q3a`, `cod`, `coduo`, `cod2`, `cod4` and `codwaw` adapters
 are implemented and
 verified against real servers (step 7.1). GoldSrc RCON and the Counter-Strike 1.6 adapter are implemented and verified against
 a real server (steps 2.1, 2.2). Source RCON and the CS:Source, CS:GO and CS2 adapters are
@@ -277,6 +281,7 @@ measured._
 | UWeb WebAdmin (HTTP) | UT99, UT2004, UT3 | `core/transports/uweb.py` (aiohttp, `html.parser`) | ✔ |
 | GameSpy query (UDP) | UT99, UT2004 | `opengsq` `GameSpy1` | used by `ut99`, `ut2004` |
 | Quake 3 RCON + getstatus (UDP) | Quake III Arena, Call of Duty 1, UO, 2, 4, World at War | `core/transports/quake3.py` | ✔ |
+| HTTP status + `dew-rcon` WebSocket (TCP) | ElDewrito | `core/transports/dewrito.py` (aiohttp) | ✔ (without players) |
 
 **Layers.** A *transport* (`core/transports/`) speaks one protocol and knows nothing about
 games; it turns protocol failures into the adapter errors. An *adapter* (`games/`) knows the
@@ -408,6 +413,31 @@ players may share, so it has no ban. The LAN scan broadcasts `getstatus` to 2796
 28960–28963 once for all six adapters (`find_servers()`, shared like the Counter-Strike
 one) and sorts the answers by `gamename` and `version`.
 
+**ElDewrito** (`core/transports/dewrito.py`, `games/eldewrito.py`). `get_info()` reads the
+status server's JSON (`GET /`, at most 256 KB, optionally with the join password as HTTP Basic
+`dorito:<password>`, without which a server that has one leaves out its players). `DewRcon`
+opens a WebSocket with the subprotocol `dew-rcon`, sends the password as the first frame and
+expects `accept` (`deny` is an `AuthenticationError` and stops further logins); then each
+command is one frame and its answer the next frame (at most 1 MB). It keeps the connection,
+opens a new one after 60 s without a command and once more when a kept one turns out to be
+closed. Answers carry no request id, so the server must not push chat or console output
+(`Server.SendChatToRconClients`, `Server.RconConsoleOutputEnabled`, both off by default). The
+adapter lists every map of `Game.ListMaps` once per built-in game variant (the names are
+case-sensitive and cannot be listed, so they are a fixed tuple) with `extra["gametype"]`; a
+change goes to the lobby (`Game.Stop`, then `Game.Info` until it shows `mainmenu`), sends
+`Game.GameType` and `Game.Map` with quoted, pattern-checked names, and `Game.Start` only when
+`Server.ListPlayers` lists somebody, because a start without players resets the lobby to the
+default map. The hard restart is the same without loading; there is no soft restart. Players
+come from `Server.ListPlayers` (slot, name, UID, address; parsed from both ends because names
+may contain quotes) with score and team from the status server, matched by UID unless several
+players share it; kick and ban use the slot (`Server.KickIndex`, `Server.KickBanIndex`) after
+checking that it still holds a player of that name, not the UID, which copied game folders
+share. The console replaces the RCON password in answers (`help` prints it). The LAN scan
+sends the server browser's query (opengsq's `ElDewrito.BROADCAST_QUERY`) to UDP 11774, keeps
+answers of at least 121 bytes that start with `01 blam` (servers send 160; the query itself
+comes back from LANPilot's own host), and reads the status server on the answering port
+plus one.
+
 Research results for the games not yet implemented, including what is unverified, are in
 [research/remote-control-protocols.md](research/remote-control-protocols.md).
 
@@ -435,6 +465,7 @@ server-supplied names to 64 printable characters. Packets and parsers come from 
 | `ut2004` | LAN query to 10777, then the Unreal 2 details; GameSpy port = game port + 10 |
 | `ut3` | UDK LAN beacon from UDP 14001 (`SO_REUSEADDR`) |
 | `q3a`, `cod`, `coduo`, `cod2`, `cod4`, `codwaw` | `getstatus` broadcast to 27960–27963 and 28960–28963; `gamename`/`version` pick the game; one shared broadcast per scan |
+| `eldewrito` | the server browser's `blam` query to UDP 11774, then the status server (HTTP) on the answering port + 1, which pre-fills the status port |
 
 **Scanner** (`core/scan.py`, `app.state.scanner`). `Scanner.run()` calls every registered
 adapter with `DISCOVER` (not the demo) concurrently, each with a limit of `timeout_seconds` +

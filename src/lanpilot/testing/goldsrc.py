@@ -2,7 +2,8 @@
 
 Speaks the two things LANPilot uses: the status query (A2S_INFO) and RCON. Its answers,
 including the way long output is cut into packets, follow what a real Counter-Strike 1.6
-server sent when it was measured (docs/games/counter-strike.md).
+server sent when it was measured (docs/games/counter-strike.md). ``folder``, ``game`` and
+``app_id`` make it answer the status query as another GoldSrc game (docs/games/valve.md).
 
     async with GoldSrcSimulator(password="secret") as server:
         adapter = CounterStrike16Adapter(
@@ -36,8 +37,14 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
         hostname: str = "Simulated HLDS",
         players: int = 3,
         max_players: int = 16,
+        folder: str = "cstrike",
+        game: str = "Counter-Strike",
+        app_id: int = 10,
     ) -> None:
         self.password = password
+        self.folder = folder
+        self.game = game
+        self.app_id = app_id
         self.maps = list(maps)
         self.current_map = self.maps[0]
         self.hostname = hostname
@@ -112,9 +119,9 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
             + bytes([48])
             + text(self.hostname)
             + text(self.current_map)
-            + text("cstrike")
-            + text("Counter-Strike")
-            + struct.pack("<H", 10)
+            + text(self.folder)
+            + text(self.game)
+            + struct.pack("<H", self.app_id)
             + bytes([self.players, self.max_players, 0])
             + b"dl"
             + bytes([0, 1])
@@ -141,7 +148,7 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
         if name == "status":
             return (
                 f"hostname:  {self.hostname}\n"
-                "version :  48/1.1.2.7/Stdio 10211 secure  (10)\n"
+                f"version :  48/1.1.2.7/Stdio 10211 secure  ({self.app_id})\n"
                 "tcp/ip  :  0.0.0.0:27015\n"
                 f"map     :  {self.current_map} at: 0 x, 0 y, 0 z\n"
                 f"players :  {self.players} active ({self.max_players} max)\n\n"
@@ -186,7 +193,7 @@ class GoldSrcSimulator(asyncio.DatagramProtocol):
         if name == "restart":
             self.restarts.append("hard")
             return self._loading_log()
-        if name in ("sv_restart", "sv_restartround"):
+        if name in ("sv_restart", "sv_restartround", "mp_clan_restartround"):
             self.restarts.append("soft")
             return f'L 10/13/2026 - 22:59:36: Server cvar "{name}" = "{argument}"\n'
         if name == "echo":

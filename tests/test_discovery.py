@@ -14,7 +14,6 @@ from lanpilot.core.adapters import DiscoveredServer
 from lanpilot.core.adapters.registry import load_registry
 from lanpilot.core.scan import Scanner
 from lanpilot.core.transports.a2s import ServerInfo
-from lanpilot.games.counterstrike import common as cs
 from lanpilot.games.counterstrike.goldsrc import CounterStrike16Adapter
 from lanpilot.games.counterstrike.source import (
     CounterStrike2Adapter,
@@ -28,6 +27,7 @@ from lanpilot.games.unreal import discovery as unreal
 from lanpilot.games.unreal.ut3 import UT3Adapter
 from lanpilot.games.unreal.ut99 import UT99Adapter
 from lanpilot.games.unreal.ut2004 import UT2004Adapter
+from lanpilot.games.valve import common as cs
 from lanpilot.testing.goldsrc import GoldSrcSimulator
 from lanpilot.testing.lan import (
     TrackmaniaInfoSimulator,
@@ -110,7 +110,11 @@ async def test_counter_strike_adapters_of_one_scan_share_one_broadcast(
         ),
         ({"app_id": 730, "game": "", "version": "1.40.0.0"}, "cs2"),
         ({"app_id": 730, "game": "", "version": "odd"}, "csgo"),
-        ({"app_id": 440, "folder": "tf"}, None),
+        ({"app_id": 440, "folder": "tf"}, "tf2"),
+        ({"app_id": 70, "folder": "valve"}, "hldm"),
+        ({"app_id": 20, "folder": "valve"}, None),
+        ({"app_id": None, "folder": "dod"}, "dod"),
+        ({"app_id": 4000, "folder": "garrysmod"}, None),
     ],
 )
 def test_classify(fields: dict[str, object], expected: str | None) -> None:

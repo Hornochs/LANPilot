@@ -34,8 +34,8 @@ text):
 
 | Game | Switch on | LANPilot reaches |
 |---|---|---|
-| Counter-Strike 1.6 | `rcon_password` in `server.cfg` | UDP game port (27015) |
-| CS:Source, CS:GO, CS2 | `rcon_password` | game port, UDP (status) and TCP (RCON) |
+| Counter-Strike 1.6, CS: Condition Zero, Half-Life DM, TFC, Day of Defeat, Opposing Force | `rcon_password` in `server.cfg` | UDP game port (27015) |
+| CS:Source, CS:GO, CS2, DoD: Source, HL2: Deathmatch, TF2 | `rcon_password` | game port, UDP (status) and TCP (RCON); a server on the LANPilot host by its LAN address, not 127.0.0.1 |
 | TrackMania Forever, Sunrise | `<authorization_levels>` in `dedicated_cfg.txt`; `xmlrpc_allowremote` for LANPilot's address | TCP XML-RPC port (5000) |
 | UT99, UT2004 | WebAdmin (`UWeb.WebServer`, `ListenPort`), `AdminPassword` | TCP WebAdmin port, UDP GameSpy query port (UT99: game port + 1, UT2004: + 10) |
 | UT3 | WebAdmin with `bHttpAuth=true` | TCP WebAdmin port |
@@ -51,7 +51,7 @@ the scan sends:
 
 | Game | Scan |
 |---|---|
-| Counter-Strike | UDP broadcast to 27015–27020 and 26900–26905 |
+| Counter-Strike and the other GoldSrc and Source games | UDP broadcast to 27015–27020 and 26900–26905 |
 | TrackMania | UDP broadcast to 2350–2353, then TCP to the game port |
 | UT99 | UDP broadcast to 8777–8786, then the GameSpy query |
 | UT2004 | UDP broadcast to 10777; the answer and a follow-up query use the query port (game port + 1) |

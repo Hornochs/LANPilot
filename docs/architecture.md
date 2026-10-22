@@ -4,7 +4,7 @@ This document describes how LANPilot is built. It is the reference to read befor
 the code, and it is updated in every change that alters structure, interfaces or the data
 model.
 
-> **Implementation state:** phases 0–2 and 4–6 are complete, phase 3 (Trackmania) except
+> **Implementation state:** phases 0–2 and 4–6 are complete, of phase 7 steps 7.1, 7.4 and 7.5 and ElDewrito, phase 3 (Trackmania) except
 > TM2/TM2020, and of phase 8 the security review, the upgrade tests and the German
 > interface (see [ROADMAP.md](ROADMAP.md)). Each section carries a state marker; what is
 > still planned (more games, phase 7) is marked as such.
@@ -128,9 +128,14 @@ src/lanpilot/
     engine.py ✔    async engine with SQLite pragmas, session factory
     migrate.py ✔   upgrade(), current_revision(), head_revision(), pre-migration backup
     migrations/ ✔  Alembic environment and versions/ (shipped inside the package)
-  games/counterstrike/common.py ✔   status query, map name pattern, stats parser
+  games/valve/common.py ✔           GoldSrc and Source: status query, LAN scan (classify()),
+                                    map name pattern, stats parser, RconPlayerControl
+  games/valve/goldsrc.py ✔          GoldSrcAdapter: what every GoldSrc game shares
+  games/valve/source.py ✔           SourceAdapter, Source1PlayerControl: what Source games share
+  games/valve/halflife.py ✔         Half-Life DM, TFC, Day of Defeat, Opposing Force, CS: CZ
+  games/valve/sourcegames.py ✔      Day of Defeat: Source, HL2: Deathmatch, Team Fortress 2
   games/counterstrike/goldsrc.py ✔  Counter-Strike 1.6
-  games/counterstrike/source.py ✔   CS:Source, CS:GO, CS2 (one base class, three adapters)
+  games/counterstrike/source.py ✔   CS:Source, CS:GO, CS2 (CS2's workshop maps)
   games/trackmania/common.py ✔      ChallengeAdapter: what the "challenge" generation shares
   games/trackmania/forever.py ✔     TrackMania Nations/United Forever
   games/trackmania/sunrise.py ✔     TrackMania Original, Sunrise (eXtreme), Nations ESWC
@@ -144,7 +149,6 @@ src/lanpilot/
   games/quake3/quake3.py ✔          Quake III Arena
   games/quake3/callofduty.py ✔      Call of Duty 1, UO, 2, 4, World at War
   games/eldewrito.py ✔              ElDewrito (Halo Online)
-  games/ (planned)  monitor_only
   catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
                     Unreal Archive image index (package data)
   testing/ (planned) simulators for the other protocols
@@ -225,7 +229,8 @@ except ban and discover, and switchable behaviour (`normal`, `slow`, `offline`; 
 password → `AuthenticationError`). It is offered in the user interface only when
 `enable_demo_adapter` is set.
 
-Games without remote control use a generic adapter that only has `STATUS` (planned, 7.3).
+Games without remote control get no adapter (decision of 2026-10-22): LANPilot is for
+controlling servers, not for a status display alone.
 
 ### Restart semantics
 
@@ -274,9 +279,9 @@ measured._
 
 | Protocol | Games | Implementation | State |
 |---|---|---|---|
-| Status query | all | `opengsq`; A2S_INFO: `core/transports/a2s.py` | A2S used by `cs16`, `css`, `csgo`, `cs2` |
-| GoldSrc RCON (UDP) | Counter-Strike 1.6 | `core/transports/goldsrc_rcon.py` | ✔ |
-| Source RCON (TCP) | CS:Source, CS:GO, CS2 | `core/transports/source_rcon.py` | ✔ |
+| Status query | all | `opengsq`; A2S_INFO: `core/transports/a2s.py` | A2S used by every GoldSrc and Source adapter (`games/valve/`, `games/counterstrike/`) |
+| GoldSrc RCON (UDP) | Counter-Strike 1.6, Condition Zero, Half-Life DM, TFC, Day of Defeat, Opposing Force | `core/transports/goldsrc_rcon.py` | ✔ |
+| Source RCON (TCP) | CS:Source, CS:GO, CS2, Day of Defeat: Source, HL2: Deathmatch, Team Fortress 2 | `core/transports/source_rcon.py` | ✔ |
 | GBXRemote / XML-RPC (TCP 5000) | Trackmania | `core/transports/gbxremote.py`, encoding via `xmlrpc.client` | ✔ (TMNF measured) |
 | UWeb WebAdmin (HTTP) | UT99, UT2004, UT3 | `core/transports/uweb.py` (aiohttp, `html.parser`) | ✔ |
 | GameSpy query (UDP) | UT99, UT2004 | `opengsq` `GameSpy1` | used by `ut99`, `ut2004` |
@@ -289,7 +294,7 @@ game's commands and parses their output. A *simulator* (`testing/`) reproduces t
 as a real server was observed to speak it, and the adapter's tests run against it. What was
 observed is written down in `games/<game>.md` first.
 
-**Patterns set by the first real adapter** (`games/counterstrike/goldsrc.py`), to be followed
+**Patterns set by the first real adapter** (Counter-Strike 1.6, now `games/valve/goldsrc.py`), to be followed
 by the next ones:
 
 - Status comes from the password-less server query wherever the game has one, so a wrong
@@ -372,22 +377,32 @@ command to `current_console`; the answer lands in the WebAdmin's message log
 which copes with the log being a window over the last messages). UT3's `/console` answers on
 the same page.
 
-**Counter-Strike on Source** (`games/counterstrike/source.py`). `SourceCounterStrikeAdapter`
-holds everything; `css`, `csgo` and `cs2` are small subclasses that set `id`, `name`,
+**GoldSrc and Source games** (`games/valve/`, step 7.5). The engine code that came with
+Counter-Strike is shared by every game on these engines. `GoldSrcAdapter`
+(`goldsrc.py`) and `SourceAdapter` (`source.py`) hold everything; a game is a subclass that
+sets `id`, `name`, `family`, `image_lookup` and its round restart (`soft_restart_command`,
+with `Capability.RESTART_SOFT`; `None` and no capability for Half-Life, TFC and Opposing
+Force, which have none). `halflife.py` holds `hldm`, `tfc`, `dod`, `opfor` and `czero`,
+`sourcegames.py` `dods`, `hl2dm` and `tf2`, `games/counterstrike/` the four Counter-Strike
+games. The LAN scan classifies A2S answers by app id (GoldSrc also by folder) in
+`common.classify()`, one broadcast for all of them; see [games/valve.md](games/valve.md).
+
+**Counter-Strike on Source** (`games/counterstrike/source.py`). `SourceAdapter` holds
+everything; `css`, `csgo` and `cs2` are small subclasses that set `id`, `name`,
 capabilities (`LOAD_STATS` only for Source 1, CS2 prints nothing for `stats`) and the
 `maps *` format (`PENDING:   (fs) <name>` on Source 1, bare names on CS2). CS2 adds workshop maps from `ds_workshop_listmaps` as `MapRef`s with
 `extra = {"workshop": "1"}` (they win over the same name from `maps *`); `change_map()` sends
 `ds_workshop_changelevel` for them. A change that CS2 refuses because it is still loading
 a map raises `CommandRejectedError`. A hard
 restart is `changelevel` to the current map, because `restart` is a cheat command on CS2.
-`common.py` holds what all Counter-Strike adapters share, including the Counter-Strike 1.6
-one, among it `RconPlayerControl`: players from `status` (`parse_status()` per engine), kick
+`games/valve/common.py` holds what all GoldSrc and Source adapters share, among it
+`RconPlayerControl`: players from `status` (`parse_status()` per engine), kick
 by user id (`kick #<id>` on GoldSrc, `kickid <id>` on Source), ban by IP address (`addip 0
 <ip>`, the kick, `writeip`) because LAN servers give every player the same Steam ID. A kick
 message is reduced to letters, digits and a few punctuation marks (`safe_message()`) before it
 becomes part of the command; user ids must be ASCII digits. `css` and `csgo` mix it in
-(`Source1PlayerControl`); `cs2` does not, its `status` format is unmeasured. All four have
-the console: the command goes to RCON as it is.
+(`Source1PlayerControl`), as do `dods`, `hl2dm` and `tf2`; `cs2` does not, its `status`
+format is unmeasured. All of them have the console: the command goes to RCON as it is.
 
 **Quake 3 engine family** (`core/transports/quake3.py`, `games/quake3/`). The transport
 sends `getstatus` (one datagram, info string and player lines, parsed by its own bounded

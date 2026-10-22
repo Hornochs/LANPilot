@@ -1,5 +1,5 @@
-"""What all Counter-Strike adapters share: the status query, map name checks, ``stats``,
-and player control over RCON."""
+"""What all adapters of GoldSrc and Source games share: the status query, the LAN scan, map
+name checks, ``stats``, and player control over RCON."""
 
 from __future__ import annotations
 
@@ -54,7 +54,19 @@ async def query_status(host: str, port: int) -> ServerStatus:
 QUERY_PORTS = (*range(27015, 27021), *range(26900, 26906))
 A2S_INFO = b"\xff\xff\xff\xffTSource Engine Query\x00"
 A2S_ANSWERS = (b"\xff\xff\xff\xffA", b"\xff\xff\xff\xffI", b"\xff\xff\xff\xffm")
-APP_CS16, APP_CSS, APP_CSGO = 10, 240, 730  # CS2 kept CS:GO's app id
+# GoldSrc games by app id and by game folder (the old GoldSrc answer names no app id).
+GOLDSRC_GAMES = {
+    10: ("cstrike", "cs16"),
+    20: ("tfc", "tfc"),
+    30: ("dod", "dod"),
+    50: ("gearbox", "opfor"),
+    70: ("valve", "hldm"),
+    80: ("czero", "czero"),
+}
+GOLDSRC_FOLDERS = dict(GOLDSRC_GAMES.values())
+# Source games by app id. CS2 kept CS:GO's app id (730) and is told apart by version.
+SOURCE_GAMES = {240: "css", 300: "dods", 320: "hl2dm", 440: "tf2"}
+APP_CSGO = 730
 FIRST_CS2_VERSION = (1, 39)  # CS:GO ended with 1.38.x
 _scans: dict[tuple[tuple[IPv4Network, ...], float], asyncio.Task[list[DiscoveredServer]]] = {}
 
@@ -62,10 +74,13 @@ _scans: dict[tuple[tuple[IPv4Network, ...], float], asyncio.Task[list[Discovered
 def classify(info: ServerInfo) -> str | None:
     """The adapter id for a server's A2S_INFO answer, ``None`` for other games."""
     folder = info.folder.lower()
-    if info.app_id in (APP_CS16, None) and folder == "cstrike":
-        return "cs16"  # None: the old GoldSrc layout, which names no app id
-    if info.app_id == APP_CSS:
-        return "css"
+    if info.app_id is None:
+        return GOLDSRC_FOLDERS.get(folder)
+    if info.app_id in GOLDSRC_GAMES:
+        expected_folder, adapter_id = GOLDSRC_GAMES[info.app_id]
+        return adapter_id if folder == expected_folder else None
+    if info.app_id in SOURCE_GAMES:
+        return SOURCE_GAMES[info.app_id]
     if info.app_id != APP_CSGO:
         return None
     if info.game == "Counter-Strike 2":
@@ -77,8 +92,8 @@ def classify(info: ServerInfo) -> str | None:
 
 
 async def find_servers(networks: Sequence[IPv4Network], wait: float) -> list[DiscoveredServer]:
-    """Counter-Strike servers of all four games. The adapters of one scan ask together, so
-    they share one broadcast."""
+    """Servers of every GoldSrc and Source game LANPilot knows. The adapters of one scan
+    ask together, so they share one broadcast."""
     key = (tuple(networks), wait)
     task = _scans.get(key)
     if task is None:
@@ -102,8 +117,8 @@ async def _find_servers(networks: Sequence[IPv4Network], wait: float) -> list[Di
     return await discovery.gather_found(detail(host, port) for host, port in senders)
 
 
-class DiscoverCounterStrike:
-    """``discover()`` for a Counter-Strike adapter: its own share of :func:`find_servers`."""
+class DiscoverValve:
+    """``discover()`` for a GoldSrc or Source adapter: its own share of :func:`find_servers`."""
 
     id: ClassVar[str]
 

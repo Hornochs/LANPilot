@@ -25,9 +25,20 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   over its RCON WebSocket (`dew-rcon`): maps per built-in game variant, map and game type
   change, hard restart, players with kick and ban by IP address, and the console (which hides
   the RCON password that `help` prints), and LAN scan. Map names for the twelve stock maps.
+- More games on Counter-Strike's engines, with everything the Counter-Strike adapters offer
+  (status without password, map list and change, restarts, players with kick and ban by IP
+  address, load values, console, LAN scan) and images from GameTracker and GameBanana:
+  Half-Life Deathmatch (`hldm`), Team Fortress Classic (`tfc`), Day of Defeat (`dod`),
+  Half-Life: Opposing Force (`opfor`) and Counter-Strike: Condition Zero (`czero`) on GoldSrc;
+  Day of Defeat: Source (`dods`), Half-Life 2: Deathmatch (`hl2dm`) and Team Fortress 2
+  (`tf2`) on Source. Half-Life, TFC and Opposing Force have no round restart, only the level
+  reload.
 
 ### Changed
 
+- The GoldSrc and Source engine code moved from `lanpilot.games.counterstrike` to
+  `lanpilot.games.valve` (`common`, `goldsrc`, `source`); the Counter-Strike adapters keep
+  their ids and modules.
 - The translation catalogues name source files by their path in the repository
   (`src/lanpilot/...`) instead of the absolute path of the checkout they were extracted in.
 

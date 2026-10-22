@@ -105,7 +105,9 @@ is stored. An image an administrator removes is not fetched again automatically.
 
 Administrators start a scan under "Server setup" → "Scan the network" (or with
 `lanpilot scan`); it runs once, never in the background, and takes a few seconds. It
-finds Counter-Strike 1.6, CS:Source, CS:GO, CS2, TrackMania Forever, TrackMania
+finds Counter-Strike 1.6, CS:Source, CS:GO, CS2, the other GoldSrc and Source games
+(Half-Life DM, TFC, Day of Defeat, Opposing Force, Condition Zero, DoD: Source, HL2:
+Deathmatch, TF2), TrackMania Forever, TrackMania
 Original/Sunrise/Nations ESWC, UT99, UT2004, UT3, Quake III Arena and Call of Duty (1, United
 Offensive, 2, 4, World at War) and ElDewrito servers without a password and lists
 name, game, game type and address; "Add" opens the server form with these values, and the

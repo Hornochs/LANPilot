@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-21 21:38+0200\n"
+"POT-Creation-Date: 2026-10-22 11:33+0200\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -173,11 +173,10 @@ msgstr "Host"
 msgid "IP address or host name of the game server."
 msgstr "IP-Adresse oder Hostname des Gameservers."
 
-#: src/lanpilot/core/adapters/base.py:153
-#: src/lanpilot/games/counterstrike/goldsrc.py:61
-#: src/lanpilot/games/counterstrike/source.py:71 src/lanpilot/games/demo.py:52
+#: src/lanpilot/core/adapters/base.py:153 src/lanpilot/games/demo.py:52
 #: src/lanpilot/games/quake3/callofduty.py:35
 #: src/lanpilot/games/quake3/common.py:75
+#: src/lanpilot/games/valve/goldsrc.py:80 src/lanpilot/games/valve/source.py:72
 msgid "Port"
 msgstr "Port"
 
@@ -583,34 +582,6 @@ msgstr "Das WebAdmin ist nicht erreichbar."
 msgid "The WebAdmin's answer could not be read."
 msgstr "Die Antwort des WebAdmin konnte nicht gelesen werden."
 
-#: src/lanpilot/games/counterstrike/goldsrc.py:64
-#: src/lanpilot/games/counterstrike/source.py:78
-msgid "The value of rcon_password in the server's configuration (server.cfg)."
-msgstr "Der Wert von rcon_password in der Konfiguration des Servers (server.cfg)."
-
-#: src/lanpilot/games/counterstrike/goldsrc.py:127
-#: src/lanpilot/games/counterstrike/source.py:148
-#: src/lanpilot/games/quake3/common.py:282
-msgid "This map name cannot be sent to the server."
-msgstr "Dieser Map-Name kann nicht an den Server gesendet werden."
-
-#: src/lanpilot/games/counterstrike/source.py:72
-msgid "The game port. RCON uses the same port over TCP."
-msgstr "Der Spiel-Port. RCON nutzt denselben Port über TCP."
-
-#: src/lanpilot/games/counterstrike/source.py:152
-#, python-brace-format
-msgid "The server does not have the map {name}."
-msgstr "Der Server hat die Map {name} nicht."
-
-#: src/lanpilot/games/counterstrike/source.py:156
-msgid "The server is still loading a map and ignored the change. Try again in a few seconds."
-msgstr "Der Server lädt noch eine Map und hat den Wechsel ignoriert. In ein paar Sekunden erneut versuchen."
-
-#: src/lanpilot/games/counterstrike/source.py:169
-msgid "The server did not report which map is running."
-msgstr "Der Server hat nicht gemeldet, welche Map läuft."
-
 #: src/lanpilot/games/demo.py:49
 msgid "Only a label: the simulation does not connect anywhere."
 msgstr "Nur eine Bezeichnung: Die Simulation verbindet sich nirgendwohin."
@@ -665,9 +636,8 @@ msgstr "Status-Port"
 msgid "Server.Port in the server's dewrito_prefs.cfg: its HTTP status server (default 11775, TCP)."
 msgstr "Server.Port in der dewrito_prefs.cfg des Servers: sein HTTP-Status-Server (Standard 11775, TCP)."
 
-#: src/lanpilot/games/counterstrike/goldsrc.py:63
-#: src/lanpilot/games/counterstrike/source.py:77
 #: src/lanpilot/games/eldewrito.py:134 src/lanpilot/games/quake3/common.py:81
+#: src/lanpilot/games/valve/goldsrc.py:82 src/lanpilot/games/valve/source.py:78
 msgid "RCON password"
 msgstr "RCON-Passwort"
 
@@ -685,8 +655,8 @@ msgstr "Diese Map oder dieser Spielmodus kann nicht an den Server gesendet werde
 msgid "The server cannot load the game type {name}."
 msgstr "Der Server kann den Spielmodus {name} nicht laden."
 
-#: src/lanpilot/games/counterstrike/goldsrc.py:130
 #: src/lanpilot/games/eldewrito.py:269 src/lanpilot/games/quake3/common.py:319
+#: src/lanpilot/games/valve/goldsrc.py:137
 #, python-brace-format
 msgid "The server does not have the map {key}."
 msgstr "Der Server hat die Map {key} nicht."
@@ -699,8 +669,8 @@ msgstr "Der Server ist nicht in die Lobby zurückgekehrt."
 msgid "The server could not start the game."
 msgstr "Der Server konnte das Spiel nicht starten."
 
-#: src/lanpilot/games/counterstrike/common.py:185
 #: src/lanpilot/games/eldewrito.py:364 src/lanpilot/games/quake3/common.py:354
+#: src/lanpilot/games/valve/common.py:200
 msgid "This player cannot be named in a command."
 msgstr "Dieser Spieler kann nicht in einem Befehl angegeben werden."
 
@@ -714,8 +684,8 @@ msgstr "Der Spieler ist nicht mehr auf dem Server."
 msgid "The server did not remove the player."
 msgstr "Der Server hat den Spieler nicht entfernt."
 
-#: src/lanpilot/games/counterstrike/common.py:176
 #: src/lanpilot/games/eldewrito.py:381 src/lanpilot/games/quake3/common.py:409
+#: src/lanpilot/games/valve/common.py:191
 msgid "The server did not report this player's IP address, so it cannot ban it."
 msgstr "Der Server hat die IP-Adresse dieses Spielers nicht gemeldet, daher kann sie nicht gebannt werden."
 
@@ -727,6 +697,12 @@ msgstr "Der Spiel-Port; Status und RCON nutzen ihn ebenfalls."
 #: src/lanpilot/games/quake3/common.py:82
 msgid "The value of rconpassword (rcon_password on CoD4) in the server's config."
 msgstr "Der Wert von rconpassword (bei CoD4 rcon_password) in der Konfiguration des Servers."
+
+#: src/lanpilot/games/quake3/common.py:282
+#: src/lanpilot/games/valve/goldsrc.py:134
+#: src/lanpilot/games/valve/source.py:151
+msgid "This map name cannot be sent to the server."
+msgstr "Dieser Map-Name kann nicht an den Server gesendet werden."
 
 #: src/lanpilot/games/quake3/common.py:308
 #, python-brace-format
@@ -873,6 +849,8 @@ msgstr "Das WebAdmin hat keine Spielmodi aufgelistet."
 
 #: src/lanpilot/games/unreal/ut3.py:221
 #: src/lanpilot/games/unreal/webadmin.py:154
+#: src/lanpilot/games/valve/goldsrc.py:143
+#: src/lanpilot/games/valve/source.py:169
 #, python-brace-format
 msgid "{game} cannot restart only the round"
 msgstr "{game} kann die Runde nicht allein neu starten"
@@ -924,6 +902,27 @@ msgstr "AdminPassword in [UTServerAdmin.UTServerAdmin] der ini-Datei des Servers
 #: src/lanpilot/games/unreal/webadmin.py:212
 msgid "The WebAdmin's player page does not add up; a player name may be forged."
 msgstr "Die Spielerseite des WebAdmin ist inkonsistent; ein Spielername könnte gefälscht sein."
+
+#: src/lanpilot/games/valve/goldsrc.py:83 src/lanpilot/games/valve/source.py:79
+msgid "The value of rcon_password in the server's configuration (server.cfg)."
+msgstr "Der Wert von rcon_password in der Konfiguration des Servers (server.cfg)."
+
+#: src/lanpilot/games/valve/source.py:73
+msgid "The game port. RCON uses the same port over TCP."
+msgstr "Der Spiel-Port. RCON nutzt denselben Port über TCP."
+
+#: src/lanpilot/games/valve/source.py:155
+#, python-brace-format
+msgid "The server does not have the map {name}."
+msgstr "Der Server hat die Map {name} nicht."
+
+#: src/lanpilot/games/valve/source.py:159
+msgid "The server is still loading a map and ignored the change. Try again in a few seconds."
+msgstr "Der Server lädt noch eine Map und hat den Wechsel ignoriert. In ein paar Sekunden erneut versuchen."
+
+#: src/lanpilot/games/valve/source.py:175
+msgid "The server did not report which map is running."
+msgstr "Der Server hat nicht gemeldet, welche Map läuft."
 
 #: src/lanpilot/web/deps.py:99
 #, python-brace-format

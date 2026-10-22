@@ -713,7 +713,9 @@ def test_admin_page_offers_online_lookup(
         f"/admin/servers/{server_id}/maps/{map_id}/image/delete",
         data={"csrf_token": csrf_token(client)},
     )
-    assert query("SELECT map_key, reason FROM map_image_misses") == [(map_key.lower(), "removed")]
+    # Only this map: the lookup of all missing images, still running, may have noted others.
+    misses = query("SELECT reason FROM map_image_misses WHERE map_key = ?", map_key.lower())
+    assert misses == [("removed",)]
     assert "image removed" in client.get(f"/admin/servers/{server_id}/maps").text
 
 

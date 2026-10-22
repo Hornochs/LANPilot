@@ -32,7 +32,6 @@ into each machine.
 - **Accounts** with username and password, three roles (admin, operator, viewer) and an audit
   log of every action.
 - **Interface in English and German**, chosen per user or by the browser.
-- **Monitoring-only mode** for games that offer no remote control at all (planned).
 - **Packages** for Debian/Ubuntu (`.deb`), Fedora/RHEL (`.rpm`) and Arch Linux.
 
 ## Design principles
@@ -51,14 +50,16 @@ into each machine.
 |---|---|---|
 | Counter-Strike 1.6 | GoldSrc RCON (UDP) | **supported** ([details](docs/games/counter-strike.md)) |
 | Counter-Strike: Source, CS:GO, CS2 | Source RCON (TCP) | **supported** ([details](docs/games/counter-strike.md)) |
+| Half-Life Deathmatch, Team Fortress Classic, Day of Defeat, Opposing Force, CS: Condition Zero | GoldSrc RCON (UDP) | **supported** ([details](docs/games/valve.md)) |
+| Day of Defeat: Source, Half-Life 2: Deathmatch, Team Fortress 2 | Source RCON (TCP) | **supported** ([details](docs/games/valve.md)) |
 | TrackMania Nations/United Forever, TrackMania Original, Sunrise (eXtreme), Nations ESWC | GBXRemote / XML-RPC | **supported** ([details](docs/games/trackmania.md)) |
 | TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | planned, high priority |
 | Unreal Tournament 99, 2004, 3 | WebAdmin (HTTP) + GameSpy query | **supported** ([details](docs/games/unreal-tournament.md)) |
 | Quake III Arena, Call of Duty, United Offensive, Call of Duty 2, Call of Duty 4 (CoD4X), World at War | Quake 3 RCON + getstatus (UDP) | **supported** ([details](docs/games/quake3.md)) |
 | Jedi Knight | Quake 3 RCON (UDP) | planned |
 | ElDewrito (Halo Online) | WebSocket RCON + HTTP status | **supported** ([details](docs/games/eldewrito.md)) |
-| Battlefield 2, Renegade X, Halo 1, Serious Sam | game-specific | planned |
-| Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | planned |
+| Battlefield 2, Halo 1, Serious Sam | game-specific | planned |
+| Toxikk, Renegade X, and games without any remote control | none usable ([why](docs/research/remote-control-protocols.md#other-games)) | not supported |
 
 ## Documentation
 

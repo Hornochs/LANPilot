@@ -389,5 +389,6 @@ Measured on 2026-10-20 against CS 1.6 (HLDS build 10211, same host as LANPilot) 
 
 CS2 kept CS:GO's app id and folder, so the adapter takes `game` (`Counter-Strike 2`) and
 then the version (1.39 and later is CS2; CS:GO ended with 1.38.x) to tell them apart;
-CS:Source is app id 240. `classify()` in `games/counterstrike/common.py` does this. The four
-Counter-Strike adapters of one scan share one broadcast (`find_servers()`).
+CS:Source is app id 240. `classify()` in `games/valve/common.py` does this. The Counter-Strike
+adapters of one scan share one broadcast (`find_servers()`) with the other GoldSrc and Source
+games ([valve.md](valve.md)).

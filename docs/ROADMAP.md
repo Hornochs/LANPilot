@@ -6,7 +6,7 @@ as done, and [architecture.md](architecture.md) describes any structural change 
 
 ## Current status
 
-_Last updated: 2026-10-21_
+_Last updated: 2026-10-22_
 
 | Phase | State |
 |---|---|
@@ -20,7 +20,7 @@ _Last updated: 2026-10-21_
 | 7 – More games | in progress |
 | 8 – Hardening and 1.0 | done |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1, 7.4 and 8.1–8.5, which completes
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1, 7.4, 7.5 and 8.1–8.5, which completes
 phases 0, 1, 2, 4, 5, 6 and 8; 3.1, 3.2, 3.4 and 3.5; of 7.2 ElDewrito. Version 1.0.0 is released.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
@@ -86,11 +86,25 @@ the LAN scan (command line and web page) and a wrong password behaved as [games/
 game, the player list with players, kick and ban follow ElDewrito's source and still need a
 player.
 
-**In progress:** release 1.0.1 (with 7.1, 7.4 and ElDewrito of 7.2), prepared on its own branch; releases are
+More GoldSrc and Source games (7.5) were run against real servers (HLDS build 10211 with
+Half-Life DM, TFC, Day of Defeat, Opposing Force and Condition Zero; DoD:S, HL2:DM and TF2):
+status, map list, map change, an unknown map, both restarts, console, LAN scan and a wrong
+password behaved as [games/valve.md](games/valve.md) describes; TF2 also with bots and
+through the web interface. Current Source servers do not answer the status query from
+127.0.0.1, only from the LAN address.
+
+**In progress:** release 1.0.1 (with 7.1, 7.4, 7.5 and ElDewrito of 7.2), prepared on its own branch; releases are
 published by the maintainer.
 
-**Next:** the rest of 7.2 (Battlefield 2, Renegade X, Halo 1, Serious Sam) and 7.3 (monitoring
-only) when test servers exist. 3.3 (TM2/TM2020) is postponed: no test servers.
+**Dropped (2026-10-22):** Toxikk and Renegade X get no adapter. Toxikk has no remote control
+LANPilot can speak; Renegade X switches RCON off on LAN servers, the only ones its LAN
+broadcast announces. The reasons are in
+[research/remote-control-protocols.md](research/remote-control-protocols.md#other-games).
+
+**Dropped (2026-10-22):** monitoring-only games (7.3). LANPilot is for controlling servers; a
+game without remote control gets no adapter.
+
+**Next:** the rest of 7.2 (Battlefield 2, Halo 1, Serious Sam) when test servers exist. 3.3 (TM2/TM2020) is postponed: no test servers.
 Player management should be checked with real players at the next LAN party (see
 [Open points](#open-points)).
 
@@ -107,13 +121,14 @@ Player management should be checked with real players at the next LAN party (see
 - Map images from online sources with a local cache and a "prefetch everything" action for
   offline LAN parties.
 - User management with the roles `admin`, `operator` and `viewer`; audit log of all actions.
-- Monitoring-only display for games without remote control.
 - `.deb`, `.rpm` and Arch packages built by GitHub Actions; complete documentation.
 
 **Out of scope**
 
 - Host access: starting or stopping processes, host CPU/RAM, reading map files from disk.
 - MFA, anonymous access, scheduled actions, periodic network scans, installing game servers.
+- Games without remote control: a status display alone is not offered (decision of
+  2026-10-22).
 
 **Consequences of being protocol-only**
 
@@ -230,16 +245,24 @@ Player management should be checked with real players at the next LAN party (see
   and CoD 1), adapters `q3a`, `cod`, `cod4`, `codwaw` with maps per game type (CoD4 and WaW:
   catalogue and rotation), players, kick (Quake 3 also ban by IP), console and LAN scan, verified against
   real servers. Jedi Knight is left out (no test server: LinuxGSM installs no game data).
-- **7.2** Battlefield 2, Renegade X, ElDewrito, Halo 1, Serious Sam, each after verifying the
-  protocol. ✔ ElDewrito: adapter `eldewrito` (HTTP status, RCON over the `dew-rcon`
+- **7.2** Battlefield 2, ElDewrito, Halo 1, Serious Sam, each after verifying the
+  protocol. Renegade X was dropped by decision (2026-10-22). ✔ ElDewrito: adapter `eldewrito` (HTTP status, RCON over the `dew-rcon`
   WebSocket), maps per game variant, map change through the lobby, hard restart, players
   with kick and ban by slot, console and LAN scan; verified against a 0.7.1 server without
   players.
-- **7.3** Monitoring only: Age of Empires 1/2, Alien vs Predator 2, C&C Generals, F.E.A.R. 2,
-  FlatOut 2, Stronghold, Supreme Commander, Toxikk, Warcraft III.
+- **7.3** Dropped (2026-10-22): monitoring only (Age of Empires 1/2, Alien vs Predator 2, C&C
+  Generals, F.E.A.R. 2, FlatOut 2, Stronghold, Supreme Commander, Toxikk, Warcraft III).
+  These games have no known remote control, and LANPilot does not offer a status display
+  alone.
 - **7.4** ✔ Call of Duty 2 and United Offensive: adapters `cod2` and `coduo` on the Quake 3
   family of 7.1, verified against real servers; map changes wait for the level load and
   report a game type the map fell back from.
+- **7.5** ✔ More games on Counter-Strike's engines: the engine code moved to `games/valve/`;
+  adapters `hldm`, `tfc`, `dod`, `opfor`, `czero` (GoldSrc) and `dods`, `hl2dm`, `tf2`
+  (Source) with everything the Counter-Strike adapters offer. Verified against real servers
+  without players (status, map list and change, restarts, console, LAN scan, wrong
+  password); see [games/valve.md](games/valve.md). TF2 also with bots (player list, kick)
+  and through the web interface.
 
 ### Phase 8 – Hardening and 1.0
 

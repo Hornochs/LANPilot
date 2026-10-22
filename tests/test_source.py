@@ -29,11 +29,11 @@ from lanpilot.games.counterstrike.source import (
     CounterStrikeGlobalOffensiveAdapter,
     CounterStrikeSourceAdapter,
     SourceConnection,
-    SourceCounterStrikeAdapter,
     parse_maps,
     parse_status,
     parse_workshop_maps,
 )
+from lanpilot.games.valve.source import SourceAdapter
 from lanpilot.testing.contract import check_adapter
 from lanpilot.testing.source import CS2_RESOURCES, SPLIT_SIZE, SourceSimulator
 from tests.conftest import ClientFactory, Query, UserFactory, csrf_token, sign_in
@@ -294,7 +294,7 @@ def test_workshop_listing() -> None:
     ],
 )
 async def test_adapters_fulfil_the_contract(
-    adapter_class: type[SourceCounterStrikeAdapter], game: Literal["cs2", "csgo", "css"]
+    adapter_class: type[SourceAdapter], game: Literal["cs2", "csgo", "css"]
 ) -> None:
     async with SourceSimulator(password=PASSWORD, game=game) as simulator:
         await check_adapter(adapter_class(connection(simulator)))

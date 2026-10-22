@@ -146,9 +146,10 @@ Sources: <https://www.4netplayers.com/de/wiki/call-of-duty-4/rcon-commands/>,
 |---|---|---|
 | Battlefield 2 | RCON over TCP 4711 with a digest seed challenge; `admin.runNextLevel`, `admin.restartMap` | partly verified |
 | ElDewrito | WebSocket RCON (`dew-rcon`), default port 11776; status as JSON over HTTP on 11775 | implemented (`eldewrito`), see [../games/eldewrito.md](../games/eldewrito.md) |
-| Renegade X | own RCON over TCP | unverified |
+| Renegade X | own RCON over TCP on the game port (`[RenX_Game.Rx_Rcon]`, admin password). The game's source (`Rx_Game.uc`) starts RCON only when `bIsLanMatch` is false and sends its LAN broadcast (JSON to UDP 45542, measured against release 1.2.1109) only when it is true, so a LAN server has no RCON. RCON itself was not measured | dropped by decision (2026-10-22) |
 | Halo: Combat Evolved | RCON inside the game protocol, or SAPP | unverified |
 | Serious Sam | remote control exists (per the maintainer); protocol to be found | unverified |
-| Toxikk, Alien vs Predator 2, F.E.A.R. 2, Supreme Commander, Age of Empires 1/2, Stronghold Crusader, Warcraft III, C&C Generals, FlatOut 2 | none known | "none known" means none was found, not that none exists |
+| Toxikk | none usable. Admin commands (`AdminLogin`, `AdminKick`, `AdminKickBan`, `AdminRestartMap`) exist only in the game client's console, over the UE3 game connection (Steamworks, package GUIDs, a player slot), which LANPilot cannot speak. The UDK web server (`UDKWeb.ini`, `[IpDrv.WebServer]`, named by the community Toxikk Server Launcher) is not shipped: the maintainer's install has no WebAdmin files (checked 2026-10-22). Status: UDK LAN beacon on UDP 14001 (opengsq `Toxikk`), Steam query port 27015 (both unmeasured: the test server did not answer) | dropped by decision (2026-10-22), not even monitoring |
+| Alien vs Predator 2, F.E.A.R. 2, Supreme Commander, Age of Empires 1/2, Stronghold Crusader, Warcraft III, C&C Generals, FlatOut 2 | none known | "none known" means none was found, not that none exists; dropped (2026-10-22): no adapter without remote control |
 
 All of these can be queried for status through `opengsq`.

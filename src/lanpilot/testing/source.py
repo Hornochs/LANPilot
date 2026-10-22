@@ -12,6 +12,10 @@ behaves like the measured servers (docs/games/counter-strike.md), selected with 
   to the end marker included) carries a line of the server log, and a map change closes
   the RCON connection.
 
+``identity`` (game folder, game name, app id, version) makes a ``"css"`` simulator answer the
+status query as another Source game; DoD:Source and HL2:Deathmatch were measured to answer
+RCON like CS:Source (docs/games/valve.md).
+
     async with SourceSimulator(password="secret", game="cs2") as server:
         adapter = CounterStrike2Adapter(
             SourceConnection(host="127.0.0.1", port=server.port, rcon_password="secret")
@@ -81,9 +85,11 @@ class SourceSimulator:
         hostname: str = "Simulated srcds",
         players: int = 2,
         max_players: int = 16,
+        identity: tuple[str, str, int, str] | None = None,
     ) -> None:
         self.password = password
         self.game = game
+        self.identity = identity
         self.cs2 = game == "cs2"
         self.maps = list(maps)
         self.workshop_maps = list(workshop_maps)
@@ -168,20 +174,24 @@ class SourceSimulator:
             "csgo": "Counter-Strike: Global Offensive",
             "css": "Counter-Strike: Source",
         }[self.game]
+        version = {"cs2": "1.41.9.0", "csgo": "1.38.8.1", "css": "11003710"}[self.game]
+        # CS2 kept CS:GO's app id; the version tells them apart.
+        folder, app_id = ("cstrike", 240) if self.game == "css" else ("csgo", 730)
+        if self.identity is not None:
+            folder, game, app_id, version = self.identity
         return (
             HEADER
             + b"I"
             + bytes([17])
             + text(self.hostname)
             + text(self.current_map)
-            + text("cstrike" if self.game == "css" else "csgo")
+            + text(folder)
             + text(game)
-            # CS2 kept CS:GO's app id; the version tells them apart.
-            + struct.pack("<H", 240 if self.game == "css" else 730)
+            + struct.pack("<H", app_id)
             + bytes([self.players, self.max_players, 0])
             + b"dl"
             + bytes([0, 0])
-            + text({"cs2": "1.41.9.0", "csgo": "1.38.8.1", "css": "11003710"}[self.game])
+            + text(version)
             + bytes([0])
         )
 

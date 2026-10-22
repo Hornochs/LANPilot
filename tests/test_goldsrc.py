@@ -20,7 +20,6 @@ from lanpilot.core.adapters import (
 from lanpilot.core.adapters.registry import load_registry
 from lanpilot.core.adapters.schema import describe_fields
 from lanpilot.core.transports.goldsrc_rcon import GoldSrcRcon, assemble, printed_text
-from lanpilot.games.counterstrike.common import safe_message
 from lanpilot.games.counterstrike.goldsrc import (
     CounterStrike16Adapter,
     CounterStrike16Connection,
@@ -28,6 +27,7 @@ from lanpilot.games.counterstrike.goldsrc import (
     parse_stats,
     parse_status,
 )
+from lanpilot.games.valve.common import safe_message
 from lanpilot.testing.contract import check_adapter
 from lanpilot.testing.goldsrc import GoldSrcSimulator
 from tests.conftest import ClientFactory, Query, UserFactory, csrf_token, sign_in

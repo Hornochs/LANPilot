@@ -128,6 +128,7 @@ Accepted, and what the operator can do about them:
 | UT3 discovery shares UDP 14001 for the scan's wait (2 s); unicast datagrams to a UT3 server on the same host land on LANPilot during that time | run UT3 servers on another host |
 | Quake 3 and Call of Duty 1, UO, 2 and World at War accept one RCON packet per 500 ms from anyone, wrong passwords included, so whoever floods the game port with RCON packets keeps LANPilot's commands from being answered ("The server did not answer") | find and remove the sender; the status (`getstatus`) keeps working |
 | ElDewrito answers RCON commands without a request id; with `Server.SendChatToRconClients` or `Server.RconConsoleOutputEnabled` switched on, pushed chat or console lines would be taken for answers | leave both off (the default) |
+| GoldSrc servers (HLDS: CS 1.6, Half-Life and its mods) write every RCON command with the password to their console and log | treat the game server's console and log files as secret; a separate RCON password per server |
 | After a refused password, editing or re-testing the server, or a restart, sends it once more | correct the password before testing again |
 | An administrator can point a server entry at any host and port | administrators are trusted |
 | Release packages are not signed with a distribution key | verify the attestation (`gh attestation verify`, see [installation.md](installation.md)) |

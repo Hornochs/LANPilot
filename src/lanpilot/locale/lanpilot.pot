@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 10:34+0100\n"
+"POT-Creation-Date: 2026-11-18 10:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,78 +93,82 @@ msgstr ""
 msgid "This language is not available."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:132
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:43
+msgid "The server is busy with other requests; try again in a moment."
+msgstr ""
+
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:139
 #, python-brace-format
 msgid "This needs the {role} role."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:135
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:156
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:266
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:282
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:142
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:166
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:276
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:306
 msgid "This server does not exist."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:137
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:144
 msgid "This server is disabled."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:139
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:146
 msgid "This server is not set up correctly."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:142
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:149
 #, python-brace-format
 msgid "{adapter_name} does not support this."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:151
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:161
 #, python-brace-format
 msgid "The server did not answer within {seconds} seconds."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:172
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:182
 msgid "Pick a map from this server's list."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:215
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:225
 msgid "Enter the map's file name as the server knows it."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:218
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:228
 #: /home/gamienator/coding/LANPilot/src/lanpilot/core/maps.py:117
 msgid "This map is already in the list."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:269
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:279
 #, python-brace-format
 msgid "{adapter_name} cannot list players."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:278
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:302
 msgid "The server did not answer in time."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:302
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:338
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/trackmania/common.py:347
 msgid "This player is no longer on the server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:306
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:342
 #, python-brace-format
 msgid "{name} cannot be banned on this server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:308
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:344
 #, python-brace-format
 msgid "{name} cannot be kicked on this server."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:334
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:373
 msgid "The console is switched off (enable_console in the configuration)."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:338
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/actions.py:377
 msgid "Enter one line of at most 500 printable characters."
 msgstr ""
 
@@ -283,15 +287,15 @@ msgstr ""
 msgid "This map name cannot be stored."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:44
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:47
 msgid "Internal error while talking to the server; see the LANPilot log."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:154
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:161
 msgid "The adapter for this game is not installed."
 msgstr ""
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:273
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/runtime.py:301
 #: /home/gamienator/coding/LANPilot/src/lanpilot/core/servers.py:291
 #, python-brace-format
 msgid "No answer within {seconds} seconds."

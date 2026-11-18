@@ -11,6 +11,9 @@ The protocol, as measured against CS2, CS:GO and CS:Source (see docs/games/count
   RESPONSE_VALUE packets (type 0). There is no end marker, so LANPilot sends an empty
   EXECCOMMAND right after the command: the server answers it with an empty packet after the
   command's output, which marks the end.
+* **Factorio answers every command with exactly one packet and ignores empty commands**, so
+  the end marker would never be answered. ``single_packet_answers=True`` sends no end
+  marker and returns the first answer that carries the command's id.
 * **CS2 labels its answers wrongly.** It executes all packets that arrived together and
   gives every answer the id of the *last* of them. The command's output therefore often
   carries the id of the empty end marker packet. The end is the empty answer with the
@@ -83,6 +86,7 @@ class SourceRcon:
         *,
         timeout_seconds: float = 5.0,
         quiet_seconds: float = 0.3,
+        single_packet_answers: bool = False,
     ) -> None:
         if not password or "\x00" in password:
             # Checked here rather than by the server: the body is a null-terminated string.
@@ -96,6 +100,7 @@ class SourceRcon:
         self._password = password
         self._timeout = timeout_seconds
         self._quiet = quiet_seconds
+        self._single_packet = single_packet_answers
         self._reader: asyncio.StreamReader | None = None
         self._writer: asyncio.StreamWriter | None = None
         self._last_used = 0.0
@@ -202,6 +207,8 @@ class SourceRcon:
 
     async def _exchange(self, command: str) -> str:
         assert self._writer is not None  # noqa: S101 - _connect() succeeded
+        if self._single_packet:
+            return await self._exchange_single(command)
         command_id, marker_id = self._next_id(), self._next_id()
         self._answered = False
         self._writer.write(encode(command_id, EXECCOMMAND, command))
@@ -246,3 +253,18 @@ class SourceRcon:
                 raise ProtocolError(M("The server's answer is too long."))
             chunks.append(body)
         return without_log_lines(b"".join(chunks)).decode("utf-8", errors="replace")
+
+    async def _exchange_single(self, command: str) -> str:
+        """Send ``command`` without an end marker; its answer is exactly one packet."""
+        assert self._writer is not None  # noqa: S101 - _connect() succeeded
+        command_id = self._next_id()
+        self._answered = False
+        self._writer.write(encode(command_id, EXECCOMMAND, command))
+        await self._writer.drain()
+        for _ in range(MAX_PACKETS):
+            packet_id, packet_type, body = await self._read_packet(self._timeout)
+            self._answered = True
+            if packet_id == command_id and packet_type == RESPONSE_VALUE:
+                return body.decode("utf-8", errors="replace")
+            # left over from an earlier exchange
+        raise ProtocolError(M("The server's answer is too long."))

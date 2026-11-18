@@ -11,6 +11,8 @@ the discovery's port constants at them and scan ``127.0.0.1/32``.
 * :class:`UT99BeaconSimulator`: ``REPORTQUERY`` -> ``ut <query port>``.
 * :class:`UT2004LanSimulator`: the LAN query on one port, answered from the Unreal 2 query
   port with the server details, which that port also answers.
+* :class:`FactorioLanSimulator`: a Factorio server's LAN announcements (sent every
+  ``interval`` seconds to ``announce_port``) and its answer to the info request.
 * :class:`UT3BeaconSimulator`: the Unreal Engine 3 LAN beacon, answering to a fixed port of
   the sender like the real one (always 14001 there).
 """
@@ -279,3 +281,44 @@ class UT3BeaconSimulator(_Simulator):
         if len(data) == 16 and data[6:8] == b"SQ":
             # The real beacon answers to its own port number at the sender's address.
             self._transports[0].sendto(self.reply(data[8:16]), (addr[0], self.answer_port))
+
+
+class FactorioLanSimulator(_Simulator):
+    """Answers the info request (``0x10``) with ``reply`` (``None``: stays silent) and, with
+    ``announce_port``, announces its own port there like a server with LAN visibility."""
+
+    def __init__(
+        self,
+        reply: bytes | None,
+        *,
+        announce_port: int | None = None,
+        interval: float = 0.05,
+    ) -> None:
+        super().__init__()
+        self.reply = reply
+        self.announce_port = announce_port
+        self.interval = interval
+        self.port = 0
+        self._announcer: asyncio.Task[None] | None = None
+
+    async def start(self) -> None:
+        self.port = await self._udp(self._answer)
+        if self.announce_port is not None:
+            self._announcer = asyncio.create_task(self._announce(self.announce_port))
+
+    def stop(self) -> None:
+        if self._announcer is not None:
+            self._announcer.cancel()
+            self._announcer = None
+        super().stop()
+
+    async def _announce(self, target: int) -> None:
+        announcement = b"\x0f" + struct.pack("<H", self.port)
+        while True:
+            self._transports[0].sendto(announcement, (LOOPBACK, target))
+            await asyncio.sleep(self.interval)
+
+    def _answer(self, data: bytes, addr: tuple[str, int]) -> None:
+        self.queries.append(data)
+        if data == b"\x10" and self.reply is not None:
+            self._transports[0].sendto(self.reply, addr)

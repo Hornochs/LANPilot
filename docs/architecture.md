@@ -149,6 +149,8 @@ src/lanpilot/
   games/quake3/quake3.py ✔          Quake III Arena
   games/quake3/callofduty.py ✔      Call of Duty 1, UO, 2, 4, World at War
   games/eldewrito.py ✔              ElDewrito (Halo Online)
+  games/factorio/adapter.py ✔       Factorio (status, players, achievement-safe console, restart)
+  games/factorio/lan.py ✔           Factorio LAN announcements and info reply
   catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
                     Unreal Archive image index (package data)
   testing/ (planned) simulators for the other protocols
@@ -197,7 +199,11 @@ what is sent back to the server and `extra` carries image lookup ids such as `ui
 `workshop_id`; `Player(id, name, score, ping, team, bot, can_kick, can_ban)` where `id` is
 what `kick()`/`ban()` need and `can_kick`/`can_ban` are false for entries the protocol cannot
 remove (bots on UT99 and UT3, bots and players without a reported address for an IP ban);
-`ServerStatus(name, players, max_players, map, game_type, password_protected, load)`;
+`ServerStatus(name, players, max_players, map, game_type, password_protected, load, details)`
+where `load` holds numbers (shown with one decimal) and `details` text facts such as a
+version (line breaks kept, one list item per line), both shown on the server page;
+`max_players` 0 means no limit: card and server page then show only the players, without a
+bar;
 `DiscoveredServer(adapter_id, host, port, name, game_type, values)` where `port` is `None`
 when the scan cannot learn the remote-control port and `values` pre-fills further public
 connection fields (a query port).
@@ -281,7 +287,7 @@ measured._
 |---|---|---|---|
 | Status query | all | `opengsq`; A2S_INFO: `core/transports/a2s.py` | A2S used by every GoldSrc and Source adapter (`games/valve/`, `games/counterstrike/`) |
 | GoldSrc RCON (UDP) | Counter-Strike 1.6, Condition Zero, Half-Life DM, TFC, Day of Defeat, Opposing Force | `core/transports/goldsrc_rcon.py` | ✔ |
-| Source RCON (TCP) | CS:Source, CS:GO, CS2, Day of Defeat: Source, HL2: Deathmatch, Team Fortress 2 | `core/transports/source_rcon.py` | ✔ |
+| Source RCON (TCP) | CS:Source, CS:GO, CS2, Day of Defeat: Source, HL2: Deathmatch, Team Fortress 2, Factorio | `core/transports/source_rcon.py` | ✔ |
 | GBXRemote / XML-RPC (TCP 5000) | Trackmania | `core/transports/gbxremote.py`, encoding via `xmlrpc.client` | ✔ (TMNF measured) |
 | UWeb WebAdmin (HTTP) | UT99, UT2004, UT3 | `core/transports/uweb.py` (aiohttp, `html.parser`) | ✔ |
 | GameSpy query (UDP) | UT99, UT2004 | `opengsq` `GameSpy1` | used by `ut99`, `ut2004` |
@@ -317,7 +323,10 @@ and removed from the text. It keeps one TCP connection per adapter, logs in on f
 opens a new connection after 60 s without a command and after any error; when a kept
 connection turns out to be closed before any answer arrived (CS:GO closes them on every map
 change), it sends the command once more on a new connection. It bounds packet size (64 KiB), answer size (1 MiB, every packet counted with its header), the packets one exchange reads (4096, skipped ones included) and command
-length. Adapters hold the transport and release it in `close()`.
+length. Adapters hold the transport and release it in `close()`. Factorio answers every
+command with exactly one packet and never answers an empty one, so with
+`single_packet_answers=True` no end marker is sent and the first answer carrying the
+command's id is the whole output.
 
 **GBXRemote** (`core/transports/gbxremote.py`). One TCP connection per `GbxRemote`; on
 connect it checks the greeting `GBXRemote 2` and calls `Authenticate`, unless it was created
@@ -481,6 +490,7 @@ server-supplied names to 64 printable characters. Packets and parsers come from 
 | `ut3` | UDK LAN beacon from UDP 14001 (`SO_REUSEADDR`) |
 | `q3a`, `cod`, `coduo`, `cod2`, `cod4`, `codwaw` | `getstatus` broadcast to 27960–27963 and 28960–28963; `gamename`/`version` pick the game; one shared broadcast per scan |
 | `eldewrito` | the server browser's `blam` query to UDP 11774, then the status server (HTTP) on the answering port + 1, which pre-fills the status port |
+| `factorio` | listens on UDP 34196 (`SO_REUSEADDR`) for at least 2.5 s for the servers' announcements, then the one-byte info request to each announced game port |
 
 **Scanner** (`core/scan.py`, `app.state.scanner`). `Scanner.run()` calls every registered
 adapter with `DISCOVER` (not the demo) concurrently, each with a limit of `timeout_seconds` +
@@ -934,6 +944,7 @@ games: adapters declare the identifiers a source needs in `GameAdapter.image_loo
 | `tmx` | `/api/tracks?uid=…` on each listed site; screenshot if `HasImages`, else thumbnail if `HasThumbnail` | `tmx` (comma-separated TMX sites) |
 | `unreal_archive` | the bundled index `catalog/unreal-archive.json.gz` (no request); then the image | `unreal_archive` (the game's name in the archive) |
 | `liandri` | the bundled index `catalog/liandri.json.gz` (no request); then the image from the Liandri Archives mirror on `unrealarchive.org`; covers stock maps | `liandri` (the game's name, as in the index) |
+| `steam_store` | `appdetails` on `store.steampowered.com` for `MapRef.extra["steam_store_app"]`; the `header_image` only if it lies on a Steam image host under that app's directory | – (the app id comes with the map) |
 
 Values from answers are checked before use (GameBanana's image must lie under its own image
 host with a plain file name; a TMX image URL is only built from the id TMX returned for

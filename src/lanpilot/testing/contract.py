@@ -61,6 +61,9 @@ async def check_adapter(adapter: GameAdapter) -> None:
     assert isinstance(status, ServerStatus), "query() must return a ServerStatus"
     assert status.players >= 0, "players must not be negative"
     assert status.max_players >= 0, "max_players must not be negative"
+    assert all(
+        isinstance(name, str) and isinstance(value, str) for name, value in status.details.items()
+    ), "details must map text to text"
     if adapter.supports(Capability.LOAD_STATS):
         assert status.load, "LOAD_STATS is declared, but query() returned no load values"
 

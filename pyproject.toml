@@ -86,6 +86,7 @@ ut99 = "lanpilot.games.unreal.ut99:UT99Adapter"
 q3a = "lanpilot.games.quake3.quake3:Quake3ArenaAdapter"
 eldewrito = "lanpilot.games.eldewrito:ElDewritoAdapter"
 demo = "lanpilot.games.demo:DemoAdapter"
+factorio = "lanpilot.games.factorio.adapter:FactorioAdapter"
 
 [project.urls]
 Homepage = "https://github.com/lan-dot-party/LANPilot"

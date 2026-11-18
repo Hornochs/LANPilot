@@ -164,7 +164,15 @@ class PollingSettings(BaseModel):
 
 
 # Online sources of map images, in the order they are asked (lanpilot.core.image_sources).
-IMAGE_SOURCES = ("steam_workshop", "gamebanana", "gametracker", "tmx", "unreal_archive", "liandri")
+IMAGE_SOURCES = (
+    "steam_workshop",
+    "gamebanana",
+    "gametracker",
+    "tmx",
+    "unreal_archive",
+    "liandri",
+    "steam_store",
+)
 
 
 class ImageSettings(BaseModel):

@@ -121,6 +121,7 @@ class DemoAdapter(GameAdapter):
             game_type=self._map.game_type,
             password_protected=False,
             load={"cpu": 7.5 + 2 * len(self._players), "fps": 512.0},
+            details={"Version": "1.0 (simulated)"},
         )
 
     async def list_maps(self) -> Sequence[MapRef]:

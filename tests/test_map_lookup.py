@@ -32,6 +32,7 @@ from lanpilot.core.image_sources import (
     GameTracker,
     ImageSource,
     LiandriArchives,
+    SteamStore,
     SteamWorkshop,
     TrackmaniaExchange,
     UnrealArchive,
@@ -147,6 +148,7 @@ def test_image_settings(base_env: dict[str, str]) -> None:
         "tmx",
         "unreal_archive",
         "liandri",
+        "steam_store",
     ]
     assert list(SOURCES) == defaults.sources  # every source is configurable
 
@@ -256,6 +258,53 @@ async def test_steam_workshop_needs_an_id_and_the_right_game() -> None:
     evil = MapRef("x", extra={"workshop_id": "1&publishedfileids[1]=2"})
     assert await source.find(fetcher, {"steam_app": "730"}, evil) is None
     assert len(fetcher.requests) == 2
+
+
+HEADER = (
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/645390/"
+    "90a06e72e86220883dec43e6f80f0cdfd58ffef3/header.jpg?t=1787303713"
+)
+
+
+def store_answer(app: str, header: object = HEADER, success: bool = True) -> dict[str, object]:
+    return {app: {"success": success, "data": {"header_image": header}}}
+
+
+async def test_steam_store_finds_the_header_image() -> None:
+    fetcher = FakeFetcher({SteamStore.endpoint: store_answer("645390")})
+    edition = MapRef("space-age", extra={"steam_store_app": "645390"})
+    assert await SteamStore().find(fetcher, {}, edition) == HEADER
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "https://evil.example/store_item_assets/steam/apps/645390/header.jpg",
+        "http://shared.akamai.steamstatic.com/store_item_assets/steam/apps/645390/header.jpg",
+        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/427520/header.jpg",
+        "https://user:pw@shared.akamai.steamstatic.com/store_item_assets/steam/apps/645390/h.jpg",
+        None,
+        42,
+    ],
+)
+async def test_steam_store_refuses_foreign_images(header: object) -> None:
+    fetcher = FakeFetcher({SteamStore.endpoint: store_answer("645390", header)})
+    edition = MapRef("space-age", extra={"steam_store_app": "645390"})
+    assert await SteamStore().find(fetcher, {}, edition) is None
+
+
+async def test_steam_store_needs_a_valid_app_id_and_a_successful_answer() -> None:
+    fetcher = FakeFetcher({SteamStore.endpoint: store_answer("645390", success=False)})
+    source = SteamStore()
+    assert (
+        await source.find(fetcher, {}, MapRef("space-age", extra={"steam_store_app": "645390"}))
+        is None
+    )
+    assert await source.find(fetcher, {}, MapRef("space-age")) is None
+    evil = MapRef("x", extra={"steam_store_app": "1&appids=2"})
+    assert await source.find(fetcher, {}, evil) is None
+    assert await source.find(fetcher, {}, MapRef("x", extra={"steam_store_app": "9" * 12})) is None
+    assert len(fetcher.requests) == 1
 
 
 def banana(

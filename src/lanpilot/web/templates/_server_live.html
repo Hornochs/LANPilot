@@ -22,9 +22,12 @@
       {% if state.status %}
       <dt>{{ _("Server name") }}</dt><dd>{{ state.status.name }}</dd>
       <dt>{{ _("Map") }}</dt><dd>{{ current.label if current else _("unknown") }}{% if state.status.game_type %} <span class="muted">({{ state.status.game_type }})</span>{% endif %}</dd>
-      <dt>{{ _("Players") }}</dt><dd>{{ state.status.players }}/{{ state.status.max_players }}</dd>
+      <dt>{{ _("Players") }}</dt><dd>{{ state.status.players }}{% if state.status.max_players %}/{{ state.status.max_players }}{% endif %}</dd>
       {% for name, value in state.status.load.items() %}
       <dt>{{ name }}</dt><dd>{{ "%.1f"|format(value) }}</dd>
+      {% endfor %}
+      {% for name, value in state.status.details.items() %}
+      <dt>{{ name|tr }}</dt><dd class="text-detail">{{ value|tr }}</dd>
       {% endfor %}
       {% endif %}
       {% if state.last_seen_at %}

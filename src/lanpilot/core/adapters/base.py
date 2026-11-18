@@ -108,12 +108,17 @@ class Player:
 class ServerStatus:
     name: str
     players: int
-    max_players: int
+    max_players: int  # 0: the server has no limit; only the players are shown
     map: MapRef | None = None
     game_type: str | None = None
     password_protected: bool | None = None
     # Whatever the protocol itself reports, e.g. {"cpu": 12.5, "fps": 512.0}.
     load: Mapping[str, float] = field(default_factory=dict)
+    # Further facts as text, shown on the server page, e.g. {"Version": "2.1.24"}; line
+    # breaks are kept, one list item per line. Labels and values made with M() are shown
+    # translated. Values come from the server: keep them short
+    # and printable.
+    details: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

@@ -9,9 +9,21 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Setting `server.allow_insecure_http` (see "Changed").
+- `ServerStatus.details`: adapters can report text facts (a version, a list of mods), shown
+  on the server page below the load values, one list item per line; labels and values made
+  with `M()` are translated.
+- Map image source `steam_store`: the header image of a game's or expansion's Steam store
+  page, for games whose "map" is the game edition (the app id comes with the map). It is on
+  by default; an installation that lists `images.sources` itself must add it.
+- Factorio (adapter `factorio`): status with version, Space Age and map age, player
+  list, kick and ban, a console that refuses every command that would turn off achievements,
+  restart for servers marked as started again automatically, and a LAN scan. Source RCON has
+  a single-packet mode for servers that answer every command with exactly one packet.
 
 ### Changed
 
+- A server without a player limit (`max_players` 0) shows only its players, without "/0"
+  and without the bar, on the card, the server page and in the connection test.
 - **Breaking:** with an `http://` `public_url`, LANPilot refuses to start when `bind` is
   reachable from other machines (anything but `127.0.0.1`, `::1` or `localhost`), because
   passwords and session cookies would cross the LAN unencrypted. An installation that is

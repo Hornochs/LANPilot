@@ -1,6 +1,7 @@
 """Polling, the action layer, the server page, events and the audit view."""
 
 import asyncio
+import dataclasses
 import json
 from collections.abc import Sequence
 from typing import ClassVar
@@ -22,6 +23,8 @@ from lanpilot.core.adapters.registry import AdapterRegistry
 from lanpilot.core.events import RESYNC, SERVER_CHANGED, SERVERS_CHANGED, Event, EventBus
 from lanpilot.core.runtime import INTERNAL_ERROR, ServerManager
 from lanpilot.db.engine import create_engine, create_sessionmaker
+from lanpilot.games.demo import DemoAdapter
+from lanpilot.i18n import M
 from lanpilot.web.routes_events import event_stream
 from tests.conftest import (
     SECRET_KEY,
@@ -105,6 +108,56 @@ def test_new_server_is_polled_and_its_maps_are_stored(site: TestClient, query: Q
     assert "Deathmatch" in page
     assert '<optgroup label="Capture the Flag">' in page
     assert "Twin Forts" in page
+
+
+def test_server_page_shows_text_details(site: TestClient, query: Query) -> None:
+    server_id = add_server(site, query)
+    page = site.get(f"/servers/{server_id}").text
+    assert '<dt>Version</dt><dd class="text-detail">1.0 (simulated)</dd>' in page
+    assert "<dt>cpu</dt>" in page  # numbers stay where they were
+
+
+def patch_demo_status(monkeypatch: pytest.MonkeyPatch, **changes: object) -> None:
+    original = DemoAdapter.query
+
+    async def query(self: DemoAdapter) -> ServerStatus:
+        return dataclasses.replace(await original(self), **changes)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(DemoAdapter, "query", query)
+
+
+def test_text_details_keep_their_line_breaks(
+    site: TestClient, query: Query, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    patch_demo_status(monkeypatch, details={"Planets": "Nauvis\nVulcanus"})
+    server_id = add_server(site, query)
+    page = site.get(f"/servers/{server_id}").text
+    assert '<dt>Planets</dt><dd class="text-detail">Nauvis\nVulcanus</dd>' in page
+    css = site.get("/static/css/app.css").text
+    assert ".text-detail" in css
+    assert "white-space: pre-line" in css.split(".text-detail", 1)[1].split("}", 1)[0]
+
+
+def test_text_details_are_translated(
+    site: TestClient, query: Query, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    patch_demo_status(monkeypatch, details={M("Players"): M("{players} players", players=3)})
+    server_id = add_server(site, query)
+    page = site.get(f"/servers/{server_id}", headers={"Accept-Language": "de"}).text
+    assert '<dt>Spieler</dt><dd class="text-detail">3 Spieler</dd>' in page
+
+
+def test_server_without_player_limit_shows_only_the_players(
+    site: TestClient, query: Query, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    patch_demo_status(monkeypatch, max_players=0)
+    server_id = add_server(site, query)
+    card = site.get(f"/servers/{server_id}/card").text
+    assert "3/0" not in card
+    assert "<progress" not in card
+    assert "<span>3</span>" in card
+    page = site.get(f"/servers/{server_id}").text
+    assert "<dt>Players</dt><dd>3</dd>" in page
 
 
 def test_offline_server_is_shown_with_its_error(site: TestClient, query: Query) -> None:

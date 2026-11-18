@@ -6,7 +6,7 @@ as done, and [architecture.md](architecture.md) describes any structural change 
 
 ## Current status
 
-_Last updated: 2026-10-22_
+_Last updated: 2026-11-18_
 
 | Phase | State |
 |---|---|
@@ -20,7 +20,7 @@ _Last updated: 2026-10-22_
 | 7 – More games | in progress |
 | 8 – Hardening and 1.0 | done |
 
-**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1, 7.4, 7.5 and 8.1–8.5, which completes
+**Done:** 0.1–0.5, 1.1–1.9, 2.1–2.4, 4.1–4.5, 5.1–5.2, 6.1–6.2, 7.1, 7.4–7.6 and 8.1–8.5, which completes
 phases 0, 1, 2, 4, 5, 6 and 8; 3.1, 3.2, 3.4 and 3.5; of 7.2 ElDewrito. Version 1.0.0 is released.
 
 **Verified:** lint, type check and tests pass locally and in CI. The package workflow built
@@ -263,6 +263,11 @@ Player management should be checked with real players at the next LAN party (see
   without players (status, map list and change, restarts, console, LAN scan, wrong
   password); see [games/valve.md](games/valve.md). TF2 also with bots (player list, kick)
   and through the web interface.
+- **7.6** ✔ Factorio: status with the edition (base game or Space Age, Steam store picture)
+  and the world's seed, details (version, planets, mods, map age, players, autosave), player
+  list, kick and ban, a console that refuses every command that would turn off achievements,
+  restart for servers that are started again automatically, LAN scan via the servers'
+  announcements; measured against Factorio 2.1.24 ([games/factorio.md](games/factorio.md)).
 
 ### Phase 8 – Hardening and 1.0
 

@@ -16,6 +16,7 @@ unverified starting point.
 | [`quake3.md`](quake3.md) | Quake III Arena, Call of Duty, United Offensive, Call of Duty 2, Call of Duty 4 (CoD4X), World at War (verified) | 7.1 ✔, 7.4 ✔ |
 | [`valve.md`](valve.md) | Half-Life DM, TFC, Day of Defeat, Opposing Force, CS: Condition Zero, DoD: Source, HL2: Deathmatch, Team Fortress 2 (verified, without human players) | 7.5 ✔ |
 | [`eldewrito.md`](eldewrito.md) | ElDewrito 0.7.1 (verified, without players) | 7.2 (ElDewrito ✔) |
+| [`factorio.md`](factorio.md) | Factorio 2.1 (verified) | 7.6 ✔ |
 
 Player lists, kick and ban (phase 5) could not be tried with real players on any of the test
 servers; each file says what was measured and what was taken from the game's own code or

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 11:37+0100\n"
+"POT-Creation-Date: 2026-11-18 11:38+0100\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -434,12 +434,12 @@ msgstr "Der Status-Port des Servers ist nicht erreichbar."
 #: src/lanpilot/core/transports/dewrito.py:146
 #: src/lanpilot/core/transports/goldsrc_rcon.py:176
 #: src/lanpilot/core/transports/quake3.py:247
-#: src/lanpilot/core/transports/source_rcon.py:147
+#: src/lanpilot/core/transports/source_rcon.py:152
 msgid "The server refused the RCON password."
 msgstr "Der Server hat das RCON-Passwort abgelehnt."
 
 #: src/lanpilot/core/transports/dewrito.py:129
-#: src/lanpilot/core/transports/source_rcon.py:136
+#: src/lanpilot/core/transports/source_rcon.py:141
 msgid "Nothing accepts RCON connections on that port."
 msgstr "Auf diesem Port nimmt nichts RCON-Verbindungen an."
 
@@ -449,7 +449,7 @@ msgid "The server's RCON port does not speak ElDewrito's RCON protocol."
 msgstr "Auf dem RCON-Port des Servers läuft nicht das RCON-Protokoll von ElDewrito."
 
 #: src/lanpilot/core/transports/dewrito.py:149
-#: src/lanpilot/core/transports/source_rcon.py:151
+#: src/lanpilot/core/transports/source_rcon.py:156
 msgid "The server did not confirm the RCON login."
 msgstr "Der Server hat die RCON-Anmeldung nicht bestätigt."
 
@@ -459,24 +459,24 @@ msgstr "Der Server hat eine fehlerhafte RCON-Antwort geschickt."
 
 #: src/lanpilot/core/transports/dewrito.py:175
 #: src/lanpilot/core/transports/quake3.py:223
-#: src/lanpilot/core/transports/source_rcon.py:165
+#: src/lanpilot/core/transports/source_rcon.py:170
 msgid "The command is empty, too long or contains a line break."
 msgstr "Der Befehl ist leer, zu lang oder enthält einen Zeilenumbruch."
 
 #: src/lanpilot/core/transports/dewrito.py:180
 #: src/lanpilot/core/transports/goldsrc_rcon.py:163
 #: src/lanpilot/core/transports/quake3.py:228
-#: src/lanpilot/core/transports/source_rcon.py:170
+#: src/lanpilot/core/transports/source_rcon.py:175
 msgid "The server refused the RCON password. Edit the server to enter another one."
 msgstr "Der Server hat das RCON-Passwort abgelehnt. Den Server bearbeiten, um ein anderes einzugeben."
 
 #: src/lanpilot/core/transports/dewrito.py:200
-#: src/lanpilot/core/transports/source_rcon.py:190
+#: src/lanpilot/core/transports/source_rcon.py:195
 msgid "The server stopped answering over RCON."
 msgstr "Der Server antwortet nicht mehr über RCON."
 
 #: src/lanpilot/core/transports/dewrito.py:204
-#: src/lanpilot/core/transports/source_rcon.py:194
+#: src/lanpilot/core/transports/source_rcon.py:199
 msgid "The RCON connection was closed by the server."
 msgstr "Die RCON-Verbindung wurde vom Server geschlossen."
 
@@ -514,8 +514,9 @@ msgid "The server refused the login or password."
 msgstr "Der Server hat das Login oder das Passwort abgelehnt."
 
 #: src/lanpilot/core/transports/gbxremote.py:191
-#: src/lanpilot/core/transports/source_rcon.py:221
-#: src/lanpilot/core/transports/source_rcon.py:246
+#: src/lanpilot/core/transports/source_rcon.py:228
+#: src/lanpilot/core/transports/source_rcon.py:253
+#: src/lanpilot/core/transports/source_rcon.py:270
 msgid "The server's answer is too long."
 msgstr "Die Antwort des Servers ist zu lang."
 
@@ -553,11 +554,11 @@ msgstr "Der Server weist die RCON-Challenge immer wieder zurück."
 msgid "The RCON password is empty or contains a space or a quote, which the protocol cannot carry."
 msgstr "Das RCON-Passwort ist leer oder enthält ein Leerzeichen oder ein Anführungszeichen, was das Protokoll nicht übertragen kann."
 
-#: src/lanpilot/core/transports/source_rcon.py:91
+#: src/lanpilot/core/transports/source_rcon.py:95
 msgid "The RCON password is empty or contains a null character, which the protocol cannot carry."
 msgstr "Das RCON-Passwort ist leer oder enthält ein Nullzeichen, was das Protokoll nicht übertragen kann."
 
-#: src/lanpilot/core/transports/source_rcon.py:125
+#: src/lanpilot/core/transports/source_rcon.py:130
 msgid "The server sent a malformed RCON packet."
 msgstr "Der Server hat ein fehlerhaftes RCON-Paket gesendet."
 
@@ -630,6 +631,7 @@ msgid "That player is not on the server."
 msgstr "Dieser Spieler ist nicht auf dem Server."
 
 #: src/lanpilot/games/eldewrito.py:119
+#: src/lanpilot/games/factorio/adapter.py:93
 msgid "RCON port"
 msgstr "RCON-Port"
 
@@ -645,7 +647,9 @@ msgstr "Status-Port"
 msgid "Server.Port in the server's dewrito_prefs.cfg: its HTTP status server (default 11775, TCP)."
 msgstr "Server.Port in der dewrito_prefs.cfg des Servers: sein HTTP-Status-Server (Standard 11775, TCP)."
 
-#: src/lanpilot/games/eldewrito.py:135 src/lanpilot/games/quake3/common.py:82
+#: src/lanpilot/games/eldewrito.py:135
+#: src/lanpilot/games/factorio/adapter.py:95
+#: src/lanpilot/games/quake3/common.py:82
 #: src/lanpilot/games/valve/goldsrc.py:83 src/lanpilot/games/valve/source.py:79
 msgid "RCON password"
 msgstr "RCON-Passwort"
@@ -697,6 +701,104 @@ msgstr "Der Server hat den Spieler nicht entfernt."
 #: src/lanpilot/games/valve/common.py:198
 msgid "The server did not report this player's IP address, so it cannot ban it."
 msgstr "Der Server hat die IP-Adresse dieses Spielers nicht gemeldet, daher kann sie nicht gebannt werden."
+
+#: src/lanpilot/games/factorio/adapter.py:96
+msgid "The value of --rcon-password on the server's command line."
+msgstr "Der Wert von --rcon-password in der Befehlszeile des Servers."
+
+#: src/lanpilot/games/factorio/adapter.py:98
+msgid "Game port"
+msgstr "Spielport"
+
+#: src/lanpilot/games/factorio/adapter.py:101
+msgid "The server is started again automatically after /quit"
+msgstr "Der Server wird nach /quit automatisch wieder gestartet"
+
+#: src/lanpilot/games/factorio/adapter.py:103
+msgid "For example systemd with Restart=always and --start-server-load-latest. Only then may LANPilot restart it."
+msgstr "Zum Beispiel systemd mit Restart=always und --start-server-load-latest. Nur dann darf LANPilot ihn neu starten."
+
+#: src/lanpilot/games/factorio/adapter.py:140
+#, python-brace-format
+msgid ""
+"{items}\n"
+"… and {count} more"
+msgstr ""
+"{items}\n"
+"… und {count} weitere"
+
+#: src/lanpilot/games/factorio/adapter.py:151
+msgid "Factorio commands start with /. Other lines would be sent to the chat."
+msgstr "Factorio-Befehle beginnen mit /. Andere Zeilen würden in den Chat geschickt."
+
+#: src/lanpilot/games/factorio/adapter.py:156
+msgid "LANPilot does not stop Factorio servers from the console. Use Restart, which is offered only for servers that are started again automatically."
+msgstr "LANPilot stoppt Factorio-Server nicht über die Konsole. Nutze Neustarten; das gibt es nur für Server, die automatisch wieder gestartet werden."
+
+#: src/lanpilot/games/factorio/adapter.py:163
+msgid "LANPilot does not send this command: it would turn off achievements or damage the game."
+msgstr "LANPilot sendet diesen Befehl nicht: Er würde die Errungenschaften abschalten oder das Spiel beschädigen."
+
+#: src/lanpilot/games/factorio/adapter.py:222
+msgid "The server's answer has an unexpected format."
+msgstr "Die Antwort des Servers hat ein unerwartetes Format."
+
+#: src/lanpilot/games/factorio/adapter.py:260
+msgid "Version"
+msgstr "Version"
+
+#: src/lanpilot/games/factorio/adapter.py:261
+msgid "Planets"
+msgstr "Planeten"
+
+#: src/lanpilot/games/factorio/adapter.py:263
+msgid "Mods"
+msgstr "Mods"
+
+#: src/lanpilot/games/factorio/adapter.py:269
+msgid "Map age"
+msgstr "Alter der Map"
+
+#: src/lanpilot/games/factorio/adapter.py:269
+#, python-brace-format
+msgid "{hours} h {minutes} min"
+msgstr "{hours} h {minutes} min"
+
+#: src/lanpilot/games/factorio/adapter.py:272
+msgid "Players ever joined"
+msgstr "Spieler insgesamt"
+
+#: src/lanpilot/games/factorio/adapter.py:275
+msgid "Autosave"
+msgstr "Automatisches Speichern"
+
+#: src/lanpilot/games/factorio/adapter.py:275
+#, python-brace-format
+msgid "every {minutes} min"
+msgstr "alle {minutes} min"
+
+#: src/lanpilot/games/factorio/adapter.py:300
+msgid "This player name cannot be sent to the server."
+msgstr "Dieser Spielername kann nicht an den Server geschickt werden."
+
+#: src/lanpilot/games/factorio/adapter.py:303
+#, python-brace-format
+msgid "No player named {name} is online."
+msgstr "Es ist kein Spieler namens {name} online."
+
+#: src/lanpilot/games/factorio/adapter.py:311
+msgid "Restarting is switched off for this server. Enable it in the server's settings if the server is started again automatically after /quit."
+msgstr "Neustarten ist für diesen Server ausgeschaltet. Schalte es in den Einstellungen des Servers ein, wenn der Server nach /quit automatisch wieder gestartet wird."
+
+#: src/lanpilot/games/factorio/adapter.py:324
+#, python-brace-format
+msgid "Saving the map took longer than {seconds} seconds, so the server was not stopped."
+msgstr "Das Speichern der Map hat länger als {seconds} Sekunden gedauert, darum wurde der Server nicht gestoppt."
+
+#: src/lanpilot/games/factorio/adapter.py:334
+#, python-brace-format
+msgid "The server could not save the map, so it was not stopped: {answer}"
+msgstr "Der Server konnte die Map nicht speichern, darum wurde er nicht gestoppt: {answer}"
 
 #: src/lanpilot/games/quake3/callofduty.py:36
 #: src/lanpilot/games/quake3/common.py:77

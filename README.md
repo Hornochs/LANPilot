@@ -63,6 +63,8 @@ into each machine.
 
 ## Documentation
 
+Packages for Debian/Ubuntu, Fedora/Rocky and Arch Linux are available from [repo.lan.party](https://repo.lan.party); the install steps are in [docs/installation.md](docs/installation.md).
+
 - [docs/lan-party-guide.md](docs/lan-party-guide.md) – checklist for organisers: before, during and after the event
 - [docs/installation.md](docs/installation.md) – packages, first start, backup, upgrade
 - [docs/configuration.md](docs/configuration.md) – all settings, accounts and roles

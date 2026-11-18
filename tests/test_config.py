@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -186,3 +187,45 @@ def test_secret_key_is_masked_when_dumped() -> None:
     assert "super-secret-value" not in str(settings.model_dump(mode="json"))
     assert settings.secret_key is not None
     assert settings.secret_key.get_secret_value() == "super-secret-value"
+
+
+@pytest.mark.parametrize("bind", ["0.0.0.0", "192.168.1.10", "::", "lanpilot.lan"])  # noqa: S104
+def test_plain_http_on_the_network_must_be_chosen_explicitly(bind: str) -> None:
+    env = {"LANPILOT_SERVER__PUBLIC_URL": "http://192.168.1.10:9030", "LANPILOT_SERVER__BIND": bind}
+    with pytest.raises(ConfigError, match="allow_insecure_http"):
+        load_settings(environ=env)
+
+    settings = load_settings(environ={**env, "LANPILOT_SERVER__ALLOW_INSECURE_HTTP": "true"})
+    assert settings.server.allow_insecure_http is True
+
+
+@pytest.mark.parametrize(
+    ("url", "bind"),
+    [
+        ("http://localhost:9030", "127.0.0.1"),
+        ("http://localhost:9030", "127.0.0.2"),
+        ("http://localhost:9030", "::1"),
+        ("http://localhost:9030", "localhost"),
+        ("https://lan.example", "0.0.0.0"),  # noqa: S104
+    ],
+)
+def test_loopback_or_https_needs_no_opt_in(url: str, bind: str) -> None:
+    settings = load_settings(
+        environ={"LANPILOT_SERVER__PUBLIC_URL": url, "LANPILOT_SERVER__BIND": bind}
+    )
+    assert settings.server.allow_insecure_http is False
+
+
+def test_sessions_are_shorter_over_plain_http() -> None:
+    https = load_settings(environ={"LANPILOT_SERVER__PUBLIC_URL": "https://lan.example"})
+    http = load_settings(environ={"LANPILOT_SERVER__PUBLIC_URL": "http://localhost:9030"})
+    short = load_settings(
+        environ={
+            "LANPILOT_SERVER__PUBLIC_URL": "http://localhost:9030",
+            "LANPILOT_AUTH__SESSION_LIFETIME_HOURS": "2",
+        }
+    )
+
+    assert https.session_lifetime == timedelta(days=7)
+    assert http.session_lifetime == timedelta(hours=12)
+    assert short.session_lifetime == timedelta(hours=2)

@@ -15,7 +15,7 @@ from typing import ClassVar
 from pydantic import Field, SecretStr
 
 from lanpilot.core.adapters import Capability, DiscoveredServer, ProtocolError
-from lanpilot.core.transports.uweb import parse
+from lanpilot.core.transports.uweb import read_page
 from lanpilot.games.unreal.common import GAME_CLASS, split_options
 from lanpilot.games.unreal.discovery import discover_ut2004
 from lanpilot.games.unreal.webadmin import ROOT, WebAdminAdapter, WebAdminConnection
@@ -84,7 +84,7 @@ class UT2004Adapter(WebAdminAdapter):
         )
 
     async def _reload(self) -> None:
-        page = parse(await self._web.get(f"{ROOT}/current_restart"))
+        page = await read_page(await self._web.get(f"{ROOT}/current_restart"))
         game_class, current = page.inputs.get("GameType", ""), page.inputs.get("MapName", "")
         if not GAME_CLASS.fullmatch(game_class) or not current:
             raise ProtocolError(M("The WebAdmin did not tell which game is running."))

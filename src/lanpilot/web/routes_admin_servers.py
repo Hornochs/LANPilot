@@ -116,8 +116,17 @@ def _form_page(
         "error": i18n.message_of(error) if error else None,
         "field_errors": error.fields if error else {},
         "prefilled": prefilled,
+        "prefilled_address": _address(values) if prefilled else None,
     }
     return render(request, "admin/server_form.html", context, status_code=400 if error else 200)
+
+
+def _address(values: dict[str, Any]) -> str | None:
+    host = values.get("host")
+    if not host:
+        return None
+    port = values.get("port")
+    return f"{host}:{port}" if port else str(host)
 
 
 def _resubmitted_values(data: servers.ServerInput, specs: list[FieldSpec]) -> dict[str, Any]:

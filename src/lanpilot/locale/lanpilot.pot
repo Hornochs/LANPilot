@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-22 11:33+0200\n"
+"POT-Creation-Date: 2026-11-18 10:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,36 +17,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: src/lanpilot/app.py:56
+#: src/lanpilot/app.py:60
 msgid "Bad request"
 msgstr ""
 
-#: src/lanpilot/app.py:57
+#: src/lanpilot/app.py:61
 msgid "Not allowed"
 msgstr ""
 
-#: src/lanpilot/app.py:58
+#: src/lanpilot/app.py:62
 msgid "Page not found"
 msgstr ""
 
-#: src/lanpilot/app.py:59
+#: src/lanpilot/app.py:63
 msgid "Method not allowed"
 msgstr ""
 
-#: src/lanpilot/app.py:84
+#: src/lanpilot/app.py:88
 msgid "You are not allowed to do this."
 msgstr ""
 
-#: src/lanpilot/app.py:92
+#: src/lanpilot/app.py:96
 #, python-brace-format
 msgid "Error {code}"
 msgstr ""
 
-#: src/lanpilot/app.py:93
+#: src/lanpilot/app.py:97
 msgid "The request could not be completed."
 msgstr ""
 
-#: src/lanpilot/app.py:95
+#: src/lanpilot/app.py:99
 msgid "This page does not exist."
 msgstr ""
 
@@ -93,74 +93,78 @@ msgstr ""
 msgid "This language is not available."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:132
+#: src/lanpilot/core/actions.py:43
+msgid "The server is busy with other requests; try again in a moment."
+msgstr ""
+
+#: src/lanpilot/core/actions.py:139
 #, python-brace-format
 msgid "This needs the {role} role."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:135 src/lanpilot/core/actions.py:156
-#: src/lanpilot/core/actions.py:266 src/lanpilot/core/actions.py:282
+#: src/lanpilot/core/actions.py:142 src/lanpilot/core/actions.py:166
+#: src/lanpilot/core/actions.py:276 src/lanpilot/core/actions.py:306
 msgid "This server does not exist."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:137
+#: src/lanpilot/core/actions.py:144
 msgid "This server is disabled."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:139
+#: src/lanpilot/core/actions.py:146
 msgid "This server is not set up correctly."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:142
+#: src/lanpilot/core/actions.py:149
 #, python-brace-format
 msgid "{adapter_name} does not support this."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:151
+#: src/lanpilot/core/actions.py:161
 #, python-brace-format
 msgid "The server did not answer within {seconds} seconds."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:172
+#: src/lanpilot/core/actions.py:182
 msgid "Pick a map from this server's list."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:215
+#: src/lanpilot/core/actions.py:225
 msgid "Enter the map's file name as the server knows it."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:218 src/lanpilot/core/maps.py:117
+#: src/lanpilot/core/actions.py:228 src/lanpilot/core/maps.py:117
 msgid "This map is already in the list."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:269
+#: src/lanpilot/core/actions.py:279
 #, python-brace-format
 msgid "{adapter_name} cannot list players."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:278
+#: src/lanpilot/core/actions.py:302
 msgid "The server did not answer in time."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:302 src/lanpilot/games/trackmania/common.py:347
+#: src/lanpilot/core/actions.py:338 src/lanpilot/games/trackmania/common.py:347
 msgid "This player is no longer on the server."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:306
+#: src/lanpilot/core/actions.py:342
 #, python-brace-format
 msgid "{name} cannot be banned on this server."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:308
+#: src/lanpilot/core/actions.py:344
 #, python-brace-format
 msgid "{name} cannot be kicked on this server."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:334
+#: src/lanpilot/core/actions.py:373
 msgid "The console is switched off (enable_console in the configuration)."
 msgstr ""
 
-#: src/lanpilot/core/actions.py:338
+#: src/lanpilot/core/actions.py:377
 msgid "Enter one line of at most 500 printable characters."
 msgstr ""
 
@@ -175,7 +179,7 @@ msgstr ""
 #: src/lanpilot/core/adapters/base.py:153 src/lanpilot/games/demo.py:52
 #: src/lanpilot/games/quake3/callofduty.py:35
 #: src/lanpilot/games/quake3/common.py:75
-#: src/lanpilot/games/valve/goldsrc.py:80 src/lanpilot/games/valve/source.py:72
+#: src/lanpilot/games/valve/goldsrc.py:81 src/lanpilot/games/valve/source.py:73
 msgid "Port"
 msgstr ""
 
@@ -277,15 +281,15 @@ msgstr ""
 msgid "This map name cannot be stored."
 msgstr ""
 
-#: src/lanpilot/core/runtime.py:44
+#: src/lanpilot/core/runtime.py:47
 msgid "Internal error while talking to the server; see the LANPilot log."
 msgstr ""
 
-#: src/lanpilot/core/runtime.py:154
+#: src/lanpilot/core/runtime.py:161
 msgid "The adapter for this game is not installed."
 msgstr ""
 
-#: src/lanpilot/core/runtime.py:273 src/lanpilot/core/servers.py:291
+#: src/lanpilot/core/runtime.py:301 src/lanpilot/core/servers.py:291
 #, python-brace-format
 msgid "No answer within {seconds} seconds."
 msgstr ""
@@ -470,51 +474,51 @@ msgstr ""
 msgid "The RCON connection was closed by the server."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:99
+#: src/lanpilot/core/transports/gbxremote.py:101
 msgid "The server refused the password. Edit the server to enter another one."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:116
+#: src/lanpilot/core/transports/gbxremote.py:118
 msgid "The server stopped answering."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:119
+#: src/lanpilot/core/transports/gbxremote.py:121
 msgid "The connection was closed by the server."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:134
-#: src/lanpilot/core/transports/gbxremote.py:142
+#: src/lanpilot/core/transports/gbxremote.py:136
+#: src/lanpilot/core/transports/gbxremote.py:144
 msgid "The server's answer to a batch of calls is malformed."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:151
+#: src/lanpilot/core/transports/gbxremote.py:153
 msgid "The server does not speak GBXRemote."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:155
+#: src/lanpilot/core/transports/gbxremote.py:157
 msgid "Nothing answers with GBXRemote on that port."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:161
+#: src/lanpilot/core/transports/gbxremote.py:163
 msgid "The server speaks an unsupported protocol version."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:170
+#: src/lanpilot/core/transports/gbxremote.py:172
 msgid "The server refused the login or password."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:189
+#: src/lanpilot/core/transports/gbxremote.py:191
 #: src/lanpilot/core/transports/source_rcon.py:221
 #: src/lanpilot/core/transports/source_rcon.py:246
 msgid "The server's answer is too long."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:194
+#: src/lanpilot/core/transports/gbxremote.py:198
 msgid "The server sent too many unexpected messages."
 msgstr ""
 
-#: src/lanpilot/core/transports/gbxremote.py:203
-#: src/lanpilot/core/transports/gbxremote.py:205
+#: src/lanpilot/core/transports/gbxremote.py:207
+#: src/lanpilot/core/transports/gbxremote.py:209
 msgid "The server's answer is not valid XML-RPC."
 msgstr ""
 
@@ -551,33 +555,33 @@ msgstr ""
 msgid "The server sent a malformed RCON packet."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:106
+#: src/lanpilot/core/transports/uweb.py:109
 msgid "The WebAdmin's page is too large to read."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:378
+#: src/lanpilot/core/transports/uweb.py:392
 msgid "The server refused the user name or password. Edit the server to enter other ones."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:400
+#: src/lanpilot/core/transports/uweb.py:414
 #: src/lanpilot/games/unreal/ut3.py:153
 msgid "The server refused the WebAdmin user name or password."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:406
+#: src/lanpilot/core/transports/uweb.py:420
 #, python-brace-format
 msgid "The WebAdmin answered with HTTP {status}."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:412
+#: src/lanpilot/core/transports/uweb.py:426
 msgid "The WebAdmin's page is too large."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:414
+#: src/lanpilot/core/transports/uweb.py:428
 msgid "The WebAdmin cannot be reached."
 msgstr ""
 
-#: src/lanpilot/core/transports/uweb.py:416
+#: src/lanpilot/core/transports/uweb.py:430
 msgid "The WebAdmin's answer could not be read."
 msgstr ""
 
@@ -636,7 +640,7 @@ msgid "Server.Port in the server's dewrito_prefs.cfg: its HTTP status server (de
 msgstr ""
 
 #: src/lanpilot/games/eldewrito.py:134 src/lanpilot/games/quake3/common.py:81
-#: src/lanpilot/games/valve/goldsrc.py:82 src/lanpilot/games/valve/source.py:78
+#: src/lanpilot/games/valve/goldsrc.py:83 src/lanpilot/games/valve/source.py:79
 msgid "RCON password"
 msgstr ""
 
@@ -655,7 +659,7 @@ msgid "The server cannot load the game type {name}."
 msgstr ""
 
 #: src/lanpilot/games/eldewrito.py:269 src/lanpilot/games/quake3/common.py:319
-#: src/lanpilot/games/valve/goldsrc.py:137
+#: src/lanpilot/games/valve/goldsrc.py:138
 #, python-brace-format
 msgid "The server does not have the map {key}."
 msgstr ""
@@ -669,7 +673,7 @@ msgid "The server could not start the game."
 msgstr ""
 
 #: src/lanpilot/games/eldewrito.py:364 src/lanpilot/games/quake3/common.py:354
-#: src/lanpilot/games/valve/common.py:200
+#: src/lanpilot/games/valve/common.py:218
 msgid "This player cannot be named in a command."
 msgstr ""
 
@@ -684,7 +688,7 @@ msgid "The server did not remove the player."
 msgstr ""
 
 #: src/lanpilot/games/eldewrito.py:381 src/lanpilot/games/quake3/common.py:409
-#: src/lanpilot/games/valve/common.py:191
+#: src/lanpilot/games/valve/common.py:209
 msgid "The server did not report this player's IP address, so it cannot ban it."
 msgstr ""
 
@@ -698,8 +702,8 @@ msgid "The value of rconpassword (rcon_password on CoD4) in the server's config.
 msgstr ""
 
 #: src/lanpilot/games/quake3/common.py:282
-#: src/lanpilot/games/valve/goldsrc.py:134
-#: src/lanpilot/games/valve/source.py:151
+#: src/lanpilot/games/valve/goldsrc.py:135
+#: src/lanpilot/games/valve/source.py:152
 msgid "This map name cannot be sent to the server."
 msgstr ""
 
@@ -848,8 +852,8 @@ msgstr ""
 
 #: src/lanpilot/games/unreal/ut3.py:221
 #: src/lanpilot/games/unreal/webadmin.py:154
-#: src/lanpilot/games/valve/goldsrc.py:143
-#: src/lanpilot/games/valve/source.py:169
+#: src/lanpilot/games/valve/goldsrc.py:144
+#: src/lanpilot/games/valve/source.py:170
 #, python-brace-format
 msgid "{game} cannot restart only the round"
 msgstr ""
@@ -902,24 +906,28 @@ msgstr ""
 msgid "The WebAdmin's player page does not add up; a player name may be forged."
 msgstr ""
 
-#: src/lanpilot/games/valve/goldsrc.py:83 src/lanpilot/games/valve/source.py:79
+#: src/lanpilot/games/valve/common.py:204
+msgid "The server reported this player more than once, so it cannot ban it."
+msgstr ""
+
+#: src/lanpilot/games/valve/goldsrc.py:84 src/lanpilot/games/valve/source.py:80
 msgid "The value of rcon_password in the server's configuration (server.cfg)."
 msgstr ""
 
-#: src/lanpilot/games/valve/source.py:73
+#: src/lanpilot/games/valve/source.py:74
 msgid "The game port. RCON uses the same port over TCP."
 msgstr ""
 
-#: src/lanpilot/games/valve/source.py:155
+#: src/lanpilot/games/valve/source.py:156
 #, python-brace-format
 msgid "The server does not have the map {name}."
 msgstr ""
 
-#: src/lanpilot/games/valve/source.py:159
+#: src/lanpilot/games/valve/source.py:160
 msgid "The server is still loading a map and ignored the change. Try again in a few seconds."
 msgstr ""
 
-#: src/lanpilot/games/valve/source.py:175
+#: src/lanpilot/games/valve/source.py:176
 msgid "The server did not report which map is running."
 msgstr ""
 
@@ -932,15 +940,15 @@ msgstr ""
 msgid "The form has expired. Reload the page and try again."
 msgstr ""
 
-#: src/lanpilot/web/routes_account.py:72
+#: src/lanpilot/web/routes_account.py:71
 msgid "Too many wrong passwords. Try again later."
 msgstr ""
 
-#: src/lanpilot/web/routes_account.py:85
+#: src/lanpilot/web/routes_account.py:84
 msgid "The current password is wrong."
 msgstr ""
 
-#: src/lanpilot/web/routes_account.py:88
+#: src/lanpilot/web/routes_account.py:87
 msgid "The two new passwords do not match."
 msgstr ""
 
@@ -1023,7 +1031,7 @@ msgstr ""
 
 #: src/lanpilot/web/templates/_players.html:16
 #: src/lanpilot/web/templates/admin/scan.html:29
-#: src/lanpilot/web/templates/admin/server_form.html:19
+#: src/lanpilot/web/templates/admin/server_form.html:20
 #: src/lanpilot/web/templates/admin/servers.html:19
 msgid "Name"
 msgstr ""
@@ -1141,7 +1149,7 @@ msgid "As the browser prefers"
 msgstr ""
 
 #: src/lanpilot/web/templates/account.html:22
-#: src/lanpilot/web/templates/admin/server_form.html:74
+#: src/lanpilot/web/templates/admin/server_form.html:75
 #: src/lanpilot/web/templates/admin/users.html:26
 msgid "Save"
 msgstr ""
@@ -1293,47 +1301,56 @@ msgid "Edit %(name)s"
 msgstr ""
 
 #: src/lanpilot/web/templates/admin/server_form.html:9
+msgid "Check the address before you enter a password."
+msgstr ""
+
+#: src/lanpilot/web/templates/admin/server_form.html:10
+#, python-format
+msgid "The connection to %(address)s was filled in from a link, for example from the network scan. Any machine on the network can answer a scan and pose as a game server; the password is sent to this address."
+msgstr ""
+
+#: src/lanpilot/web/templates/admin/server_form.html:10
 msgid "The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there."
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:17
+#: src/lanpilot/web/templates/admin/server_form.html:18
 #, python-format
 msgid "Game: %(name)s"
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:21
+#: src/lanpilot/web/templates/admin/server_form.html:22
 msgid "Shown on the dashboard."
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:23
+#: src/lanpilot/web/templates/admin/server_form.html:24
 msgid "Connection"
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:42
+#: src/lanpilot/web/templates/admin/server_form.html:43
 msgid "unchanged"
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:63
+#: src/lanpilot/web/templates/admin/server_form.html:64
 msgid "Leave empty to keep the stored value. It has to be entered again when host or port change."
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:67
+#: src/lanpilot/web/templates/admin/server_form.html:68
 msgid "Options"
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:70
+#: src/lanpilot/web/templates/admin/server_form.html:71
 msgid "Enabled"
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:72
+#: src/lanpilot/web/templates/admin/server_form.html:73
 msgid "Disabled servers stay configured but are not queried."
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:74
+#: src/lanpilot/web/templates/admin/server_form.html:75
 msgid "Add server"
 msgstr ""
 
-#: src/lanpilot/web/templates/admin/server_form.html:75
+#: src/lanpilot/web/templates/admin/server_form.html:76
 msgid "Cancel"
 msgstr ""
 

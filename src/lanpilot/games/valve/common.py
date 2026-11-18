@@ -32,6 +32,17 @@ MAX_NAME_LENGTH = 100
 UNSAFE_IN_MESSAGE = re.compile(r"[^A-Za-z0-9 .,!?()_-]")
 MAX_MESSAGE_LENGTH = 64
 USER_ID = re.compile(r"[0-9]{1,9}")
+LINE_BREAK = re.compile(r"\r?\n")
+
+
+def answer_lines(answer: str) -> list[str]:
+    """The lines of an RCON answer, split at line feeds only.
+
+    ``str.splitlines()`` also splits at ``\\x0b``, ``\\x0c``, ``\\x1c``-``\\x1e``, ``\\x85``,
+    U+2028 and U+2029. A player can put those into a name and so turn one ``status`` line
+    into several, one of them a forged player line with an id and address of their choice.
+    """
+    return LINE_BREAK.split(answer)
 
 
 async def query_status(host: str, port: int) -> ServerStatus:
@@ -185,7 +196,14 @@ class RconPlayerControl:
     async def ban(self, player: Player, reason: str = "") -> None:
         user_id = _user_id(player)
         entries = self._parse_status(await self._execute("status"))
-        address = next((ip for entry, ip in entries if entry.id == user_id), None)
+        addresses = [ip for entry, ip in entries if entry.id == user_id]
+        if len(addresses) > 1:
+            # A forged status line can repeat another player's id with an address of its
+            # choice; banning the first match could then hit someone else.
+            raise CommandRejectedError(
+                M("The server reported this player more than once, so it cannot ban it.")
+            )
+        address = addresses[0] if addresses else None
         if address is None:
             raise CommandRejectedError(
                 M("The server did not report this player's IP address, so it cannot ban it.")

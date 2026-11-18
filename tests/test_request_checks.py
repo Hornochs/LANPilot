@@ -1,7 +1,10 @@
+import re
+
 import pytest
 from fastapi.testclient import TestClient
+from starlette.types import Receive, Scope, Send
 
-from lanpilot.web.middleware import hostname_of
+from lanpilot.web.middleware import BodyLimitMiddleware, hostname_of
 from tests.conftest import ClientFactory
 
 LOGIN = {"username": "nobody", "password": "irrelevant-password"}
@@ -154,3 +157,29 @@ def test_unknown_page_renders_the_error_page(client: TestClient) -> None:
     assert response.status_code == 404
     assert "Page not found" in response.text
     assert response.headers["content-type"].startswith("text/html")
+
+
+def test_only_the_image_upload_may_send_a_large_body(client: TestClient) -> None:
+    body = b"x" * (300 * 1024)
+
+    login = client.post("/login", content=body)
+    assert login.status_code == 413 and "256 KB" in login.text
+
+    # The upload path gets past the size check (and is then refused for other reasons).
+    upload = client.post("/admin/servers/1/maps/2/image", content=body)
+    assert upload.status_code != 413
+
+
+async def test_the_upload_limit_applies_below_the_root_path() -> None:
+    async def app(scope: Scope, receive: Receive, send: Send) -> None:
+        raise AssertionError("not called")
+
+    limit = BodyLimitMiddleware(
+        app,
+        max_bytes=10,
+        upload_bytes=100,
+        upload_paths=re.compile(r"/up"),
+        root_path="/pilot",
+    )
+    assert limit._limit("/pilot/up") == limit._limit("/up") == 100
+    assert limit._limit("/pilot/login") == limit._limit("/pilotup") == 10

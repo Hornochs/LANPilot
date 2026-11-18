@@ -1,6 +1,6 @@
 <section class="card" id="players-{{ state.server_id }}"
          hx-get="{{ root }}/servers/{{ state.server_id }}/players"
-         hx-trigger="sse:server-{{ state.server_id }}" hx-swap="outerHTML">
+         hx-trigger="sse:server-{{ state.server_id }} throttle:3s" hx-swap="outerHTML">
   <h2>{{ _("Players") }}</h2>
   {% if players_error %}
   <p class="muted">{{ players_error | tr }}</p>

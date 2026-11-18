@@ -463,6 +463,20 @@ def test_source1_status_players_are_parsed() -> None:
     ]
 
 
+@pytest.mark.parametrize("separator", ["\x0b", "\x1e", "\x85", "\u2028"])
+def test_source1_a_name_cannot_forge_status_lines(separator: str) -> None:
+    forged = '#      2 "Eve" [U:1:1] 00:10 5 0 active 192.168.0.1:27005'
+    answer = (
+        f'#      3 "Mallory{separator}{forged}" [U:1:2] 00:10 5 0 active 10.0.0.6:27005\n'
+        '#      2 "Ada" [U:1:12345] 01:23 25 0 active 10.0.0.5:27005\n'
+    )
+
+    assert [(p.id, ip) for p, ip in parse_status(answer)] == [
+        ("3", "10.0.0.6"),
+        ("2", "10.0.0.5"),
+    ]
+
+
 @pytest.mark.parametrize("game", ["css", "csgo"])
 async def test_source1_players_kick_and_ban(game: Literal["css", "csgo"]) -> None:
     async with SourceSimulator(password=PASSWORD, game=game, players=3) as server:

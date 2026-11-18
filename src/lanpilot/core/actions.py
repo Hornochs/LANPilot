@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import time
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 
@@ -30,12 +31,16 @@ from lanpilot.core.adapters import (
     Player,
     RestartMode,
 )
-from lanpilot.core.runtime import INTERNAL_ERROR, ServerManager
+from lanpilot.core.runtime import INTERNAL_ERROR, ServerBusyError, ServerManager
 from lanpilot.i18n import M
 
 logger = logging.getLogger(__name__)
 
 ACTION_TIMEOUT_SECONDS = 15.0
+# Player lists are shared for this long: every open server page asks for one on each live
+# update, and each query takes the server's lock that actions need too.
+PLAYER_LIST_MAX_AGE_SECONDS = 3.0
+BUSY = M("The server is busy with other requests; try again in a moment.")
 MAX_PLAYERS = 256
 MAX_PLAYER_TEXT = 64
 MAX_REASON_LENGTH = 100
@@ -89,6 +94,8 @@ class Actions:
         self._manager = manager
         self._sessionmaker = sessionmaker
         self._console_enabled = console_enabled
+        self._player_lists: dict[int, tuple[float, list[Player]]] = {}
+        self._player_queries: dict[int, asyncio.Task[list[Player]]] = {}
 
     @property
     def console_enabled(self) -> bool:
@@ -143,8 +150,11 @@ class Actions:
             )
 
         try:
-            async with asyncio.timeout(ACTION_TIMEOUT_SECONDS):
-                message = await manager.call(server_id, lambda adapter: operation(adapter, db))
+            message = await manager.call(
+                server_id, lambda adapter: operation(adapter, db), seconds=ACTION_TIMEOUT_SECONDS
+            )
+        except ServerBusyError:
+            raise await refused(BUSY, 503) from None
         except TimeoutError:
             seconds = f"{ACTION_TIMEOUT_SECONDS:.0f}"
             raise await refused(
@@ -269,18 +279,44 @@ class Actions:
                 M("{adapter_name} cannot list players.", adapter_name=state.adapter_name),
                 status=400,
             )
+        cached = self._player_lists.get(server_id)
+        if cached is not None and time.monotonic() - cached[0] < PLAYER_LIST_MAX_AGE_SECONDS:
+            return list(cached[1])
+        # One query per server at a time; everyone who asks meanwhile shares its answer.
+        query = self._player_queries.get(server_id)
+        if query is None:
+            query = asyncio.create_task(self._query_players(server_id))
+            self._player_queries[server_id] = query
+            query.add_done_callback(lambda done: self._query_finished(server_id, done))
+        # Shielded: one caller giving up must not cancel the query for the others.
+        return list(await asyncio.shield(query))
+
+    async def _query_players(self, server_id: int) -> list[Player]:
         try:
-            async with asyncio.timeout(ACTION_TIMEOUT_SECONDS):
-                reported = await self._manager.call(
-                    server_id, lambda adapter: adapter.list_players()
-                )
+            reported = await self._manager.call(
+                server_id, lambda adapter: adapter.list_players(), seconds=ACTION_TIMEOUT_SECONDS
+            )
+        except ServerBusyError:
+            raise ActionError(BUSY, status=503) from None
         except TimeoutError:
             raise ActionError(M("The server did not answer in time."), status=504) from None
         except AdapterError as exc:
             raise ActionError(i18n.message_of(exc) or type(exc).__name__, status=502) from exc
         except LookupError:
             raise ActionError(M("This server does not exist."), status=404) from None
-        return clean_players(reported)
+        players = clean_players(reported)
+        self._player_lists[server_id] = (time.monotonic(), players)
+        return players
+
+    def _query_finished(self, server_id: int, query: asyncio.Task[list[Player]]) -> None:
+        if self._player_queries.get(server_id) is query:
+            del self._player_queries[server_id]
+        if not query.cancelled():
+            query.exception()  # retrieved, even if every caller gave up waiting
+
+    def forget_players(self, server_id: int) -> None:
+        """Drop the shared player list, e.g. after a kick, so the next page shows the change."""
+        self._player_lists.pop(server_id, None)
 
     async def kick(self, actor: Actor, server_id: int, player_id: str, reason: str) -> str:
         return await self._remove_player(actor, server_id, player_id, reason, ban=False)
@@ -315,16 +351,19 @@ class Actions:
             return f"{target.name} was kicked."
 
         async with self._sessionmaker() as db:
-            return await self._perform(
-                actor,
-                server_id,
-                action="server.ban" if ban else "server.kick",
-                required_role=Role.ADMIN if ban else Role.OPERATOR,
-                capability=Capability.BAN if ban else Capability.KICK,
-                detail=detail,
-                operation=operation,
-                db=db,
-            )
+            try:
+                return await self._perform(
+                    actor,
+                    server_id,
+                    action="server.ban" if ban else "server.kick",
+                    required_role=Role.ADMIN if ban else Role.OPERATOR,
+                    capability=Capability.BAN if ban else Capability.KICK,
+                    detail=detail,
+                    operation=operation,
+                    db=db,
+                )
+            finally:
+                self.forget_players(server_id)
 
     async def console(self, actor: Actor, server_id: int, command: str) -> str:
         """Run a raw console command and return what the server answered. Administrators

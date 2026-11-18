@@ -36,6 +36,7 @@ from lanpilot.games.valve.common import (
     STATS_INTERVAL_SECONDS,
     DiscoverValve,
     RconPlayerControl,
+    answer_lines,
     ip_of,
     parse_stats,
     query_status,
@@ -163,7 +164,7 @@ def parse_status(answer: str) -> list[tuple[Player, str | None]]:
     """Players and their IP addresses from the answer to ``status`` (HLTV proxies, which
     have no frags, are left out)."""
     players = []
-    for line in answer.splitlines():
+    for line in answer_lines(answer):
         match = STATUS_PLAYER.fullmatch(line.strip())
         if match is None:
             continue

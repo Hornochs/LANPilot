@@ -1,8 +1,10 @@
 """GBXRemote transport and the TrackMania Forever adapter, against the simulator."""
 
 import asyncio
+import contextlib
 import struct
 import threading
+import xmlrpc.client
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
 
 import pytest
@@ -183,6 +185,36 @@ async def test_malformed_answers_are_protocol_errors(answer: bytes) -> None:
         await connection.close()
     finally:
         listener.close()
+
+
+async def test_answers_are_parsed_off_the_event_loop(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A hostile answer can take seconds of CPU to parse; that must not stall the event loop.
+    threads: list[threading.Thread] = []
+    original = gbxremote._parse
+
+    def recording(data: bytes) -> object:
+        threads.append(threading.current_thread())
+        return original(data)
+
+    monkeypatch.setattr(gbxremote, "_parse", recording)
+    answer = xmlrpc.client.dumps(("ok",), methodresponse=True).encode()
+
+    async def serve(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        writer.write(struct.pack("<I", 11) + b"GBXRemote 2")
+        with contextlib.suppress(asyncio.IncompleteReadError):
+            while True:  # Authenticate, then the call
+                size, handle = struct.unpack("<II", await reader.readexactly(8))
+                await reader.readexactly(size)
+                writer.write(struct.pack("<II", len(answer), handle) + answer)
+
+    listener, port = await raw_server(serve)
+    try:
+        connection = GbxRemote("127.0.0.1", port, "Admin", "pw", timeout_seconds=2)
+        assert await connection.call("X") == "ok"
+        await connection.close()
+    finally:
+        listener.close()
+    assert threads and threads[0] is not threading.main_thread()
 
 
 async def test_oversized_answer_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:

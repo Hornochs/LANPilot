@@ -3,6 +3,21 @@
 LANPilot runs on one Linux machine in your network that can reach the game servers. It
 needs no agent on the game hosts.
 
+## From the lan.party package repository (recommended)
+
+Set up the repository once, then install and update the package with your system's package manager.
+Instructions for Debian/Ubuntu, Fedora/RHEL/Rocky, Arch Linux: **https://repo.lan.party**
+
+```sh
+curl -fsSL https://repo.lan.party/setup.sh | sudo sh   # or follow the manual steps on repo.lan.party
+
+sudo apt install lanpilot      # Debian / Ubuntu
+sudo dnf install lanpilot      # Fedora / RHEL / Rocky
+sudo pacman -S lanpilot        # Arch Linux
+```
+
+New releases then arrive with your normal system updates (`apt upgrade`, `dnf upgrade`, `pacman -Syu`).
+
 ## Packages
 
 Packages are published on the

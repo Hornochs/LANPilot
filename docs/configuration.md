@@ -40,6 +40,7 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 | `port` | port LANPilot listens on | `9030` |
 | `allowed_hosts` | further host names or IPs under which LANPilot may be reached | none |
 | `trusted_proxies` | IPs or networks of reverse proxies whose `X-Forwarded-*` headers are trusted | `127.0.0.1` |
+| `allow_insecure_http` | allow an `http://` `public_url` while `bind` is not a loopback address | `false` |
 
 `public_url` decides several things:
 
@@ -47,7 +48,10 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
   `allowed_hosts`. Everything else gets "400 Invalid Host header".
 - Requests that change something must come from pages of that address.
 - With `https://` the session cookie is marked `Secure`. With `http://` it is not, and
-  every page shows a warning, because passwords then travel unencrypted.
+  every page shows a warning, because passwords then travel unencrypted. LANPilot then also
+  refuses to start if `bind` is reachable from other machines (anything but `127.0.0.1`,
+  `::1` or `localhost`), unless `allow_insecure_http = true` says this is intended; and
+  sessions end 12 hours after sign-in at the latest, whatever `session_lifetime_hours` says.
 - A path, as in `https://tools.example.lan/lanpilot`, means LANPilot is served from that
   sub-path.
 
@@ -56,7 +60,7 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 | Key | Meaning | Default |
 |---|---|---|
 | `session_idle_minutes` | a session ends after this much inactivity | `720` (12 hours) |
-| `session_lifetime_hours` | a session ends this long after sign-in in any case | `168` (7 days) |
+| `session_lifetime_hours` | a session ends this long after sign-in in any case | `168` (7 days; at most 12 hours with an `http://` `public_url`) |
 
 ### `[polling]`
 
@@ -139,6 +143,7 @@ secret_key_file = "/etc/lanpilot/secret.key"
 [server]
 public_url = "http://192.168.1.10:9030"
 bind = "0.0.0.0"
+allow_insecure_http = true
 trusted_proxies = []
 ```
 

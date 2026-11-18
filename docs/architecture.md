@@ -664,9 +664,11 @@ _State: implemented (step 1.2)._
   disabled users cost the same time as a wrong password (dummy Argon2 verification) and get
   the same message. On success expired sessions are purged, any session the browser already
   had is ended, and a new one is created.
-- **Throttle** (`auth/throttle.py`): 5 failures per (user name, client address) pair and 30
-  per client address within 15 minutes; further attempts get 429 with `Retry-After`, even
-  with the right password. `attempt()` checks and counts in one step, before the password is
+- **Throttle** (`auth/throttle.py`): 5 failures per (user name, client) pair and 20 per
+  client within 15 minutes; further attempts get 429 with `Retry-After`, even with the right
+  password. A client is an IPv4 address or an IPv6 /64 (one host can pick any address in its
+  /64). An account with 20 failures from any clients within the window is slowed down
+  instead of locked: every attempt then waits 30 s after the last failure. `attempt()` checks and counts in one step, before the password is
   verified, so parallel requests cannot all pass; a right password takes its count back.
   Counters are in memory and bounded. The current-password check of a password change uses
   the same limits under its own key. Argon2 runs in worker threads, at most four at a time
@@ -749,8 +751,11 @@ timestamps. It never contains credentials. State lives in memory only.
 - After a server first answers, its map list is fetched once and stored. That is also how a
   wrong password is noticed.
 - `manager.reload(server_id)` is called after a server is created, edited or deleted;
-  `manager.call(server_id, operation)` runs an operation under the server's lock, so polls
-  and actions never interleave on one connection; `poll_now()` refreshes after an action.
+  `manager.call(server_id, operation, seconds=…)` runs an operation under the server's lock,
+  so polls and actions never interleave on one connection. `seconds` bounds the operation and
+  starts once the lock is held; the wait for the lock is bounded separately
+  (`LOCK_WAIT_SECONDS`, 30 s, then `ServerBusyError` → HTTP 503). `poll_now()` refreshes after
+  an action.
 - Servers that are disabled, whose adapter is missing or whose credentials cannot be
   decrypted get a runtime without adapter and an explanatory `error`.
 
@@ -765,7 +770,7 @@ path that changes a game server:
 
 1. check the actor's role (again, independent of the route's dependency),
 2. check that the server exists, is enabled, is set up correctly and has the capability,
-3. run the operation through `manager.call()` with a 15 s limit,
+3. run the operation through `manager.call()` with a 15 s limit (after the lock is taken),
 4. write the audit entry, for success and for every refusal or failure,
 5. trigger a fresh poll.
 
@@ -777,7 +782,9 @@ without invalidating the objects the web request holds. `Actor` carries plain va
 same reason.
 
 Players: `list_players()` reads the list under the server's lock (not audited, as it changes
-nothing) and cleans it (`clean_players()`: at most 256 entries, printable names and teams of
+nothing). The answer is shared for 3 s, and concurrent requests for the same server share one
+query (single flight), so many open server pages cannot queue up in front of actions; a kick
+or ban drops the shared list. The list is cleaned (`clean_players()`: at most 256 entries, printable names and teams of
 at most 64 characters, entries without a usable or unique id dropped). `kick()` (operator,
 `KICK`) and `ban()` (administrator, `BAN`) take the player's id and an optional reason; inside
 the lock they list the players again and act only on someone who is there now and whose entry
@@ -790,7 +797,7 @@ returns at most 64 KB of the answer.
 `POST /servers/{id}/map`, `/restart`, `/maps/refresh` (operator, CSRF-protected). On
 success they redirect back with a notice; on failure they re-render the page with the
 message and the fitting status code. `GET /servers/{id}/players` is the player list fragment
-(`_players.html`, refetched on `sse:server-<id>`); `POST /servers/{id}/players/kick`
+(`_players.html`, refetched on `sse:server-<id>`, at most every 3 s); `POST /servers/{id}/players/kick`
 (operator) and `/players/ban` (administrator) act on it; the list shows only the buttons the
 user's role, the adapter and the player's entry allow. `GET`/`POST /servers/{id}/console`
 (administrator) is the console page (`console.html`); the answer is shown escaped in a
@@ -802,9 +809,9 @@ server_id)` to subscribers through bounded queues; a subscriber that falls behin
 names `server-<id>`, `servers` and `resync` and **no payload**: pages react by fetching what
 they show through the normal routes, so nothing bypasses the access checks. The stream
 authenticates with short-lived database sessions (the request dependency would pin a
-connection for the stream's lifetime), allows eight streams per session and 500 in all
-(`StreamLimit`), re-checks the session every 15 s with the keepalive
-and ends when it is gone. It sends `X-Accel-Buffering: no`.
+connection for the stream's lifetime), allows eight streams per session, 16 per user (who may
+be signed in many times) and 500 in all (`StreamLimit`), re-checks the session every 15 s,
+also while events keep the stream busy, and ends when it is gone. It sends `X-Accel-Buffering: no`.
 
 ## Languages
 
@@ -1004,8 +1011,10 @@ findings of the review are in [security.md](security.md)._
   strict character set; transports reject `;`, quotes and line breaks; kick uses numeric ids.
 - **Untrusted server data** (1.6 onwards) – autoescaping, strict Content-Security-Policy
   without inline scripts, size and time limits in all protocol clients, parser fuzz tests.
-- **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 11 MB with 413 before
-  anything reads them, and requests with a body but without `Content-Length` with 411.
+- **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 256 KB with 413 before
+  anything reads them (11 MB for the map image upload,
+  `/admin/servers/{id}/maps/{map}/image`, only), and requests with a body but without
+  `Content-Length` with 411.
 - **Uploads** (1.7 ✔) – images are never stored as received; see "Map images".
 - **LAN scan** (6 ✔) – on request by an administrator only, only inside the configured
   networks (answers from elsewhere are dropped), bounded in hosts, answers and time; names

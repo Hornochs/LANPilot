@@ -585,9 +585,11 @@ _State: implemented (step 1.2)._
   disabled users cost the same time as a wrong password (dummy Argon2 verification) and get
   the same message. On success expired sessions are purged, any session the browser already
   had is ended, and a new one is created.
-- **Throttle** (`auth/throttle.py`): 5 failures per (user name, client address) pair and 30
-  per client address within 15 minutes; further attempts get 429 with `Retry-After`, even
-  with the right password. `attempt()` checks and counts in one step, before the password is
+- **Throttle** (`auth/throttle.py`): 5 failures per (user name, client) pair and 20 per
+  client within 15 minutes; further attempts get 429 with `Retry-After`, even with the right
+  password. A client is an IPv4 address or an IPv6 /64 (one host can pick any address in its
+  /64). An account with 20 failures from any clients within the window is slowed down
+  instead of locked: every attempt then waits 30 s after the last failure. `attempt()` checks and counts in one step, before the password is
   verified, so parallel requests cannot all pass; a right password takes its count back.
   Counters are in memory and bounded. The current-password check of a password change uses
   the same limits under its own key. Argon2 runs in worker threads, at most four at a time

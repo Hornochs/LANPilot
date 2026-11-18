@@ -37,7 +37,8 @@ the internet, and the network itself (it can be sniffed and spoofed).
 
 They can reach the sign-in page and `/healthz`, nothing else.
 
-- Password guessing: login throttle per (name, address) and per address, counted before the
+- Password guessing: login throttle per (name, client) and per client (IPv6 by /64), plus a
+  soft per-account cooldown against guessing from many clients, counted before the
   password is checked so parallel requests cannot slip through; uniform answers and timing
   for unknown names; Argon2id with at most four verifications at a time.
 - Flooding: failed logins are kept in the audit log up to 5000 entries, throttled attempts

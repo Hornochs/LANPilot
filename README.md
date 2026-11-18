@@ -16,7 +16,7 @@ into each machine.
 
 ![The LANPilot dashboard with a card for each server](docs/images/dashboard.png)
 
-![A server page: status, map preview, players and map change](docs/images/server.png)
+![A server page: status, map preview, players with kick and ban, map change and restarts](docs/images/server.png)
 
 ## What LANPilot does
 
@@ -42,7 +42,9 @@ into each machine.
 - **Modular.** Every game is an adapter that declares what it can do. New games can be added
   without touching the user interface, including as separately installed Python packages.
 - **Secure by default.** Stored server credentials are encrypted, everything requires a login,
-  and data coming from game servers is treated as untrusted. See [SECURITY.md](SECURITY.md).
+  and data coming from game servers is treated as untrusted. LANPilot belongs behind a reverse
+  proxy with HTTPS; plain HTTP on the network needs an explicit `allow_insecure_http = true`
+  ([details](docs/reverse-proxy.md)). See [SECURITY.md](SECURITY.md).
 
 ## Game support
 

@@ -4,11 +4,10 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0]
+## [1.2.0]
 
 ### Added
 
-- Setting `server.allow_insecure_http` (see "Changed").
 - `ServerStatus.details`: adapters can report text facts (a version, a list of mods), shown
   on the server page below the load values, one list item per line; labels and values made
   with `M()` are translated.
@@ -19,11 +18,22 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   list, kick and ban, a console that refuses every command that would turn off achievements,
   restart for servers marked as started again automatically, and a LAN scan. Source RCON has
   a single-packet mode for servers that answer every command with exactly one packet.
+  Contributed by [@RichardGottschalk](https://github.com/RichardGottschalk) in
+  [#25](https://github.com/lan-dot-party/LANPilot/pull/25).
 
 ### Changed
 
 - A server without a player limit (`max_players` 0) shows only its players, without "/0"
   and without the bar, on the card, the server page and in the connection test.
+
+## [1.1.0] - 2026-11-18
+
+### Added
+
+- Setting `server.allow_insecure_http` (see "Changed").
+
+### Changed
+
 - **Breaking:** with an `http://` `public_url`, LANPilot refuses to start when `bind` is
   reachable from other machines (anything but `127.0.0.1`, `::1` or `localhost`), because
   passwords and session cookies would cross the LAN unencrypted. An installation that is

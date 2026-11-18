@@ -282,6 +282,53 @@ class TrackmaniaExchange(ImageSource):
         return None
 
 
+class SteamStore(ImageSource):
+    """The header image of a game or DLC on its Steam store page; needs the app id in
+    ``MapRef.extra["steam_store_app"]``. For games whose "map" is the game itself (Factorio:
+    the base game or an expansion), not one of many maps.
+
+    The image address comes from the store API, as Steam changes the paths now and then;
+    only an address on Steam's image hosts under that app's directory is accepted.
+    """
+
+    id = "steam_store"
+    title = "Steam store"
+    image_hosts = frozenset(
+        {
+            "shared.akamai.steamstatic.com",
+            "shared.fastly.steamstatic.com",
+            "shared.cloudflare.steamstatic.com",
+            "cdn.akamai.steamstatic.com",
+            "cdn.cloudflare.steamstatic.com",
+        }
+    )
+    hosts = image_hosts | {"store.steampowered.com"}
+    endpoint = "https://store.steampowered.com/api/appdetails"
+    app_id = re.compile(r"[0-9]{1,10}")
+
+    async def find(self, fetcher: Fetcher, lookup: Mapping[str, str], ref: MapRef) -> str | None:
+        app = ref.extra.get("steam_store_app", "")
+        if not self.app_id.fullmatch(app):
+            return None
+        answer = await fetcher.get_json(self.endpoint, {"appids": app, "filters": "basic"})
+        details = _dig(answer, app)
+        url = _dig(details, "data", "header_image")
+        if _dig(details, "success") is not True or not isinstance(url, str):
+            return None
+        parts = urlsplit(url)
+        if (
+            parts.scheme != "https"
+            or parts.hostname not in self.image_hosts
+            or parts.username is not None
+            or parts.password is not None
+            or not parts.path.startswith(
+                (f"/store_item_assets/steam/apps/{app}/", f"/steam/apps/{app}/")
+            )
+        ):
+            return None
+        return url
+
+
 UNREAL_INDEX = "unreal-archive.json.gz"
 
 
@@ -370,5 +417,6 @@ SOURCES: dict[str, ImageSource] = {
         TrackmaniaExchange(),
         UnrealArchive(),
         LiandriArchives(),
+        SteamStore(),
     )
 }

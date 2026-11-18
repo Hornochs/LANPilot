@@ -12,6 +12,39 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Archives (index shipped with LANPilot, built by `scripts/build_liandri_index.py`). It is
   on by default; an installation that lists `images.sources` itself must add it. Online
   sources may now deliver GIF images (first frame); uploads still accept JPEG, PNG and WebP.
+- Setting `server.allow_insecure_http` (see "Changed").
+
+### Changed
+
+- **Breaking:** with an `http://` `public_url`, LANPilot refuses to start when `bind` is
+  reachable from other machines (anything but `127.0.0.1`, `::1` or `localhost`), because
+  passwords and session cookies would cross the LAN unencrypted. An installation that is
+  used directly over HTTP must add `allow_insecure_http = true` to `[server]`. Over plain
+  HTTP sessions now end 12 hours after sign-in at the latest.
+- Request bodies are limited to 256 KB; only the map image upload may send up to 11 MB.
+- Updated dependencies: FastAPI 0.163.0, Starlette 1.10.0, SQLAlchemy 2.1.8, Alembic 1.20.1,
+  Pydantic 2.14.3, OpenTelemetry API 1.45.2 and others; CI actions setup-python 7.1.0 and
+  CodeQL 4.39.3.
+
+### Security
+
+- Counter-Strike: a player name with characters such as `\x0b` or U+2028 could forge a line
+  in the `status` answer, with another player's id and an address of its choice, and so
+  make a ban hit the wrong address. Answers are split at line feeds only, and a ban is
+  refused when the server reports a player id twice.
+- WebAdmin pages and XML-RPC answers are parsed in a worker thread, with lower size limits
+  (512 KiB, 1 MiB): a hostile UT3 or Trackmania server could stall the whole panel for
+  seconds on every poll.
+- Player lists are shared for 3 seconds with one query per server at a time, and the action
+  timeout starts once the server's lock is held: many open server pages could make map
+  changes and kicks time out.
+- The login throttle counts IPv6 clients by their /64 and slows down guessing at one
+  account from many clients (cooldown after 20 failures); 20 failures per client instead
+  of 30.
+- A server form filled in from the network scan names the address the password will be
+  sent to: any machine on the LAN can answer a scan.
+- Event streams check the session every 15 seconds also while busy, and are limited to 16
+  per user.
 
 ## [1.0.0] - 2026-10-20
 

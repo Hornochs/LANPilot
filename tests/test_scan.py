@@ -320,6 +320,19 @@ def test_scan_page_lists_finds_with_add_links(scanning_admin: TestClient, query:
     assert '"found": 2' in detail
 
 
+def test_a_prefilled_form_names_the_address_the_password_goes_to(
+    scanning_admin: TestClient,
+) -> None:
+    form = scanning_admin.get(
+        "/admin/servers/new?adapter=ut2004&c_host=10.20.30.5&c_port=8075&name=Fun"
+    ).text
+    assert "Check the address before you enter a password." in form
+    assert "The connection to 10.20.30.5:8075 was filled in from a link" in form
+
+    plain = scanning_admin.get("/admin/servers/new?adapter=ut2004").text
+    assert "Check the address before you enter a password." not in plain
+
+
 def test_scan_needs_csrf_and_an_administrator(
     scanning_admin: TestClient, make_client: ClientFactory, make_user: UserFactory
 ) -> None:
@@ -376,9 +389,9 @@ def test_add_link_fills_in_the_form_but_never_a_password(
     assert 'value="10.20.30.5"' in page
     assert 'value="7790"' in page
     assert "stolen" not in page
-    assert "Check the host before you enter a password" in page
+    assert "Check the address before you enter a password" in page
     plain = client.get("/admin/servers/new", params={"adapter": "ut2004"}).text
-    assert "Check the host" not in plain
+    assert "Check the address" not in plain
 
 
 # --- command line -----------------------------------------------------------------------

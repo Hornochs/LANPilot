@@ -6,7 +6,8 @@
 <p class="banner error" role="alert">{{ error | tr }}</p>
 {% endif %}
 {% if prefilled %}
-<p class="banner warning" role="status">{{ _("The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there.") }}</p>
+<p class="banner warning" role="alert"><strong>{{ _("Check the address before you enter a password.") }}</strong>
+  {% if prefilled_address %}{{ _("The connection to %(address)s was filled in from a link, for example from the network scan. Any machine on the network can answer a scan and pose as a game server; the password is sent to this address.", address=prefilled_address) }}{% else %}{{ _("The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there.") }}{% endif %}</p>
 {% endif %}
 <section class="card narrow">
   <form method="post" action="{{ root }}/admin/servers/{{ server.id ~ "/edit" if server else "new" }}">

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 10:38+0100\n"
+"POT-Creation-Date: 2026-11-18 10:43+0100\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -854,15 +854,15 @@ msgstr "Diese Seite erfordert die Rolle {value}."
 msgid "The form has expired. Reload the page and try again."
 msgstr "Das Formular ist abgelaufen. Die Seite neu laden und erneut versuchen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:72
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:71
 msgid "Too many wrong passwords. Try again later."
 msgstr "Zu viele falsche Passwörter. Später erneut versuchen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:85
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:84
 msgid "The current password is wrong."
 msgstr "Das aktuelle Passwort ist falsch."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:88
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/routes_account.py:87
 msgid "The two new passwords do not match."
 msgstr "Die beiden neuen Passwörter stimmen nicht überein."
 
@@ -945,7 +945,7 @@ msgstr "Team"
 
 #: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/_players.html:16
 #: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/scan.html:29
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:19
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:20
 #: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/servers.html:19
 msgid "Name"
 msgstr "Name"
@@ -1063,7 +1063,7 @@ msgid "As the browser prefers"
 msgstr "Wie vom Browser bevorzugt"
 
 #: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/account.html:22
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:74
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:75
 #: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/users.html:26
 msgid "Save"
 msgstr "Speichern"
@@ -1215,47 +1215,56 @@ msgid "Edit %(name)s"
 msgstr "%(name)s bearbeiten"
 
 #: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:9
+msgid "Check the address before you enter a password."
+msgstr "Vor der Eingabe eines Passworts die Adresse prüfen."
+
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:10
+#, python-format
+msgid "The connection to %(address)s was filled in from a link, for example from the network scan. Any machine on the network can answer a scan and pose as a game server; the password is sent to this address."
+msgstr "Die Verbindung zu %(address)s wurde aus einem Link übernommen, zum Beispiel aus dem Netzwerk-Scan. Jeder Rechner im Netzwerk kann auf einen Scan antworten und sich als Gameserver ausgeben; das Passwort wird an diese Adresse gesendet."
+
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:10
 msgid "The connection was filled in from a link, for example from the network scan. Check the host before you enter a password: it is sent there."
 msgstr "Die Verbindung wurde aus einem Link übernommen, zum Beispiel aus dem Netzwerk-Scan. Den Host prüfen, bevor ein Passwort eingegeben wird: Es wird dorthin gesendet."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:17
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:18
 #, python-format
 msgid "Game: %(name)s"
 msgstr "Spiel: %(name)s"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:21
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:22
 msgid "Shown on the dashboard."
 msgstr "Wird im Dashboard angezeigt."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:23
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:24
 msgid "Connection"
 msgstr "Verbindung"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:42
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:43
 msgid "unchanged"
 msgstr "unverändert"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:63
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:64
 msgid "Leave empty to keep the stored value. It has to be entered again when host or port change."
 msgstr "Leer lassen, um den gespeicherten Wert zu behalten. Bei geändertem Host oder Port muss er erneut eingegeben werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:67
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:68
 msgid "Options"
 msgstr "Optionen"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:70
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:71
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:72
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:73
 msgid "Disabled servers stay configured but are not queried."
 msgstr "Deaktivierte Server bleiben konfiguriert, werden aber nicht abgefragt."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:74
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:75
 msgid "Add server"
 msgstr "Server hinzufügen"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:75
+#: /home/gamienator/coding/LANPilot/src/lanpilot/web/templates/admin/server_form.html:76
 msgid "Cancel"
 msgstr "Abbrechen"
 

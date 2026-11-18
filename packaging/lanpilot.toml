@@ -21,7 +21,8 @@ secret_key_file = "/etc/lanpilot/secret.key"
 # REQUIRED. The address under which users reach LANPilot, exactly as they type it into the
 # browser. LANPilot accepts requests for this host only and refuses to start without it.
 #   public_url = "https://lanpilot.example.lan"      behind a reverse proxy with TLS
-#   public_url = "http://192.168.1.10:9030"          directly, without TLS (not recommended)
+#   public_url = "http://192.168.1.10:9030"          directly, without TLS (not recommended;
+#                                                    needs allow_insecure_http = true)
 #public_url = ""
 
 # Where LANPilot itself listens. Keep 127.0.0.1 behind a reverse proxy on the same host;
@@ -31,6 +32,10 @@ port = 9030
 
 # Further host names or IP addresses under which LANPilot may be reached.
 allowed_hosts = []
+
+# Plain HTTP (public_url with http://) on an address other machines can reach sends passwords
+# and session cookies unencrypted. LANPilot refuses to start that way unless this is true.
+#allow_insecure_http = false
 
 # Reverse proxies whose X-Forwarded-For / X-Forwarded-Proto headers are trusted.
 # Use [] if there is no reverse proxy.

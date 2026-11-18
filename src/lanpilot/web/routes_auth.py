@@ -115,7 +115,7 @@ async def login(
         if old_session is not None:
             await sessions.end(db, old_session)
 
-    lifetime = timedelta(hours=settings.auth.session_lifetime_hours)
+    lifetime = settings.session_lifetime
     token, _ = await sessions.create(
         db, user, lifetime=lifetime, ip=address, user_agent=request.headers.get("user-agent")
     )

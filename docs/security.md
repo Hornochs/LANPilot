@@ -97,7 +97,9 @@ RCON, XML-RPC and the WebAdmin send passwords in clear text; that is how these p
 work, and LANPilot cannot change it. Someone who can read or redirect the traffic between
 LANPilot and a game server gets the password. Between browsers and LANPilot, use HTTPS
 (`public_url` with `https://`): over plain HTTP, session cookies and passwords can be read
-as well, which LANPilot warns about at start-up and on every page.
+as well. LANPilot refuses plain HTTP on an address other machines can reach unless
+`allow_insecure_http = true` is set, then limits sessions to 12 hours and warns at start-up
+and on every page.
 
 ### Supply chain
 

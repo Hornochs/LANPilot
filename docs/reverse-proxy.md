@@ -98,11 +98,14 @@ infrastructure:
 [server]
 public_url = "http://192.168.1.10:9030"
 bind = "0.0.0.0"
+allow_insecure_http = true
 trusted_proxies = []
 ```
 
-Everything works, but passwords and session cookies then cross the network unencrypted,
-and LANPilot says so on every page. Set `trusted_proxies = []`, so that nobody can fake
+Everything works, but passwords and session cookies then cross the network unencrypted:
+anyone on the LAN who can redirect traffic (ARP spoofing is enough) can take over a
+session. LANPilot therefore refuses to start this way without `allow_insecure_http = true`,
+ends sessions 12 hours after sign-in at the latest and says so on every page. Set `trusted_proxies = []`, so that nobody can fake
 their address with an `X-Forwarded-For` header.
 
 ## Troubleshooting

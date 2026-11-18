@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 11:20+0100\n"
+"POT-Creation-Date: 2026-11-18 11:37+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -168,66 +168,66 @@ msgstr ""
 msgid "Enter one line of at most 500 printable characters."
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:148 src/lanpilot/games/demo.py:48
+#: src/lanpilot/core/adapters/base.py:153 src/lanpilot/games/demo.py:48
 msgid "Host"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:149
+#: src/lanpilot/core/adapters/base.py:154
 msgid "IP address or host name of the game server."
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:153 src/lanpilot/games/demo.py:52
+#: src/lanpilot/core/adapters/base.py:158 src/lanpilot/games/demo.py:52
 #: src/lanpilot/games/quake3/callofduty.py:35
 #: src/lanpilot/games/quake3/common.py:76
 #: src/lanpilot/games/valve/goldsrc.py:81 src/lanpilot/games/valve/source.py:73
 msgid "Port"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:160
+#: src/lanpilot/core/adapters/base.py:165
 msgid "must be a host name or an IP address, without scheme or path"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:217
+#: src/lanpilot/core/adapters/base.py:222
 #, python-brace-format
 msgid "{game} cannot list maps"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:221
+#: src/lanpilot/core/adapters/base.py:226
 #, python-brace-format
 msgid "{game} cannot change the map"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:224
+#: src/lanpilot/core/adapters/base.py:229
 #, python-brace-format
 msgid "{game} cannot restart"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:227
+#: src/lanpilot/core/adapters/base.py:232
 #, python-brace-format
 msgid "{game} cannot list players"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:230
+#: src/lanpilot/core/adapters/base.py:235
 #, python-brace-format
 msgid "{game} cannot kick players"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:233
+#: src/lanpilot/core/adapters/base.py:238
 #, python-brace-format
 msgid "{game} cannot ban players"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:239
+#: src/lanpilot/core/adapters/base.py:244
 #, python-brace-format
 msgid "{game} cannot add maps by hand"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:243
+#: src/lanpilot/core/adapters/base.py:248
 #, python-brace-format
 msgid "{game} has no console"
 msgstr ""
 
-#: src/lanpilot/core/adapters/base.py:256
+#: src/lanpilot/core/adapters/base.py:261
 #, python-brace-format
 msgid "{game} cannot be discovered"
 msgstr ""
@@ -289,7 +289,7 @@ msgstr ""
 msgid "The adapter for this game is not installed."
 msgstr ""
 
-#: src/lanpilot/core/runtime.py:301 src/lanpilot/core/servers.py:291
+#: src/lanpilot/core/runtime.py:301 src/lanpilot/core/servers.py:295
 #, python-brace-format
 msgid "No answer within {seconds} seconds."
 msgstr ""
@@ -352,27 +352,32 @@ msgstr ""
 msgid "unknown map"
 msgstr ""
 
-#: src/lanpilot/core/servers.py:267
+#: src/lanpilot/core/servers.py:268
 #, python-brace-format
 msgid "{players}/{max_players} players"
 msgstr ""
 
 #: src/lanpilot/core/servers.py:273
 #, python-brace-format
-msgid "Status: “{name}”, {map}, {occupancy}."
+msgid "{players} players"
 msgstr ""
 
-#: src/lanpilot/core/servers.py:284
+#: src/lanpilot/core/servers.py:277
 #, python-brace-format
-msgid "Remote control works: the server lists {count} maps."
+msgid "Status: “{name}”, {map}, {occupancy}."
 msgstr ""
 
 #: src/lanpilot/core/servers.py:288
 #, python-brace-format
+msgid "Remote control works: the server lists {count} maps."
+msgstr ""
+
+#: src/lanpilot/core/servers.py:292
+#, python-brace-format
 msgid "Remote control failed: {reason}"
 msgstr ""
 
-#: src/lanpilot/core/servers.py:294
+#: src/lanpilot/core/servers.py:298
 #, python-brace-format
 msgid "Status query failed: {reason}"
 msgstr ""
@@ -614,12 +619,12 @@ msgstr ""
 msgid "The server refused the remote-control password."
 msgstr ""
 
-#: src/lanpilot/games/demo.py:135
+#: src/lanpilot/games/demo.py:136
 #, python-brace-format
 msgid "The server has no map named {key}."
 msgstr ""
 
-#: src/lanpilot/games/demo.py:151
+#: src/lanpilot/games/demo.py:152
 msgid "That player is not on the server."
 msgstr ""
 
@@ -985,13 +990,13 @@ msgstr ""
 msgid "Looking for images online is switched off (images.online in the configuration)."
 msgstr ""
 
-#: src/lanpilot/web/templates/_card.html:19
+#: src/lanpilot/web/templates/_card.html:20
 #: src/lanpilot/web/templates/_players.html:4
 #: src/lanpilot/web/templates/_server_live.html:25
 msgid "Players"
 msgstr ""
 
-#: src/lanpilot/web/templates/_card.html:27
+#: src/lanpilot/web/templates/_card.html:31
 msgid "Remote control is not working."
 msgstr ""
 
@@ -1096,7 +1101,7 @@ msgstr ""
 msgid "Map"
 msgstr ""
 
-#: src/lanpilot/web/templates/_server_live.html:31
+#: src/lanpilot/web/templates/_server_live.html:34
 msgid "Last answer"
 msgstr ""
 

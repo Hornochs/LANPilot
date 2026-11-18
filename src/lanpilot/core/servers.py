@@ -263,10 +263,14 @@ async def probe(server: Server, adapter: type[GameAdapter], box: SecretBox) -> P
             status = await instance.query()
             reachable = True
             current = status.map.label if status.map else M("unknown map")
-            occupancy = M(
-                "{players}/{max_players} players",
-                players=status.players,
-                max_players=status.max_players,
+            occupancy = (
+                M(
+                    "{players}/{max_players} players",
+                    players=status.players,
+                    max_players=status.max_players,
+                )
+                if status.max_players
+                else M("{players} players", players=status.players)
             )
             lines.append(
                 M(

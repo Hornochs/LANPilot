@@ -164,6 +164,11 @@ What to take from it:
   on in the configuration.
 - **Load** (`Capability.LOAD_STATS`): declare it when `query()` fills `ServerStatus.load`
   (for example `{"cpu": 12.5, "fps": 128.0}`); the contract checks that it does.
+- **Details**: facts that are text, not measurements (a version, a list of mods), go into
+  `ServerStatus.details` (`{"Version": "2.1.24"}`). They need no capability and appear on
+  the server page below the load values, line breaks kept (one list item per line). Keep
+  them short and printable: they come from the server.
+- **No player limit:** report `max_players=0`; LANPilot then shows only the players.
 - **LAN scan** (`Capability.DISCOVER`): the classmethod `discover(networks, wait)` finds
   servers of the game without a password, on request only. `wait` is how long to wait for
   answers to a broadcast. Return `DiscoveredServer(adapter_id, host, port, name, game_type,

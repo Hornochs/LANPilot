@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import re
 
@@ -6,6 +7,8 @@ from fastapi.testclient import TestClient
 
 from lanpilot.auth.roles import Role
 from lanpilot.core import secrets
+from lanpilot.core.adapters import ServerStatus
+from lanpilot.games.demo import DemoAdapter
 from tests.conftest import SECRET_KEY, ClientFactory, Query, UserFactory, csrf_token, sign_in
 
 STORED_PASSWORD = "S3cret-Rcon-Passw0rd"
@@ -341,3 +344,19 @@ def test_server_setup_is_admin_only(
     home = client.get("/").text
     assert "Demo One" in home  # everyone signed in may see the servers ...
     assert "Server setup" not in home  # ... but not manage them
+
+
+def test_connection_test_without_player_limit(
+    admin: TestClient, query: Query, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = DemoAdapter.query
+
+    async def unlimited(self: DemoAdapter) -> ServerStatus:
+        return dataclasses.replace(await original(self), max_players=0)
+
+    monkeypatch.setattr(DemoAdapter, "query", unlimited)
+    create(admin)
+    [(server_id,)] = query("SELECT id FROM servers")
+    _status, page = submit(admin, f"/admin/servers/{server_id}/test")
+    assert "Foundry, 3 players" in page
+    assert "3/0" not in page

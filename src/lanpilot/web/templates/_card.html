@@ -15,9 +15,13 @@
       <p class="card-meta">{{ state.adapter_name }} {{ badge(state) }}</p>
       {% if state.status %}
       <div class="players">
-        <progress value="{{ state.status.players }}" max="{{ [state.status.max_players, 1]|max }}"
+        {% if state.status.max_players %}
+        <progress value="{{ state.status.players }}" max="{{ state.status.max_players }}"
                   aria-label="{{ _("Players") }}"></progress>
         <span>{{ state.status.players }}/{{ state.status.max_players }}</span>
+        {% else %}
+        <span>{{ state.status.players }}</span>
+        {% endif %}
       </div>
       {% if state.status.game_type %}<p class="muted">{{ state.status.game_type }}</p>{% endif %}
       {% elif state.error %}

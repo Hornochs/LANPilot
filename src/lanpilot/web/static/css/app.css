@@ -316,3 +316,8 @@ pre.console-output {
   font-size: 0.85rem; background: var(--bg); border: 1px solid var(--border); padding: 0.75rem;
   border-radius: 6px;
 }
+
+/* Text details on the server page: lists come one item per line. */
+.text-detail {
+  white-space: pre-line;
+}

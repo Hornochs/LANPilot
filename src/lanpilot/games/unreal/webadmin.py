@@ -42,9 +42,9 @@ from lanpilot.core.transports.uweb import (
     Page,
     UWebAdmin,
     find_table,
-    parse,
+    read_lines,
+    read_page,
     table,
-    text_lines,
 )
 from lanpilot.games.unreal.common import (
     GAME_CLASS,
@@ -110,7 +110,7 @@ class WebAdminAdapter(GameAdapter):
         return await query_status(self._host, self._query_port, self._game_names)
 
     async def list_maps(self) -> Sequence[MapRef]:
-        page = parse(await self._web.get(f"{ROOT}/current_game"))
+        page = await read_page(await self._web.get(f"{ROOT}/current_game"))
         game_types = [
             option
             for option in page.options("GameTypeSelect")
@@ -122,7 +122,7 @@ class WebAdminAdapter(GameAdapter):
         for game_type in game_types:
             label = game_type.label[:100] or game_type.value
             self._game_names[game_type.value.rsplit(".", 1)[1].lower()] = label
-            lists = parse(
+            lists = await read_page(
                 await self._web.get(f"{ROOT}/defaults_maps", {"GameType": game_type.value})
             )
             seen: set[str] = set()
@@ -155,7 +155,7 @@ class WebAdminAdapter(GameAdapter):
         await self._reload()
 
     async def list_players(self) -> Sequence[Player]:
-        return self._players(parse(await self._web.get(f"{ROOT}/current_players")))
+        return self._players(await read_page(await self._web.get(f"{ROOT}/current_players")))
 
     async def kick(self, player: Player, reason: str = "") -> None:
         await self._remove(player, self.kick_box)
@@ -172,7 +172,7 @@ class WebAdminAdapter(GameAdapter):
             f"{ROOT}/current_players", {prefix + player.id: value, "Kick": "Kick"}
         )
         # The answer is the player page after the removal.
-        if any(other.id == player.id for other in self._players(parse(answer))):
+        if any(other.id == player.id for other in self._players(await read_page(answer))):
             raise CommandRejectedError(M("The server did not remove the player."))
 
     def _players(self, page: Page) -> list[Player]:
@@ -252,11 +252,11 @@ class WebAdminAdapter(GameAdapter):
         return "\n".join(new_lines(before, await self._console_log()))
 
     async def _console_log(self) -> list[str]:
-        lines = text_lines(await self._web.get(f"{ROOT}/current_console_log")) or []
+        lines = await read_lines(await self._web.get(f"{ROOT}/current_console_log")) or []
         return [line[1:].strip() for line in lines if line.startswith(">")]
 
     async def _current_class(self) -> str:
-        page = parse(await self._web.get(f"{ROOT}/current_game"))
+        page = await read_page(await self._web.get(f"{ROOT}/current_game"))
         selected = [option.value for option in page.options("GameTypeSelect") if option.selected]
         if not selected or not GAME_CLASS.fullmatch(selected[0]):
             raise ProtocolError(M("The WebAdmin did not tell which game type is running."))

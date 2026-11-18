@@ -37,7 +37,8 @@ the internet, and the network itself (it can be sniffed and spoofed).
 
 They can reach the sign-in page and `/healthz`, nothing else.
 
-- Password guessing: login throttle per (name, address) and per address, counted before the
+- Password guessing: login throttle per (name, client) and per client (IPv6 by /64), plus a
+  soft per-account cooldown against guessing from many clients, counted before the
   password is checked so parallel requests cannot slip through; uniform answers and timing
   for unknown names; Argon2id with at most four verifications at a time.
 - Flooding: failed logins are kept in the audit log up to 5000 entries, throttled attempts
@@ -97,7 +98,9 @@ RCON, XML-RPC and the WebAdmin send passwords in clear text; that is how these p
 work, and LANPilot cannot change it. Someone who can read or redirect the traffic between
 LANPilot and a game server gets the password. Between browsers and LANPilot, use HTTPS
 (`public_url` with `https://`): over plain HTTP, session cookies and passwords can be read
-as well, which LANPilot warns about at start-up and on every page.
+as well. LANPilot refuses plain HTTP on an address other machines can reach unless
+`allow_insecure_http = true` is set, then limits sessions to 12 hours and warns at start-up
+and on every page.
 
 ### Supply chain
 
@@ -126,6 +129,9 @@ Accepted, and what the operator can do about them:
 | Plain HTTP between browsers and LANPilot | HTTPS through the reverse proxy |
 | A hostile player on UT99 can make the player list unusable (it is refused, not guessed) | kick through the game's own WebAdmin or console |
 | UT3 discovery shares UDP 14001 for the scan's wait (2 s); unicast datagrams to a UT3 server on the same host land on LANPilot during that time | run UT3 servers on another host |
+| Quake 3 and Call of Duty 1, UO, 2 and World at War accept one RCON packet per 500 ms from anyone, wrong passwords included, so whoever floods the game port with RCON packets keeps LANPilot's commands from being answered ("The server did not answer") | find and remove the sender; the status (`getstatus`) keeps working |
+| ElDewrito answers RCON commands without a request id; with `Server.SendChatToRconClients` or `Server.RconConsoleOutputEnabled` switched on, pushed chat or console lines would be taken for answers | leave both off (the default) |
+| GoldSrc servers (HLDS: CS 1.6, Half-Life and its mods) write every RCON command with the password to their console and log | treat the game server's console and log files as secret; a separate RCON password per server |
 | After a refused password, editing or re-testing the server, or a restart, sends it once more | correct the password before testing again |
 | An administrator can point a server entry at any host and port | administrators are trusted |
 | Release packages are not signed with a distribution key | verify the attestation (`gh attestation verify`, see [installation.md](installation.md)) |

@@ -8,10 +8,77 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Setting `server.allow_insecure_http` (see "Changed").
+
+### Changed
+
+- **Breaking:** with an `http://` `public_url`, LANPilot refuses to start when `bind` is
+  reachable from other machines (anything but `127.0.0.1`, `::1` or `localhost`), because
+  passwords and session cookies would cross the LAN unencrypted. An installation that is
+  used directly over HTTP must add `allow_insecure_http = true` to `[server]`. Over plain
+  HTTP sessions now end 12 hours after sign-in at the latest.
+- Request bodies are limited to 256 KB; only the map image upload may send up to 11 MB.
+- Updated dependencies: FastAPI 0.163.0, Starlette 1.10.0, SQLAlchemy 2.1.8, Alembic 1.20.1,
+  Pydantic 2.14.3, OpenTelemetry API 1.45.2 and others; CI actions setup-python 7.1.0 and
+  CodeQL 4.39.3.
+
+### Security
+
+- Counter-Strike: a player name with characters such as `\x0b` or U+2028 could forge a line
+  in the `status` answer, with another player's id and an address of its choice, and so
+  make a ban hit the wrong address. Answers are split at line feeds only, and a ban is
+  refused when the server reports a player id twice. The same applies to the other GoldSrc
+  and Source games, the Quake 3 family (kick and ban are refused when a slot appears twice)
+  and ElDewrito.
+- WebAdmin pages and XML-RPC answers are parsed in a worker thread, with lower size limits
+  (512 KiB, 1 MiB): a hostile UT3 or Trackmania server could stall the whole panel for
+  seconds on every poll.
+- Player lists are shared for 3 seconds with one query per server at a time, and the action
+  timeout starts once the server's lock is held: many open server pages could make map
+  changes and kicks time out.
+- The login throttle counts IPv6 clients by their /64 and slows down guessing at one
+  account from many clients (cooldown after 20 failures); 20 failures per client instead
+  of 30.
+- A server form filled in from the network scan names the address the password will be
+  sent to: any machine on the LAN can answer a scan.
+- Event streams check the session every 15 seconds also while busy, and are limited to 16
+  per user.
+
+## [1.0.1] - 2026-10-21
+
+### Added
+
 - Map image source `liandri`: screenshots of Unreal Tournament stock maps from the Liandri
   Archives (index shipped with LANPilot, built by `scripts/build_liandri_index.py`). It is
   on by default; an installation that lists `images.sources` itself must add it. Online
   sources may now deliver GIF images (first frame); uploads still accept JPEG, PNG and WebP.
+- Quake III Arena (`q3a`), Call of Duty (`cod`), United Offensive (`coduo`), Call of Duty 2
+  (`cod2`), Call of Duty 4 (`cod4`, CoD4X) and Call of Duty: World at War (`codwaw`) over the
+  Quake 3 protocol: status without password, maps per
+  game type (CoD4 and WaW: stock maps and the map rotation), map and game type change, both
+  restarts, players with kick (Quake 3 also ban by IP address), console and LAN scan. Map
+  names for their stock maps; images from GameTracker. A map change that the server loads
+  with another game type (the map is not made for it) is reported as an error.
+- ElDewrito (`eldewrito`, Halo Online): status from the server's HTTP status server, control
+  over its RCON WebSocket (`dew-rcon`): maps per built-in game variant, map and game type
+  change, hard restart, players with kick and ban by IP address, and the console (which hides
+  the RCON password that `help` prints), and LAN scan. Map names for the twelve stock maps.
+- More games on Counter-Strike's engines, with everything the Counter-Strike adapters offer
+  (status without password, map list and change, restarts, players with kick and ban by IP
+  address, load values, console, LAN scan) and images from GameTracker and GameBanana:
+  Half-Life Deathmatch (`hldm`), Team Fortress Classic (`tfc`), Day of Defeat (`dod`),
+  Half-Life: Opposing Force (`opfor`) and Counter-Strike: Condition Zero (`czero`) on GoldSrc;
+  Day of Defeat: Source (`dods`), Half-Life 2: Deathmatch (`hl2dm`) and Team Fortress 2
+  (`tf2`) on Source. Half-Life, TFC and Opposing Force have no round restart, only the level
+  reload.
+
+### Changed
+
+- The GoldSrc and Source engine code moved from `lanpilot.games.counterstrike` to
+  `lanpilot.games.valve` (`common`, `goldsrc`, `source`); the Counter-Strike adapters keep
+  their ids and modules.
+- The translation catalogues name source files by their path in the repository
+  (`src/lanpilot/...`) instead of the absolute path of the checkout they were extracted in.
 
 ## [1.0.0] - 2026-10-20
 

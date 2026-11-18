@@ -13,6 +13,7 @@ import ipaddress
 import os
 import tomllib
 from collections.abc import Mapping
+from datetime import timedelta
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from urllib.parse import urlsplit
@@ -25,12 +26,14 @@ from pydantic import (
     SecretStr,
     ValidationError,
     field_validator,
+    model_validator,
 )
 
 ENV_PREFIX = "LANPILOT_"
 CONFIG_FILE_ENV = "LANPILOT_CONFIG"
 DEFAULT_CONFIG_FILE = Path("/etc/lanpilot/lanpilot.toml")
 DATABASE_FILENAME = "lanpilot.db"
+INSECURE_SESSION_LIFETIME = timedelta(hours=12)
 
 
 class ConfigError(Exception):
@@ -54,6 +57,9 @@ class ServerSettings(BaseModel):
     public_url: str
     allowed_hosts: CommaList = Field(default_factory=list)
     trusted_proxies: CommaList = Field(default_factory=lambda: ["127.0.0.1"])
+    # Plain HTTP on an address other machines can reach sends passwords and session cookies
+    # unencrypted, so it must be chosen explicitly.
+    allow_insecure_http: bool = False
 
     @field_validator("public_url")
     @classmethod
@@ -99,6 +105,16 @@ class ServerSettings(BaseModel):
                 raise ValueError(f"{entry!r} is not an IP address or network") from exc
         return value
 
+    @model_validator(mode="after")
+    def _refuse_plain_http_on_the_network(self) -> ServerSettings:
+        if self.is_https or self.allow_insecure_http or _is_loopback(self.bind):
+            return self
+        raise ValueError(
+            "public_url is http:// and bind is reachable from the network: passwords and "
+            "session cookies would cross the network unencrypted. Put LANPilot behind a "
+            "reverse proxy with TLS, or set allow_insecure_http = true to accept this"
+        )
+
     @property
     def is_https(self) -> bool:
         return self.public_url.startswith("https://")
@@ -118,6 +134,15 @@ class ServerSettings(BaseModel):
     def root_path(self) -> str:
         """Sub-path LANPilot is served from; empty when it lives at ``/``."""
         return urlsplit(self.public_url).path
+
+
+def _is_loopback(bind: str) -> bool:
+    if bind.lower() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(bind.strip("[]")).is_loopback
+    except ValueError:
+        return False  # a host name: may resolve to anything
 
 
 class AuthSettings(BaseModel):
@@ -207,6 +232,15 @@ class Settings(BaseModel):
     @property
     def database_path(self) -> Path:
         return self.data_dir / DATABASE_FILENAME
+
+    @property
+    def session_lifetime(self) -> timedelta:
+        """How long a session lasts after sign-in. Over plain HTTP a stolen cookie is easier
+        to come by, so sessions end after a day at most there."""
+        lifetime = timedelta(hours=self.auth.session_lifetime_hours)
+        if self.server.is_https:
+            return lifetime
+        return min(lifetime, INSECURE_SESSION_LIFETIME)
 
 
 def _read_toml(path: Path) -> dict[str, Any]:

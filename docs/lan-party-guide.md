@@ -34,11 +34,13 @@ text):
 
 | Game | Switch on | LANPilot reaches |
 |---|---|---|
-| Counter-Strike 1.6 | `rcon_password` in `server.cfg` | UDP game port (27015) |
-| CS:Source, CS:GO, CS2 | `rcon_password` | game port, UDP (status) and TCP (RCON) |
+| Counter-Strike 1.6, CS: Condition Zero, Half-Life DM, TFC, Day of Defeat, Opposing Force | `rcon_password` in `server.cfg` | UDP game port (27015) |
+| CS:Source, CS:GO, CS2, DoD: Source, HL2: Deathmatch, TF2 | `rcon_password` | game port, UDP (status) and TCP (RCON); a server on the LANPilot host by its LAN address, not 127.0.0.1 |
 | TrackMania Forever, Sunrise | `<authorization_levels>` in `dedicated_cfg.txt`; `xmlrpc_allowremote` for LANPilot's address | TCP XML-RPC port (5000) |
 | UT99, UT2004 | WebAdmin (`UWeb.WebServer`, `ListenPort`), `AdminPassword` | TCP WebAdmin port, UDP GameSpy query port (UT99: game port + 1, UT2004: + 10) |
 | UT3 | WebAdmin with `bHttpAuth=true` | TCP WebAdmin port |
+| Quake III Arena, Call of Duty (1, UO, 2, 4, WaW) | `rconpassword` (CoD 2, CoD4 and WaW: `rcon_password`) in the server's config, without spaces or quotes | UDP game port (27960, 28960) |
+| ElDewrito | `Server.RconPassword` in `dewrito_prefs.cfg` (not in `server.json`) | TCP RCON port (11776) and status port (11775) |
 
 Details per game, as measured: [games/](games/).
 
@@ -49,11 +51,13 @@ the scan sends:
 
 | Game | Scan |
 |---|---|
-| Counter-Strike | UDP broadcast to 27015–27020 and 26900–26905 |
+| Counter-Strike and the other GoldSrc and Source games | UDP broadcast to 27015–27020 and 26900–26905 |
 | TrackMania | UDP broadcast to 2350–2353, then TCP to the game port |
 | UT99 | UDP broadcast to 8777–8786, then the GameSpy query |
 | UT2004 | UDP broadcast to 10777; the answer and a follow-up query use the query port (game port + 1) |
 | UT3 | UDP broadcast from and to 14001 |
+| Quake III Arena, Call of Duty (1, UO, 2, 4, WaW) | UDP broadcast to 27960–27963 and 28960–28963 |
+| ElDewrito | UDP broadcast to 11774, then HTTP to the status port (11775) |
 
 A firewall on the game servers has to let these in; on the LANPilot host the answers are
 replies and pass a stateful firewall.

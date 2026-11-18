@@ -40,6 +40,7 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 | `port` | port LANPilot listens on | `9030` |
 | `allowed_hosts` | further host names or IPs under which LANPilot may be reached | none |
 | `trusted_proxies` | IPs or networks of reverse proxies whose `X-Forwarded-*` headers are trusted | `127.0.0.1` |
+| `allow_insecure_http` | allow an `http://` `public_url` while `bind` is not a loopback address | `false` |
 
 `public_url` decides several things:
 
@@ -47,7 +48,10 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
   `allowed_hosts`. Everything else gets "400 Invalid Host header".
 - Requests that change something must come from pages of that address.
 - With `https://` the session cookie is marked `Secure`. With `http://` it is not, and
-  every page shows a warning, because passwords then travel unencrypted.
+  every page shows a warning, because passwords then travel unencrypted. LANPilot then also
+  refuses to start if `bind` is reachable from other machines (anything but `127.0.0.1`,
+  `::1` or `localhost`), unless `allow_insecure_http = true` says this is intended; and
+  sessions end 12 hours after sign-in at the latest, whatever `session_lifetime_hours` says.
 - A path, as in `https://tools.example.lan/lanpilot`, means LANPilot is served from that
   sub-path.
 
@@ -56,7 +60,7 @@ Exactly one of `secret_key_file` and `secret_key` must be set. Create a key with
 | Key | Meaning | Default |
 |---|---|---|
 | `session_idle_minutes` | a session ends after this much inactivity | `720` (12 hours) |
-| `session_lifetime_hours` | a session ends this long after sign-in in any case | `168` (7 days) |
+| `session_lifetime_hours` | a session ends this long after sign-in in any case | `168` (7 days; at most 12 hours with an `http://` `public_url`) |
 
 ### `[polling]`
 
@@ -105,8 +109,11 @@ is stored. An image an administrator removes is not fetched again automatically.
 
 Administrators start a scan under "Server setup" → "Scan the network" (or with
 `lanpilot scan`); it runs once, never in the background, and takes a few seconds. It
-finds Counter-Strike 1.6, CS:Source, CS:GO, CS2, TrackMania Forever, TrackMania
-Original/Sunrise/Nations ESWC, UT99, UT2004 and UT3 servers without a password and lists
+finds Counter-Strike 1.6, CS:Source, CS:GO, CS2, the other GoldSrc and Source games
+(Half-Life DM, TFC, Day of Defeat, Opposing Force, Condition Zero, DoD: Source, HL2:
+Deathmatch, TF2), TrackMania Forever, TrackMania
+Original/Sunrise/Nations ESWC, UT99, UT2004, UT3, Quake III Arena and Call of Duty (1, United
+Offensive, 2, 4, World at War) and ElDewrito servers without a password and lists
 name, game, game type and address; "Add" opens the server form with these values, and the
 passwords are entered there.
 
@@ -136,6 +143,7 @@ secret_key_file = "/etc/lanpilot/secret.key"
 [server]
 public_url = "http://192.168.1.10:9030"
 bind = "0.0.0.0"
+allow_insecure_http = true
 trusted_proxies = []
 ```
 

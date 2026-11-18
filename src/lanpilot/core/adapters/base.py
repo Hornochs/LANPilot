@@ -295,3 +295,17 @@ def validate_adapter_class(cls: type[GameAdapter]) -> None:
             )
         if implemented and not declared:
             raise TypeError(f"{where}: implements {method}() but declares no capability for it")
+
+
+LINE_BREAK = re.compile(r"\r?\n")
+
+
+def answer_lines(answer: str) -> list[str]:
+    """The lines of an RCON answer, split at line feeds only.
+
+    ``str.splitlines()`` also splits at ``\\x0b``, ``\\x0c``, ``\\x1c``-``\\x1e``, ``\\x85``,
+    U+2028 and U+2029. A player can put those into a name and so turn one line of a player
+    list into several, one of them a forged player line with an id and address of their
+    choice. Adapters split answers that contain player names with this function.
+    """
+    return LINE_BREAK.split(answer)

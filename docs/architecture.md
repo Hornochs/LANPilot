@@ -4,7 +4,7 @@ This document describes how LANPilot is built. It is the reference to read befor
 the code, and it is updated in every change that alters structure, interfaces or the data
 model.
 
-> **Implementation state:** phases 0–2 and 4–6 are complete, phase 3 (Trackmania) except
+> **Implementation state:** phases 0–2 and 4–6 are complete, of phase 7 steps 7.1, 7.4 and 7.5 and ElDewrito, phase 3 (Trackmania) except
 > TM2/TM2020, and of phase 8 the security review, the upgrade tests and the German
 > interface (see [ROADMAP.md](ROADMAP.md)). Each section carries a state marker; what is
 > still planned (more games, phase 7) is marked as such.
@@ -104,7 +104,8 @@ src/lanpilot/
     transports/source_rcon.py ✔   RCON over TCP for Source and Source 2 servers
     transports/gbxremote.py ✔     GBXRemote 2 (XML-RPC over TCP) for Trackmania
     transports/uweb.py ✔          WebAdmin of Unreal servers: HTTP Basic auth, form parsing
-    transports/ (planned)        q3_rcon
+    transports/quake3.py ✔        getstatus and RCON of id Tech 3 servers (UDP)
+    transports/dewrito.py ✔       ElDewrito: HTTP status server, RCON over a WebSocket (aiohttp)
   games/demo.py ✔           simulated server
   testing/contract.py ✔     check_adapter() for adapter authors
   testing/goldsrc.py ✔      simulator of a GoldSrc server (status query and RCON)
@@ -113,6 +114,8 @@ src/lanpilot/
   testing/uweb.py ✔         simulators of the UT99/UT2004 WebAdmin + GameSpy query, and UT3
   testing/lan.py ✔          simulators of the LAN discovery answers of Trackmania and Unreal
   testing/rcon_players.py ✔ players, kicks and bans for the RCON simulators
+  testing/quake3.py ✔       simulator of Quake 3 and the Call of Duty servers
+  testing/eldewrito.py ✔    simulator of an ElDewrito server (status server and RCON WebSocket)
   auth/
     roles.py ✔      Role enum with ordering (viewer < operator < admin)
     passwords.py ✔  Argon2id hashing, policy, dummy verification
@@ -125,9 +128,14 @@ src/lanpilot/
     engine.py ✔    async engine with SQLite pragmas, session factory
     migrate.py ✔   upgrade(), current_revision(), head_revision(), pre-migration backup
     migrations/ ✔  Alembic environment and versions/ (shipped inside the package)
-  games/counterstrike/common.py ✔   status query, map name pattern, stats parser
+  games/valve/common.py ✔           GoldSrc and Source: status query, LAN scan (classify()),
+                                    map name pattern, stats parser, RconPlayerControl
+  games/valve/goldsrc.py ✔          GoldSrcAdapter: what every GoldSrc game shares
+  games/valve/source.py ✔           SourceAdapter, Source1PlayerControl: what Source games share
+  games/valve/halflife.py ✔         Half-Life DM, TFC, Day of Defeat, Opposing Force, CS: CZ
+  games/valve/sourcegames.py ✔      Day of Defeat: Source, HL2: Deathmatch, Team Fortress 2
   games/counterstrike/goldsrc.py ✔  Counter-Strike 1.6
-  games/counterstrike/source.py ✔   CS:Source, CS:GO, CS2 (one base class, three adapters)
+  games/counterstrike/source.py ✔   CS:Source, CS:GO, CS2 (CS2's workshop maps)
   games/trackmania/common.py ✔      ChallengeAdapter: what the "challenge" generation shares
   games/trackmania/forever.py ✔     TrackMania Nations/United Forever
   games/trackmania/sunrise.py ✔     TrackMania Original, Sunrise (eXtreme), Nations ESWC
@@ -137,7 +145,10 @@ src/lanpilot/
   games/unreal/ut2004.py ✔, ut99.py ✔   Unreal Tournament 2004 and UT99
   games/unreal/ut3.py ✔             Unreal Tournament 3 (status and control over its WebAdmin)
   games/unreal/discovery.py ✔       LAN beacons of UT99, UT2004 and UT3
-  games/ (planned)  quake3/, monitor_only
+  games/quake3/common.py ✔          Quake3FamilyAdapter, IpBanAdapter, status parsing, LAN scan
+  games/quake3/quake3.py ✔          Quake III Arena
+  games/quake3/callofduty.py ✔      Call of Duty 1, UO, 2, 4, World at War
+  games/eldewrito.py ✔              ElDewrito (Halo Online)
   catalog/ ✔        <family>.toml: stock map names per adapter id; unreal-archive.json.gz:
                     Unreal Archive image index (package data)
   testing/ (planned) simulators for the other protocols
@@ -218,7 +229,8 @@ except ban and discover, and switchable behaviour (`normal`, `slow`, `offline`; 
 password → `AuthenticationError`). It is offered in the user interface only when
 `enable_demo_adapter` is set.
 
-Games without remote control use a generic adapter that only has `STATUS` (planned, 7.3).
+Games without remote control get no adapter (decision of 2026-10-22): LANPilot is for
+controlling servers, not for a status display alone.
 
 ### Restart semantics
 
@@ -235,8 +247,10 @@ processes, and a stopped server helps nobody.
 Maps are stored per server in `server_maps` with a source marker:
 
 - `protocol` – reported by the server (`maps *`, `GetChallengeList`, WebAdmin dropdown),
-- `catalog` – stock maps bundled with LANPilot for games that cannot list maps,
 - `manual` – added by an administrator (games with `MANUAL_MAPS`).
+
+Games that cannot list maps (`cod4`, `codwaw`) report the catalogue's stock maps
+(`Catalog.keys()`) plus what their configuration names; these are stored as `protocol` rows.
 
 The list is refreshed on demand and cached, so the searchable dropdown is instant. A map
 change is only accepted for a map that is in this list.
@@ -252,7 +266,10 @@ able to switch to every map `look_up_map()` returned.
 
 ## Protocols
 
-_State: GoldSrc RCON and the Counter-Strike 1.6 adapter are implemented and verified against
+_State: the ElDewrito transport and adapter are implemented and verified against a real
+server without players (step 7.2). The Quake 3 transport and the `q3a`, `cod`, `coduo`, `cod2`, `cod4` and `codwaw` adapters
+are implemented and
+verified against real servers (step 7.1). GoldSrc RCON and the Counter-Strike 1.6 adapter are implemented and verified against
 a real server (steps 2.1, 2.2). Source RCON and the CS:Source, CS:GO and CS2 adapters are
 implemented and verified against real servers (step 2.3). GBXRemote and the TrackMania
 Forever adapter are implemented and verified against a TMNF server (steps 3.1, 3.2). The rest
@@ -262,13 +279,14 @@ measured._
 
 | Protocol | Games | Implementation | State |
 |---|---|---|---|
-| Status query | all | `opengsq`; A2S_INFO: `core/transports/a2s.py` | A2S used by `cs16`, `css`, `csgo`, `cs2` |
-| GoldSrc RCON (UDP) | Counter-Strike 1.6 | `core/transports/goldsrc_rcon.py` | ✔ |
-| Source RCON (TCP) | CS:Source, CS:GO, CS2 | `core/transports/source_rcon.py` | ✔ |
+| Status query | all | `opengsq`; A2S_INFO: `core/transports/a2s.py` | A2S used by every GoldSrc and Source adapter (`games/valve/`, `games/counterstrike/`) |
+| GoldSrc RCON (UDP) | Counter-Strike 1.6, Condition Zero, Half-Life DM, TFC, Day of Defeat, Opposing Force | `core/transports/goldsrc_rcon.py` | ✔ |
+| Source RCON (TCP) | CS:Source, CS:GO, CS2, Day of Defeat: Source, HL2: Deathmatch, Team Fortress 2 | `core/transports/source_rcon.py` | ✔ |
 | GBXRemote / XML-RPC (TCP 5000) | Trackmania | `core/transports/gbxremote.py`, encoding via `xmlrpc.client` | ✔ (TMNF measured) |
 | UWeb WebAdmin (HTTP) | UT99, UT2004, UT3 | `core/transports/uweb.py` (aiohttp, `html.parser`) | ✔ |
 | GameSpy query (UDP) | UT99, UT2004 | `opengsq` `GameSpy1` | used by `ut99`, `ut2004` |
-| Quake 3 RCON (UDP) | Call of Duty 1/4/5, Quake 3, Jedi Knight | own transport | planned |
+| Quake 3 RCON + getstatus (UDP) | Quake III Arena, Call of Duty 1, UO, 2, 4, World at War | `core/transports/quake3.py` | ✔ |
+| HTTP status + `dew-rcon` WebSocket (TCP) | ElDewrito | `core/transports/dewrito.py` (aiohttp) | ✔ (without players) |
 
 **Layers.** A *transport* (`core/transports/`) speaks one protocol and knows nothing about
 games; it turns protocol failures into the adapter errors. An *adapter* (`games/`) knows the
@@ -276,7 +294,7 @@ game's commands and parses their output. A *simulator* (`testing/`) reproduces t
 as a real server was observed to speak it, and the adapter's tests run against it. What was
 observed is written down in `games/<game>.md` first.
 
-**Patterns set by the first real adapter** (`games/counterstrike/goldsrc.py`), to be followed
+**Patterns set by the first real adapter** (Counter-Strike 1.6, now `games/valve/goldsrc.py`), to be followed
 by the next ones:
 
 - Status comes from the password-less server query wherever the game has one, so a wrong
@@ -359,22 +377,81 @@ command to `current_console`; the answer lands in the WebAdmin's message log
 which copes with the log being a window over the last messages). UT3's `/console` answers on
 the same page.
 
-**Counter-Strike on Source** (`games/counterstrike/source.py`). `SourceCounterStrikeAdapter`
-holds everything; `css`, `csgo` and `cs2` are small subclasses that set `id`, `name`,
+**GoldSrc and Source games** (`games/valve/`, step 7.5). The engine code that came with
+Counter-Strike is shared by every game on these engines. `GoldSrcAdapter`
+(`goldsrc.py`) and `SourceAdapter` (`source.py`) hold everything; a game is a subclass that
+sets `id`, `name`, `family`, `image_lookup` and its round restart (`soft_restart_command`,
+with `Capability.RESTART_SOFT`; `None` and no capability for Half-Life, TFC and Opposing
+Force, which have none). `halflife.py` holds `hldm`, `tfc`, `dod`, `opfor` and `czero`,
+`sourcegames.py` `dods`, `hl2dm` and `tf2`, `games/counterstrike/` the four Counter-Strike
+games. The LAN scan classifies A2S answers by app id (GoldSrc also by folder) in
+`common.classify()`, one broadcast for all of them; see [games/valve.md](games/valve.md).
+
+**Counter-Strike on Source** (`games/counterstrike/source.py`). `SourceAdapter` holds
+everything; `css`, `csgo` and `cs2` are small subclasses that set `id`, `name`,
 capabilities (`LOAD_STATS` only for Source 1, CS2 prints nothing for `stats`) and the
 `maps *` format (`PENDING:   (fs) <name>` on Source 1, bare names on CS2). CS2 adds workshop maps from `ds_workshop_listmaps` as `MapRef`s with
 `extra = {"workshop": "1"}` (they win over the same name from `maps *`); `change_map()` sends
 `ds_workshop_changelevel` for them. A change that CS2 refuses because it is still loading
 a map raises `CommandRejectedError`. A hard
 restart is `changelevel` to the current map, because `restart` is a cheat command on CS2.
-`common.py` holds what all Counter-Strike adapters share, including the Counter-Strike 1.6
-one, among it `RconPlayerControl`: players from `status` (`parse_status()` per engine), kick
+`games/valve/common.py` holds what all GoldSrc and Source adapters share, among it
+`RconPlayerControl`: players from `status` (`parse_status()` per engine), kick
 by user id (`kick #<id>` on GoldSrc, `kickid <id>` on Source), ban by IP address (`addip 0
 <ip>`, the kick, `writeip`) because LAN servers give every player the same Steam ID. A kick
 message is reduced to letters, digits and a few punctuation marks (`safe_message()`) before it
 becomes part of the command; user ids must be ASCII digits. `css` and `csgo` mix it in
-(`Source1PlayerControl`); `cs2` does not, its `status` format is unmeasured. All four have
-the console: the command goes to RCON as it is.
+(`Source1PlayerControl`), as do `dods`, `hl2dm` and `tf2`; `cs2` does not, its `status`
+format is unmeasured. All of them have the console: the command goes to RCON as it is.
+
+**Quake 3 engine family** (`core/transports/quake3.py`, `games/quake3/`). The transport
+sends `getstatus` (one datagram, info string and player lines, parsed by its own bounded
+parser) and RCON as `rcon "<password>" <command>` on the game port; output is the `print`
+packets that arrive until 300 ms pass without one. It refuses passwords with spaces or
+quotes and commands with line breaks, never sends a refused password again, and keeps a
+minimum interval between commands (Quake 3, CoD 1, UO, CoD 2 and WaW drop RCON packets less
+than 500 ms apart; the adapters use 700 ms, CoD4X needs none). `Quake3FamilyAdapter` holds
+everything; `q3a`, `cod`, `coduo`, `cod2`, `cod4` and `codwaw` set `game_types` (`g_gametype` code → name), the restart commands
+(`None` = load the current map again), whether the kick takes a reason, and
+`_reported_maps()`: `dir maps bsp` (Quake 3), `dir maps/mp bsp` (CoD 1, UO), `dir maps/mp
+d3dbsp` (CoD 2), the catalogue's
+stock maps plus the maps of `sv_mapRotation` (CoD4 and WaW, which cannot list maps). The map list
+holds every map once per game type with `extra["gametype"]` = the code, as the Unreal
+adapters do; a change sends `g_gametype <code>` and `map <name>` and sets the previous game
+type back if the map is missing. Map changes and restarts wait up to 15 s for the first
+answer (the level loads before the server answers); afterwards the status is read, and a
+different game type (the map is not made for the requested one) is reported as an error. Players come from `status`, whose header says how many
+fields stand before and after the name; the player id is the slot, and kick and ban read
+`status` again and act only if the slot still holds a player of that name. `IpBanAdapter`
+(Quake 3) bans with `addip <ip>` and a kick; Call of Duty bans by player id, which LAN
+players may share, so it has no ban. The LAN scan broadcasts `getstatus` to 27960–27963 and
+28960–28963 once for all six adapters (`find_servers()`, shared like the Counter-Strike
+one) and sorts the answers by `gamename` and `version`.
+
+**ElDewrito** (`core/transports/dewrito.py`, `games/eldewrito.py`). `get_info()` reads the
+status server's JSON (`GET /`, at most 256 KB, optionally with the join password as HTTP Basic
+`dorito:<password>`, without which a server that has one leaves out its players). `DewRcon`
+opens a WebSocket with the subprotocol `dew-rcon`, sends the password as the first frame and
+expects `accept` (`deny` is an `AuthenticationError` and stops further logins); then each
+command is one frame and its answer the next frame (at most 1 MB). It keeps the connection,
+opens a new one after 60 s without a command and once more when a kept one turns out to be
+closed. Answers carry no request id, so the server must not push chat or console output
+(`Server.SendChatToRconClients`, `Server.RconConsoleOutputEnabled`, both off by default). The
+adapter lists every map of `Game.ListMaps` once per built-in game variant (the names are
+case-sensitive and cannot be listed, so they are a fixed tuple) with `extra["gametype"]`; a
+change goes to the lobby (`Game.Stop`, then `Game.Info` until it shows `mainmenu`), sends
+`Game.GameType` and `Game.Map` with quoted, pattern-checked names, and `Game.Start` only when
+`Server.ListPlayers` lists somebody, because a start without players resets the lobby to the
+default map. The hard restart is the same without loading; there is no soft restart. Players
+come from `Server.ListPlayers` (slot, name, UID, address; parsed from both ends because names
+may contain quotes) with score and team from the status server, matched by UID unless several
+players share it; kick and ban use the slot (`Server.KickIndex`, `Server.KickBanIndex`) after
+checking that it still holds a player of that name, not the UID, which copied game folders
+share. The console replaces the RCON password in answers (`help` prints it). The LAN scan
+sends the server browser's query (opengsq's `ElDewrito.BROADCAST_QUERY`) to UDP 11774, keeps
+answers of at least 121 bytes that start with `01 blam` (servers send 160; the query itself
+comes back from LANPilot's own host), and reads the status server on the answering port
+plus one.
 
 Research results for the games not yet implemented, including what is unverified, are in
 [research/remote-control-protocols.md](research/remote-control-protocols.md).
@@ -402,6 +479,8 @@ server-supplied names to 64 printable characters. Packets and parsers come from 
 | `ut99` | `REPORTQUERY` to 8777–8786, then GameSpy on the announced query port |
 | `ut2004` | LAN query to 10777, then the Unreal 2 details; GameSpy port = game port + 10 |
 | `ut3` | UDK LAN beacon from UDP 14001 (`SO_REUSEADDR`) |
+| `q3a`, `cod`, `coduo`, `cod2`, `cod4`, `codwaw` | `getstatus` broadcast to 27960–27963 and 28960–28963; `gamename`/`version` pick the game; one shared broadcast per scan |
+| `eldewrito` | the server browser's `blam` query to UDP 11774, then the status server (HTTP) on the answering port + 1, which pre-fills the status port |
 
 **Scanner** (`core/scan.py`, `app.state.scanner`). `Scanner.run()` calls every registered
 adapter with `DISCOVER` (not the demo) concurrently, each with a limit of `timeout_seconds` +
@@ -585,9 +664,11 @@ _State: implemented (step 1.2)._
   disabled users cost the same time as a wrong password (dummy Argon2 verification) and get
   the same message. On success expired sessions are purged, any session the browser already
   had is ended, and a new one is created.
-- **Throttle** (`auth/throttle.py`): 5 failures per (user name, client address) pair and 30
-  per client address within 15 minutes; further attempts get 429 with `Retry-After`, even
-  with the right password. `attempt()` checks and counts in one step, before the password is
+- **Throttle** (`auth/throttle.py`): 5 failures per (user name, client) pair and 20 per
+  client within 15 minutes; further attempts get 429 with `Retry-After`, even with the right
+  password. A client is an IPv4 address or an IPv6 /64 (one host can pick any address in its
+  /64). An account with 20 failures from any clients within the window is slowed down
+  instead of locked: every attempt then waits 30 s after the last failure. `attempt()` checks and counts in one step, before the password is
   verified, so parallel requests cannot all pass; a right password takes its count back.
   Counters are in memory and bounded. The current-password check of a password change uses
   the same limits under its own key. Argon2 runs in worker threads, at most four at a time
@@ -670,8 +751,11 @@ timestamps. It never contains credentials. State lives in memory only.
 - After a server first answers, its map list is fetched once and stored. That is also how a
   wrong password is noticed.
 - `manager.reload(server_id)` is called after a server is created, edited or deleted;
-  `manager.call(server_id, operation)` runs an operation under the server's lock, so polls
-  and actions never interleave on one connection; `poll_now()` refreshes after an action.
+  `manager.call(server_id, operation, seconds=…)` runs an operation under the server's lock,
+  so polls and actions never interleave on one connection. `seconds` bounds the operation and
+  starts once the lock is held; the wait for the lock is bounded separately
+  (`LOCK_WAIT_SECONDS`, 30 s, then `ServerBusyError` → HTTP 503). `poll_now()` refreshes after
+  an action.
 - Servers that are disabled, whose adapter is missing or whose credentials cannot be
   decrypted get a runtime without adapter and an explanatory `error`.
 
@@ -686,7 +770,7 @@ path that changes a game server:
 
 1. check the actor's role (again, independent of the route's dependency),
 2. check that the server exists, is enabled, is set up correctly and has the capability,
-3. run the operation through `manager.call()` with a 15 s limit,
+3. run the operation through `manager.call()` with a 15 s limit (after the lock is taken),
 4. write the audit entry, for success and for every refusal or failure,
 5. trigger a fresh poll.
 
@@ -698,7 +782,9 @@ without invalidating the objects the web request holds. `Actor` carries plain va
 same reason.
 
 Players: `list_players()` reads the list under the server's lock (not audited, as it changes
-nothing) and cleans it (`clean_players()`: at most 256 entries, printable names and teams of
+nothing). The answer is shared for 3 s, and concurrent requests for the same server share one
+query (single flight), so many open server pages cannot queue up in front of actions; a kick
+or ban drops the shared list. The list is cleaned (`clean_players()`: at most 256 entries, printable names and teams of
 at most 64 characters, entries without a usable or unique id dropped). `kick()` (operator,
 `KICK`) and `ban()` (administrator, `BAN`) take the player's id and an optional reason; inside
 the lock they list the players again and act only on someone who is there now and whose entry
@@ -711,7 +797,7 @@ returns at most 64 KB of the answer.
 `POST /servers/{id}/map`, `/restart`, `/maps/refresh` (operator, CSRF-protected). On
 success they redirect back with a notice; on failure they re-render the page with the
 message and the fitting status code. `GET /servers/{id}/players` is the player list fragment
-(`_players.html`, refetched on `sse:server-<id>`); `POST /servers/{id}/players/kick`
+(`_players.html`, refetched on `sse:server-<id>`, at most every 3 s); `POST /servers/{id}/players/kick`
 (operator) and `/players/ban` (administrator) act on it; the list shows only the buttons the
 user's role, the adapter and the player's entry allow. `GET`/`POST /servers/{id}/console`
 (administrator) is the console page (`console.html`); the answer is shown escaped in a
@@ -723,9 +809,9 @@ server_id)` to subscribers through bounded queues; a subscriber that falls behin
 names `server-<id>`, `servers` and `resync` and **no payload**: pages react by fetching what
 they show through the normal routes, so nothing bypasses the access checks. The stream
 authenticates with short-lived database sessions (the request dependency would pin a
-connection for the stream's lifetime), allows eight streams per session and 500 in all
-(`StreamLimit`), re-checks the session every 15 s with the keepalive
-and ends when it is gone. It sends `X-Accel-Buffering: no`.
+connection for the stream's lifetime), allows eight streams per session, 16 per user (who may
+be signed in many times) and 500 in all (`StreamLimit`), re-checks the session every 15 s,
+also while events keep the stream busy, and ends when it is gone. It sends `X-Accel-Buffering: no`.
 
 ## Languages
 
@@ -880,8 +966,8 @@ off nothing is queued and no task runs.
 adapter id (`de_dust2 = "Dust II"`), loaded once per process and validated. `maps.replace_reported()`
 fills in a name for every map the server reports without one, and the poll does the same for
 the current map, so cards say "Dust II" and the picker "Dust II (de_dust2)". The catalogue
-never adds maps a server did not report; games whose protocol cannot list maps will use it
-for that when they are added (planned with Call of Duty).
+adds no maps by itself; an adapter whose protocol cannot list maps takes the stock maps of
+its game from `Catalog.keys()` and reports them as its list (`cod4`, `codwaw`).
 
 **Unreal Archive index.** `scripts/build_unreal_index.py` reads the archive's public-domain
 metadata (one YAML file per upload, from a sparse clone of `unreal-archive-data`) and writes
@@ -925,8 +1011,10 @@ findings of the review are in [security.md](security.md)._
   strict character set; transports reject `;`, quotes and line breaks; kick uses numeric ids.
 - **Untrusted server data** (1.6 onwards) – autoescaping, strict Content-Security-Policy
   without inline scripts, size and time limits in all protocol clients, parser fuzz tests.
-- **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 11 MB with 413 before
-  anything reads them, and requests with a body but without `Content-Length` with 411.
+- **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 256 KB with 413 before
+  anything reads them (11 MB for the map image upload,
+  `/admin/servers/{id}/maps/{map}/image`, only), and requests with a body but without
+  `Content-Length` with 411.
 - **Uploads** (1.7 ✔) – images are never stored as received; see "Map images".
 - **LAN scan** (6 ✔) – on request by an administrator only, only inside the configured
   networks (answers from elsewhere are dropped), bounded in hosts, answers and time; names

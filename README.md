@@ -9,13 +9,14 @@ into each machine.
 > images (uploaded or found online), an on-demand LAN scan that finds servers without
 > passwords, an English and German interface, and distribution packages. Working games:
 > **Counter-Strike 1.6, Source, Global Offensive and 2**, **TrackMania Nations/United
-> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, and **Unreal Tournament 99,
-> 2004 and 3** (player management not yet on CS2). More games come next.
+> Forever** and **TrackMania Original/Sunrise/Nations ESWC**, **Unreal Tournament 99,
+> 2004 and 3**, **Quake III Arena and Call of Duty 1, United Offensive, 2, 4 and World at
+> War**, and **ElDewrito** (player management not yet on CS2). More games come next.
 > Progress is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ![The LANPilot dashboard with a card for each server](docs/images/dashboard.png)
 
-![A server page: status, map preview, players and map change](docs/images/server.png)
+![A server page: status, map preview, players with kick and ban, map change and restarts](docs/images/server.png)
 
 ## What LANPilot does
 
@@ -31,7 +32,6 @@ into each machine.
 - **Accounts** with username and password, three roles (admin, operator, viewer) and an audit
   log of every action.
 - **Interface in English and German**, chosen per user or by the browser.
-- **Monitoring-only mode** for games that offer no remote control at all (planned).
 - **Packages** for Debian/Ubuntu (`.deb`), Fedora/RHEL (`.rpm`) and Arch Linux.
 
 ## Design principles
@@ -42,7 +42,9 @@ into each machine.
 - **Modular.** Every game is an adapter that declares what it can do. New games can be added
   without touching the user interface, including as separately installed Python packages.
 - **Secure by default.** Stored server credentials are encrypted, everything requires a login,
-  and data coming from game servers is treated as untrusted. See [SECURITY.md](SECURITY.md).
+  and data coming from game servers is treated as untrusted. LANPilot belongs behind a reverse
+  proxy with HTTPS; plain HTTP on the network needs an explicit `allow_insecure_http = true`
+  ([details](docs/reverse-proxy.md)). See [SECURITY.md](SECURITY.md).
 
 ## Game support
 
@@ -50,12 +52,16 @@ into each machine.
 |---|---|---|
 | Counter-Strike 1.6 | GoldSrc RCON (UDP) | **supported** ([details](docs/games/counter-strike.md)) |
 | Counter-Strike: Source, CS:GO, CS2 | Source RCON (TCP) | **supported** ([details](docs/games/counter-strike.md)) |
+| Half-Life Deathmatch, Team Fortress Classic, Day of Defeat, Opposing Force, CS: Condition Zero | GoldSrc RCON (UDP) | **supported** ([details](docs/games/valve.md)) |
+| Day of Defeat: Source, Half-Life 2: Deathmatch, Team Fortress 2 | Source RCON (TCP) | **supported** ([details](docs/games/valve.md)) |
 | TrackMania Nations/United Forever, TrackMania Original, Sunrise (eXtreme), Nations ESWC | GBXRemote / XML-RPC | **supported** ([details](docs/games/trackmania.md)) |
 | TrackMania 2, Trackmania (2020) | GBXRemote / XML-RPC | planned, high priority |
 | Unreal Tournament 99, 2004, 3 | WebAdmin (HTTP) + GameSpy query | **supported** ([details](docs/games/unreal-tournament.md)) |
-| Call of Duty 1/4/5, Quake 3, Jedi Knight | Quake 3 RCON (UDP) | planned |
-| Battlefield 2, Renegade X, ElDewrito | game-specific | planned |
-| Age of Empires 1/2, FlatOut 2, Stronghold Crusader, Warcraft III and others | none (monitoring only) | planned |
+| Quake III Arena, Call of Duty, United Offensive, Call of Duty 2, Call of Duty 4 (CoD4X), World at War | Quake 3 RCON + getstatus (UDP) | **supported** ([details](docs/games/quake3.md)) |
+| Jedi Knight | Quake 3 RCON (UDP) | planned |
+| ElDewrito (Halo Online) | WebSocket RCON + HTTP status | **supported** ([details](docs/games/eldewrito.md)) |
+| Battlefield 2, Halo 1, Serious Sam | game-specific | planned |
+| Toxikk, Renegade X, and games without any remote control | none usable ([why](docs/research/remote-control-protocols.md#other-games)) | not supported |
 
 ## Documentation
 

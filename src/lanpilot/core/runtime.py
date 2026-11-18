@@ -41,7 +41,14 @@ T = TypeVar("T")
 
 MAX_BACKOFF_FACTOR = 6
 FIRST_POLL_WAIT_SECONDS = 2.0
+# How long an action waits for the server's lock (held by the poll loop or other actions,
+# each bounded by its own timeout) before it gives up.
+LOCK_WAIT_SECONDS = 30.0
 INTERNAL_ERROR = M("Internal error while talking to the server; see the LANPilot log.")
+
+
+class ServerBusyError(TimeoutError):
+    """The server's lock was not free within ``LOCK_WAIT_SECONDS``."""
 
 
 @dataclass(frozen=True)
@@ -201,17 +208,38 @@ class ServerManager:
 
     # --- calling the server ------------------------------------------------------------
 
-    async def call(self, server_id: int, operation: Callable[[GameAdapter], Awaitable[T]]) -> T:
+    async def call(
+        self,
+        server_id: int,
+        operation: Callable[[GameAdapter], Awaitable[T]],
+        *,
+        seconds: float | None = None,
+    ) -> T:
         """Run ``operation`` against the server's adapter, serialised with the poll loop.
 
+        ``seconds`` bounds the operation itself and starts once the lock is held, so time
+        spent waiting behind the poll loop or other actions does not count against it; the
+        wait for the lock is bounded by ``LOCK_WAIT_SECONDS`` (``ServerBusyError``).
+
         Raises ``LookupError`` if the server has no usable adapter, and whatever
-        ``AdapterError`` the adapter raises. Callers bound the wait with ``asyncio.timeout``.
+        ``AdapterError`` the adapter raises.
         """
         runtime = self._runtimes.get(server_id)
         if runtime is None or runtime.adapter is None:
             raise LookupError(server_id)
-        async with runtime.lock:
-            return await operation(runtime.adapter)
+        try:
+            async with asyncio.timeout(LOCK_WAIT_SECONDS):
+                await runtime.lock.acquire()
+        except TimeoutError:
+            raise ServerBusyError(server_id) from None
+        try:
+            adapter = runtime.adapter
+            if adapter is None:  # removed while waiting
+                raise LookupError(server_id)
+            async with asyncio.timeout(seconds):
+                return await operation(adapter)
+        finally:
+            runtime.lock.release()
 
     def poll_soon(self, server_id: int) -> None:
         """Ask for a fresh status right away, e.g. after an action changed something."""

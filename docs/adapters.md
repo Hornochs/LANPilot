@@ -131,7 +131,11 @@ What to take from it:
 - **Raise the adapter errors.** Their messages are shown to operators:
   `ServerUnreachableError`, `AuthenticationError`, `CommandRejectedError`, `ProtocolError`.
 - **Distrust the server.** Bound what you read (`limit=`), tolerate garbage, and drop
-  entries that do not look like what you expect, as `list_maps()` does.
+  entries that do not look like what you expect, as `list_maps()` does. Split answers
+  that contain player names with `answer_lines()` from `lanpilot.core.adapters`, not
+  `str.splitlines()`: that also splits at characters such as `\x0b` or U+2028 that a
+  player can put into a name to forge a line. Refuse to kick or ban when an id appears
+  more than once.
 - **Validate before you send.** LANPilot only passes maps from the stored list to
   `change_map()`, but that list came from the server. Check every value that goes into a
   command against a strict pattern, so a crafted map name cannot smuggle in a second

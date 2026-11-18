@@ -127,12 +127,15 @@ Sources: <https://unrealarchive.org/wikis/unreal-wiki/UE2:Console_Commands_(UT20
 
 ## Quake 3 engine family
 
-- UDP on the game port: `FF FF FF FF rcon <password> <command>`. [background]
-- Call of Duty 4: `map`, `map_rotate`, `map_restart`, `fast_restart`; `map_rotate` loads the
-  next map from `sv_mapRotation`. [verified]
-- Flood protection exists (`sv_floodProtect`); the exact interval is [unverified].
-- **Listing installed maps remotely is [unverified]** (`dir maps bsp`, `fdir`, `dir usermaps`).
-  Plan with a bundled catalogue plus the rotation plus manual entries.
+Measured and implemented for Quake III Arena, Call of Duty, Call of Duty 4 (CoD4X) and
+World at War in step 7.1, United Offensive and Call of Duty 2 in 7.4; the facts are in [../games/quake3.md](../games/quake3.md). In short: RCON is
+`FF FF FF FF rcon "<password>" <command>` on the game port, one command per packet;
+Quake 3, CoD 1 and WaW drop RCON packets less than 500 ms apart (`sv_floodProtect` is about
+client commands); `dir maps bsp` lists maps on Quake 3 and `dir maps/mp bsp` on CoD 1,
+while CoD4 and WaW cannot list their fast files and need the catalogue plus
+`sv_mapRotation`.
+
+Still unverified: Jedi Knight II/Academy.
 
 Sources: <https://www.4netplayers.com/de/wiki/call-of-duty-4/rcon-commands/>,
 <https://github.com/arbytez/cod4-rcon-commands>
@@ -142,9 +145,11 @@ Sources: <https://www.4netplayers.com/de/wiki/call-of-duty-4/rcon-commands/>,
 | Game | Remote control | State |
 |---|---|---|
 | Battlefield 2 | RCON over TCP 4711 with a digest seed challenge; `admin.runNextLevel`, `admin.restartMap` | partly verified |
-| ElDewrito | WebSocket RCON, default port 11776 | port verified |
-| Renegade X | own RCON over TCP | unverified |
+| ElDewrito | WebSocket RCON (`dew-rcon`), default port 11776; status as JSON over HTTP on 11775 | implemented (`eldewrito`), see [../games/eldewrito.md](../games/eldewrito.md) |
+| Renegade X | own RCON over TCP on the game port (`[RenX_Game.Rx_Rcon]`, admin password). The game's source (`Rx_Game.uc`) starts RCON only when `bIsLanMatch` is false and sends its LAN broadcast (JSON to UDP 45542, measured against release 1.2.1109) only when it is true, so a LAN server has no RCON. RCON itself was not measured | dropped by decision (2026-10-22) |
 | Halo: Combat Evolved | RCON inside the game protocol, or SAPP | unverified |
-| Toxikk, Serious Sam Classic, Alien vs Predator 2, F.E.A.R. 2, Supreme Commander, Age of Empires 1/2, Stronghold Crusader, Warcraft III, C&C Generals, FlatOut 2 | none known | "none known" means none was found, not that none exists |
+| Serious Sam | remote control exists (per the maintainer); protocol to be found | unverified |
+| Toxikk | none usable. Admin commands (`AdminLogin`, `AdminKick`, `AdminKickBan`, `AdminRestartMap`) exist only in the game client's console, over the UE3 game connection (Steamworks, package GUIDs, a player slot), which LANPilot cannot speak. The UDK web server (`UDKWeb.ini`, `[IpDrv.WebServer]`, named by the community Toxikk Server Launcher) is not shipped: the maintainer's install has no WebAdmin files (checked 2026-10-22). Status: UDK LAN beacon on UDP 14001 (opengsq `Toxikk`), Steam query port 27015 (both unmeasured: the test server did not answer) | dropped by decision (2026-10-22), not even monitoring |
+| Alien vs Predator 2, F.E.A.R. 2, Supreme Commander, Age of Empires 1/2, Stronghold Crusader, Warcraft III, C&C Generals, FlatOut 2 | none known | "none known" means none was found, not that none exists; dropped (2026-10-22): no adapter without remote control |
 
 All of these can be queried for status through `opengsq`.

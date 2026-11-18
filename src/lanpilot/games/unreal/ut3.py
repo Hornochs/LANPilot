@@ -45,9 +45,9 @@ from lanpilot.core.transports.uweb import (
     Page,
     PageNotFoundError,
     UWebAdmin,
-    parse,
+    read_lines,
+    read_page,
     table,
-    text_lines,
 )
 from lanpilot.games.unreal.common import (
     GAME_CLASS,
@@ -140,11 +140,11 @@ class UT3Adapter(GameAdapter):
         return await discover_ut3(cls.id, networks, wait)
 
     async def _get(self, path: str) -> Page:
-        return self._checked(parse(await self._web.get(path)))
+        return self._checked(await read_page(await self._web.get(path)))
 
     async def _post(self, path: str, fields: dict[str, str]) -> tuple[Page, str]:
         answer = await self._web.post(path, fields)
-        return self._checked(parse(answer)), answer
+        return self._checked(await read_page(answer)), answer
 
     def _checked(self, page: Page) -> Page:
         # Without valid HTTP credentials UT3 answers with its login form, not with 401.
@@ -284,7 +284,7 @@ class UT3Adapter(GameAdapter):
             raise UnsupportedError(
                 M("The WebAdmin's console is switched off (bConsoleEnabled in UTWeb.ini).")
             ) from exc
-        lines = text_lines(answer, "consoleResults")
+        lines = await read_lines(answer, "consoleResults")
         if lines is None:
             raise ProtocolError(M("The WebAdmin's console page has an unexpected format."))
         # The first line repeats the command ("> command").

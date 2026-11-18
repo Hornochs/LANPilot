@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Form, Request
@@ -92,7 +91,7 @@ async def change_password(
     except users.UserError as exc:
         return failed(i18n.message_of(exc))
 
-    lifetime = timedelta(hours=settings.auth.session_lifetime_hours)
+    lifetime = settings.session_lifetime
     token, _ = await sessions.create(
         db,
         user,

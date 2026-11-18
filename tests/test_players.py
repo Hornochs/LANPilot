@@ -1,13 +1,22 @@
 """Player list, kick, ban and the raw console, through the web interface (demo adapter)."""
 
+import asyncio
 import time
+from types import SimpleNamespace
+from typing import cast
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from lanpilot.auth.roles import Role
-from lanpilot.core.actions import clean_players, clean_text
-from lanpilot.core.adapters import Player
+from lanpilot.core import runtime as runtime_module
+from lanpilot.core import secrets
+from lanpilot.core.actions import PLAYER_LIST_MAX_AGE_SECONDS, Actions, clean_players, clean_text
+from lanpilot.core.adapters import GameAdapter, Player
+from lanpilot.core.adapters.registry import AdapterRegistry
+from lanpilot.core.events import EventBus
+from lanpilot.core.runtime import ServerBusyError, ServerManager, ServerRuntime, ServerState
 from tests.conftest import ClientFactory, Query, UserFactory
 from tests.test_live import add_server, post, switch_user
 
@@ -167,3 +176,98 @@ def test_player_entries_are_cleaned() -> None:
         Player(id="2", name="(no name)"),
     ]
     assert clean_text("a\tb\x00c" + "d" * 200, 10) == "a bcdddddd"
+
+
+# --- sharing the player list (one query per server at a time) ------------------------------
+
+
+class SlowManager:
+    """Stands in for ServerManager: counts player queries and answers when released."""
+
+    def __init__(self) -> None:
+        self.queries = 0
+        self.release = asyncio.Event()
+
+    def state(self, server_id: int) -> SimpleNamespace:
+        return SimpleNamespace(usable=True, adapter_name="Fake", can=lambda capability: True)
+
+    async def call(self, server_id: int, operation: object, *, seconds: float) -> list[Player]:
+        self.queries += 1
+        await self.release.wait()
+        return [Player(id="1", name="Ada")]
+
+
+async def test_concurrent_player_lists_share_one_query(monkeypatch: pytest.MonkeyPatch) -> None:
+    manager = SlowManager()
+    actions = Actions(cast(ServerManager, manager), cast(async_sessionmaker[AsyncSession], None))
+
+    waiting = [asyncio.create_task(actions.list_players(1)) for _ in range(50)]
+    await asyncio.sleep(0)
+    waiting[0].cancel()  # one viewer leaving does not cancel the query for the others
+    manager.release.set()
+    lists = await asyncio.gather(*waiting[1:])
+
+    assert manager.queries == 1
+    assert all([p.name for p in players] == ["Ada"] for players in lists)
+    await actions.list_players(1)
+    assert manager.queries == 1  # still fresh
+
+    actions.forget_players(1)  # as after a kick
+    await actions.list_players(1)
+    assert manager.queries == 2
+
+    now = time.monotonic()
+    monkeypatch.setattr(time, "monotonic", lambda: now + PLAYER_LIST_MAX_AGE_SECONDS + 1)
+    await actions.list_players(1)
+    assert manager.queries == 3
+
+
+async def test_waiting_for_the_lock_does_not_count_against_the_timeout() -> None:
+    manager = ServerManager(
+        sessionmaker=cast(async_sessionmaker[AsyncSession], None),
+        registry=AdapterRegistry(),
+        box=cast(secrets.SecretBox, None),
+        bus=EventBus(),
+        interval=3600,
+        timeout=1,
+    )
+    runtime = ServerRuntime(state=cast(ServerState, None), adapter=cast(GameAdapter, object()))
+    manager._runtimes[1] = runtime
+
+    async def quick(adapter: GameAdapter) -> str:
+        await asyncio.sleep(0.05)
+        return "done"
+
+    async with runtime.lock:
+        later = asyncio.create_task(manager.call(1, quick, seconds=0.2))
+        await asyncio.sleep(0.3)  # longer than the operation's own bound
+    assert await later == "done"
+
+    async def slow(adapter: GameAdapter) -> str:
+        await asyncio.sleep(1)
+        return "late"
+
+    with pytest.raises(TimeoutError):
+        await manager.call(1, slow, seconds=0.05)
+    assert not runtime.lock.locked()
+
+
+async def test_a_lock_that_stays_taken_means_busy(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(runtime_module, "LOCK_WAIT_SECONDS", 0.05)
+    manager = ServerManager(
+        sessionmaker=cast(async_sessionmaker[AsyncSession], None),
+        registry=AdapterRegistry(),
+        box=cast(secrets.SecretBox, None),
+        bus=EventBus(),
+        interval=3600,
+        timeout=1,
+    )
+    runtime = ServerRuntime(state=cast(ServerState, None), adapter=cast(GameAdapter, object()))
+    manager._runtimes[1] = runtime
+
+    async def never(adapter: GameAdapter) -> str:
+        raise AssertionError("must not run")
+
+    async with runtime.lock:
+        with pytest.raises(ServerBusyError):
+            await manager.call(1, never, seconds=1)

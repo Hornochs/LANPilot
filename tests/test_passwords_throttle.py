@@ -1,7 +1,7 @@
 import pytest
 
 from lanpilot.auth import passwords
-from lanpilot.auth.throttle import LoginThrottle
+from lanpilot.auth.throttle import LoginThrottle, client_key
 
 
 def test_hash_and_verify() -> None:
@@ -155,3 +155,31 @@ async def test_hashing_runs_only_a_few_at_a_time() -> None:
 
     await asyncio.gather(*(passwords.in_worker(work) for _ in range(20)))
     assert peak <= passwords.MAX_PARALLEL
+
+
+def test_ipv6_clients_are_throttled_by_their_64() -> None:
+    throttle = LoginThrottle(max_failures=3, max_failures_per_address=100, clock=Clock())
+    for index in range(3):  # a new address from the same /64 for every attempt
+        throttle.record_failure("ada", f"2001:db8:1:2::{index + 1:x}")
+
+    assert throttle.retry_after("ada", "2001:db8:1:2:ffff::9") > 0
+    assert throttle.retry_after("ada", "2001:db8:1:3::1") == 0  # another /64
+    assert client_key("::ffff:10.0.0.1") == client_key("10.0.0.1") == "10.0.0.1"
+
+
+def test_many_clients_guessing_one_account_slow_down_but_do_not_lock_it() -> None:
+    clock = Clock()
+    throttle = LoginThrottle(
+        max_failures=5, max_failures_per_account=10, account_cooldown_seconds=30, clock=clock
+    )
+    for index in range(10):
+        throttle.record_failure("ada", f"10.0.1.{index}")
+
+    # Every client now waits a short cooldown after the last failure, not the whole window.
+    wait = throttle.retry_after("ada", "10.0.2.1")
+    assert 0 < wait <= 31
+    assert throttle.retry_after("grace", "10.0.2.1") == 0  # other accounts are not affected
+    clock.now += 31
+    assert throttle.retry_after("ada", "10.0.2.1") == 0
+    throttle.record_failure("ada", "10.0.1.99")
+    assert throttle.retry_after("ada", "10.0.2.1") > 0  # and again after each failure

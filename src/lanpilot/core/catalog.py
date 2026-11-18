@@ -2,8 +2,8 @@
 
 The catalogue lives in ``lanpilot/catalog/*.toml``: one table per adapter id, mapping a map
 key to the name users know it by (``de_dust2 = "Dust II"``). It only adds names; which maps
-a server has still comes from the server. Games whose protocol cannot list maps will take
-their map list from here as well, when they are added.
+a server has still comes from the server, except for games whose protocol cannot list
+maps: their adapters take the stock maps from here (``keys()``).
 """
 
 from __future__ import annotations
@@ -43,6 +43,10 @@ class Catalog:
             return ref
         name = self.name(adapter_id, ref.key)
         return dataclasses.replace(ref, name=name) if name else ref
+
+    def keys(self, adapter_id: str) -> list[str]:
+        """The map keys of a game, for games whose protocol cannot list maps."""
+        return sorted(self._names.get(adapter_id, {}))
 
     def games(self) -> list[str]:
         return sorted(self._names)

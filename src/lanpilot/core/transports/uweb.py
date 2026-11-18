@@ -16,6 +16,7 @@ standard library's tolerant HTML parser, which never executes anything.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -31,7 +32,9 @@ from lanpilot.core.adapters import (
 )
 from lanpilot.i18n import M
 
-MAX_PAGE_BYTES = 2 * 1024 * 1024
+# Real pages are a few dozen KiB. Parsing is CPU-bound, so a large hostile page would cost
+# seconds of CPU; see read_page.
+MAX_PAGE_BYTES = 512 * 1024
 # What a WebAdmin page may contain. Real pages have a few thousand elements; the bounds keep
 # a hostile page from costing gigabytes and minutes (a <td colspan=64> per few bytes did).
 MAX_TAGS = 50_000
@@ -247,6 +250,12 @@ def parse(html: str) -> Page:
     return parser.page
 
 
+async def read_page(html: str) -> Page:
+    """:func:`parse` in a worker thread: parsing a hostile page takes CPU time that would
+    otherwise stall the event loop, and ``asyncio.timeout`` cannot interrupt it."""
+    return await asyncio.to_thread(parse, html)
+
+
 def find_table(page: Page, *headers: str) -> tuple[dict[str, int], list[list[Cell]]]:
     """The first table with a row that has all of ``headers``: the column of every header
     (lower case, without a trailing colon) and all rows of that table."""
@@ -333,6 +342,11 @@ def text_lines(html: str, element_id: str | None = None) -> list[str] | None:
         return None
     lines = "".join(parser.pieces).splitlines()
     return [line.replace("\xa0", " ").strip() for line in lines if line.strip()]
+
+
+async def read_lines(html: str, element_id: str | None = None) -> list[str] | None:
+    """:func:`text_lines` in a worker thread (see :func:`read_page`)."""
+    return await asyncio.to_thread(text_lines, html, element_id)
 
 
 class UWebAdmin:

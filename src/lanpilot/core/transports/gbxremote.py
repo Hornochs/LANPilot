@@ -43,7 +43,9 @@ from lanpilot.i18n import M
 PROTOCOL = b"GBXRemote 2"
 FIRST_HANDLE = 0x80000000
 MAX_GREETING = 64
-MAX_ANSWER_BYTES = 8 * 1024 * 1024
+# Map lists are fetched in pages, so real answers stay far below this. Parsing is CPU-bound
+# and runs in a worker thread (see _call).
+MAX_ANSWER_BYTES = 1024 * 1024
 MAX_SKIPPED_FRAMES = 100
 MAX_FAULT_TEXT = 200
 PASSWORD_INCORRECT = "Password incorrect."  # noqa: S105 - the server's fault text
@@ -189,7 +191,9 @@ class GbxRemote:
                     raise ProtocolError(M("The server's answer is too long."))
                 data = await self._reader.readexactly(size)
                 if answer_handle == handle:
-                    return _parse(data)
+                    # In a worker thread: parsing a hostile answer takes CPU time that
+                    # would otherwise stall the event loop.
+                    return await asyncio.to_thread(_parse, data)
                 # A callback or the answer to an abandoned call: skip it.
         raise ProtocolError(M("The server sent too many unexpected messages."))
 

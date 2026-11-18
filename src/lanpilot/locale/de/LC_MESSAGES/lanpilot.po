@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 10:32+0100\n"
+"POT-Creation-Date: 2026-11-18 10:34+0100\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -412,51 +412,51 @@ msgstr "Der Server hat eine geteilte Status-Antwort gesendet."
 msgid "The server did not answer the status query."
 msgstr "Der Server hat die Statusabfrage nicht beantwortet."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:99
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:101
 msgid "The server refused the password. Edit the server to enter another one."
 msgstr "Der Server hat das Passwort abgelehnt. Den Server bearbeiten, um ein anderes einzugeben."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:116
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:118
 msgid "The server stopped answering."
 msgstr "Der Server antwortet nicht mehr."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:119
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:121
 msgid "The connection was closed by the server."
 msgstr "Die Verbindung wurde vom Server geschlossen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:134
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:142
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:136
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:144
 msgid "The server's answer to a batch of calls is malformed."
 msgstr "Die Antwort des Servers auf einen Sammelaufruf ist fehlerhaft."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:151
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:153
 msgid "The server does not speak GBXRemote."
 msgstr "Der Server spricht kein GBXRemote."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:155
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:157
 msgid "Nothing answers with GBXRemote on that port."
 msgstr "Auf diesem Port antwortet nichts mit GBXRemote."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:161
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:163
 msgid "The server speaks an unsupported protocol version."
 msgstr "Der Server verwendet eine nicht unterstützte Protokollversion."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:170
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:172
 msgid "The server refused the login or password."
 msgstr "Der Server hat das Login oder das Passwort abgelehnt."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:189
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:191
 #: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:221
 #: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/source_rcon.py:246
 msgid "The server's answer is too long."
 msgstr "Die Antwort des Servers ist zu lang."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:194
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:198
 msgid "The server sent too many unexpected messages."
 msgstr "Der Server hat zu viele unerwartete Nachrichten gesendet."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:203
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:205
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:207
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/gbxremote.py:209
 msgid "The server's answer is not valid XML-RPC."
 msgstr "Die Antwort des Servers ist kein gültiges XML-RPC."
 
@@ -519,33 +519,33 @@ msgstr "Der Server antwortet nicht mehr über RCON."
 msgid "The RCON connection was closed by the server."
 msgstr "Die RCON-Verbindung wurde vom Server geschlossen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:106
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:109
 msgid "The WebAdmin's page is too large to read."
 msgstr "Die WebAdmin-Seite ist zu groß zum Lesen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:378
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:392
 msgid "The server refused the user name or password. Edit the server to enter other ones."
 msgstr "Der Server hat den Benutzernamen oder das Passwort abgelehnt. Den Server bearbeiten, um andere einzugeben."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:400
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:414
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:153
 msgid "The server refused the WebAdmin user name or password."
 msgstr "Der Server hat den WebAdmin-Benutzernamen oder das Passwort abgelehnt."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:406
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:420
 #, python-brace-format
 msgid "The WebAdmin answered with HTTP {status}."
 msgstr "Das WebAdmin hat mit HTTP {status} geantwortet."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:412
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:426
 msgid "The WebAdmin's page is too large."
 msgstr "Die WebAdmin-Seite ist zu groß."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:414
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:428
 msgid "The WebAdmin cannot be reached."
 msgstr "Das WebAdmin ist nicht erreichbar."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:416
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:430
 msgid "The WebAdmin's answer could not be read."
 msgstr "Die Antwort des WebAdmin konnte nicht gelesen werden."
 

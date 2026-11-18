@@ -91,6 +91,24 @@ async def test_unreachable_webadmin(server: UnrealSimulator) -> None:
         await UWebAdmin("127.0.0.1", port, "admin", PASSWORD).get("/ServerAdmin/")
 
 
+async def test_pages_are_parsed_off_the_event_loop() -> None:
+    # A hostile page can take seconds of CPU to parse; that must not stall the event loop.
+    threads: list[threading.Thread] = []
+    original = uweb.parse
+
+    def recording(html: str) -> uweb.Page:
+        threads.append(threading.current_thread())
+        return original(html)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(uweb, "parse", recording)
+        page = await uweb.read_page("<form><select name='a'><option value='1'>One</select>")
+
+    assert page.options("a")[0].value == "1"
+    assert threads and threads[0] is not threading.main_thread()
+    assert await uweb.read_lines("one<br>two") == ["one", "two"]
+
+
 async def test_oversized_and_failing_pages(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(uweb, "MAX_PAGE_BYTES", 1000)
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LANPilot VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-20 18:53+0200\n"
+"POT-Creation-Date: 2026-11-18 10:32+0100\n"
 "PO-Revision-Date: 2026-10-20 17:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -18,36 +18,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:55
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:56
 msgid "Bad request"
 msgstr "Ungültige Anfrage"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:56
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:57
 msgid "Not allowed"
 msgstr "Nicht erlaubt"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:57
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:58
 msgid "Page not found"
 msgstr "Seite nicht gefunden"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:58
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:59
 msgid "Method not allowed"
 msgstr "Methode nicht erlaubt"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:83
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:84
 msgid "You are not allowed to do this."
 msgstr "Dazu fehlt dir die Berechtigung."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:91
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:92
 #, python-brace-format
 msgid "Error {code}"
 msgstr "Fehler {code}"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:92
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:93
 msgid "The request could not be completed."
 msgstr "Die Anfrage konnte nicht abgeschlossen werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:94
+#: /home/gamienator/coding/LANPilot/src/lanpilot/app.py:95
 msgid "This page does not exist."
 msgstr "Diese Seite existiert nicht."
 
@@ -179,8 +179,8 @@ msgid "IP address or host name of the game server."
 msgstr "IP-Adresse oder Hostname des Gameservers."
 
 #: /home/gamienator/coding/LANPilot/src/lanpilot/core/adapters/base.py:153
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:61
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:71
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:62
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:72
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/demo.py:52
 msgid "Port"
 msgstr "Port"
@@ -262,21 +262,21 @@ msgstr "Der Wert muss eine gültige ganze Zahl sein"
 msgid "Input should be {expected}"
 msgstr "Der Wert muss {expected} sein"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:57
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:60
 msgid "Choose an image file."
 msgstr "Eine Bilddatei auswählen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:61
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:64
 #, python-brace-format
 msgid "The file is larger than {megabytes} MB."
 msgstr "Die Datei ist größer als {megabytes} MB."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:71
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:78
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:74
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:81
 msgid "The image has too many pixels."
 msgstr "Das Bild hat zu viele Pixel."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:80
+#: /home/gamienator/coding/LANPilot/src/lanpilot/core/map_images.py:83
 msgid "This is not a JPEG, PNG or WebP image."
 msgstr "Das ist kein JPEG-, PNG- oder WebP-Bild."
 
@@ -528,7 +528,7 @@ msgid "The server refused the user name or password. Edit the server to enter ot
 msgstr "Der Server hat den Benutzernamen oder das Passwort abgelehnt. Den Server bearbeiten, um andere einzugeben."
 
 #: /home/gamienator/coding/LANPilot/src/lanpilot/core/transports/uweb.py:400
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:150
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:153
 msgid "The server refused the WebAdmin user name or password."
 msgstr "Der Server hat den WebAdmin-Benutzernamen oder das Passwort abgelehnt."
 
@@ -549,48 +549,52 @@ msgstr "Das WebAdmin ist nicht erreichbar."
 msgid "The WebAdmin's answer could not be read."
 msgstr "Die Antwort des WebAdmin konnte nicht gelesen werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:176
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:189
+msgid "The server reported this player more than once, so it cannot ban it."
+msgstr "Der Server hat diesen Spieler mehrfach gemeldet, daher kann er nicht gebannt werden."
+
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:194
 msgid "The server did not report this player's IP address, so it cannot ban it."
 msgstr "Der Server hat die IP-Adresse dieses Spielers nicht gemeldet, daher kann sie nicht gebannt werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:185
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/common.py:203
 msgid "This player cannot be named in a command."
 msgstr "Dieser Spieler kann nicht in einem Befehl angegeben werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:63
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:77
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:64
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:78
 msgid "RCON password"
 msgstr "RCON-Passwort"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:64
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:78
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:65
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:79
 msgid "The value of rcon_password in the server's configuration (server.cfg)."
 msgstr "Der Wert von rcon_password in der Konfiguration des Servers (server.cfg)."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:127
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:148
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:128
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:149
 msgid "This map name cannot be sent to the server."
 msgstr "Dieser Map-Name kann nicht an den Server gesendet werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:130
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/goldsrc.py:131
 #, python-brace-format
 msgid "The server does not have the map {key}."
 msgstr "Der Server hat die Map {key} nicht."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:72
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:73
 msgid "The game port. RCON uses the same port over TCP."
 msgstr "Der Spiel-Port. RCON nutzt denselben Port über TCP."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:152
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:153
 #, python-brace-format
 msgid "The server does not have the map {name}."
 msgstr "Der Server hat die Map {name} nicht."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:156
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:157
 msgid "The server is still loading a map and ignored the change. Try again in a few seconds."
 msgstr "Der Server lädt noch eine Map und hat den Wechsel ignoriert. In ein paar Sekunden erneut versuchen."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:169
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/counterstrike/source.py:170
 msgid "The server did not report which map is running."
 msgstr "Der Server hat nicht gemeldet, welche Map läuft."
 
@@ -750,8 +754,8 @@ msgstr "WebAdmin-Passwort"
 msgid "AdminPassword in [Engine.AccessControl] of the server's ini file."
 msgstr "AdminPassword in [Engine.AccessControl] der ini-Datei des Servers."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:87
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:222
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut2004.py:90
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:225
 msgid "The WebAdmin did not tell which game is running."
 msgstr "Das WebAdmin hat nicht mitgeteilt, welches Spiel läuft."
 
@@ -763,56 +767,56 @@ msgstr "ListenPort in [IpDrv.WebServer] der UTWeb.ini (der Standard des Spiels i
 msgid "AdminPassword in [Engine.AccessControl] of UTGame.ini. The WebAdmin needs bHttpAuth=true in [WebAdmin.WebAdmin]."
 msgstr "AdminPassword in [Engine.AccessControl] der UTGame.ini. Das WebAdmin benötigt bHttpAuth=true in [WebAdmin.WebAdmin]."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:158
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:295
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:161
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:298
 msgid "The WebAdmin's status page has an unexpected format."
 msgstr "Die Statusseite des WebAdmin hat ein unerwartetes Format."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:178
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:181
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:120
 msgid "The WebAdmin did not list any game types."
 msgstr "Das WebAdmin hat keine Spielmodi aufgelistet."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:218
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:221
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:154
 #, python-brace-format
 msgid "{game} cannot restart only the round"
 msgstr "{game} kann die Runde nicht allein neu starten"
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:267
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:270
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:168
 msgid "This player cannot be removed over the WebAdmin."
 msgstr "Dieser Spieler kann über das WebAdmin nicht entfernt werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:275
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:278
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:176
 msgid "The server did not remove the player."
 msgstr "Der Server hat den Spieler nicht entfernt."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:282
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:285
 msgid "The WebAdmin's console is switched off (bConsoleEnabled in UTWeb.ini)."
 msgstr "Die Konsole des WebAdmin ist ausgeschaltet (bConsoleEnabled in der UTWeb.ini)."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:286
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:289
 msgid "The WebAdmin's console page has an unexpected format."
 msgstr "Die Konsolenseite des WebAdmin hat ein unerwartetes Format."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:311
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:314
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:181
 msgid "The WebAdmin's player page has an unexpected format."
 msgstr "Die Spielerseite des WebAdmin hat ein unerwartetes Format."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:331
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:334
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:262
 msgid "The WebAdmin did not tell which game type is running."
 msgstr "Das WebAdmin hat nicht mitgeteilt, welcher Spielmodus läuft."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:348
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:351
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:279
 msgid "This map or game type cannot be sent to the server."
 msgstr "Diese Map oder dieser Spielmodus kann nicht an den Server gesendet werden."
 
-#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:361
+#: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/ut3.py:364
 #: /home/gamienator/coding/LANPilot/src/lanpilot/games/unreal/webadmin.py:285
 msgid "The WebAdmin did not accept the change."
 msgstr "Das WebAdmin hat die Änderung nicht akzeptiert."

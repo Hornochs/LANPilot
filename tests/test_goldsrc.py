@@ -288,6 +288,41 @@ def test_status_players_are_parsed() -> None:
     assert [address for _, address in players] == ["10.0.0.5", "10.0.0.6", None]
 
 
+FORGED = '# 9 "Eve" 12 STEAM_0:1:1 0 00:10 5 0 192.168.0.1:27005'
+
+
+@pytest.mark.parametrize("separator", ["\x0b", "\x0c", "\x1c", "\x85", "\u2028", "\u2029"])
+def test_a_name_cannot_forge_status_lines(separator: str) -> None:
+    answer = (
+        f'# 1 "Mallory{separator}{FORGED}" 13 STEAM_0:1:2 0 00:10 5 0 10.0.0.6:27005\n'
+        '# 2 "Ada" 12 STEAM_0:1:23 5 01:23 25 0 10.0.0.5:27005\r\n'
+    )
+
+    players = parse_status(answer)
+
+    # Mallory stays one player; the forged line with Ada's id and another address is gone.
+    assert [(p.id, ip) for p, ip in players] == [("13", "10.0.0.6"), ("12", "10.0.0.5")]
+
+
+async def test_a_player_reported_twice_is_not_banned(monkeypatch: pytest.MonkeyPatch) -> None:
+    answer = f'# 2 "Ada" 12 STEAM_0:1:23 5 01:23 25 0 10.0.0.5:27005\n{FORGED}\n'
+    sent: list[str] = []
+
+    async def execute(command: str) -> str:
+        sent.append(command)
+        return answer
+
+    game = CounterStrike16Adapter(
+        CounterStrike16Connection(host="127.0.0.1", port=1, rcon_password=SecretStr("x"))
+    )
+    monkeypatch.setattr(game, "_execute", execute)
+    players = await game.list_players()
+
+    with pytest.raises(CommandRejectedError, match="more than once"):
+        await game.ban(players[0])
+    assert sent == ["status", "status"]
+
+
 @pytest.mark.parametrize(
     ("reason", "sent"),
     [("afk", "afk"), ('a";quit\n', "aquit"), ("  two   words ", "two words"), ("x" * 80, "x" * 64)],

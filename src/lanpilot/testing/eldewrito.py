@@ -24,6 +24,7 @@ import asyncio
 import base64
 from dataclasses import dataclass, field
 from types import TracebackType
+from typing import cast
 
 from aiohttp import WSMsgType, web
 
@@ -43,8 +44,8 @@ class _Beacon(asyncio.DatagramProtocol):
         self.transport: asyncio.DatagramTransport | None = None
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
-        assert isinstance(transport, asyncio.DatagramTransport)
-        self.transport = transport
+        # Python 3.11's selector transport does not derive from DatagramTransport.
+        self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         if data == SCAN_QUERY and self.transport is not None:

@@ -932,8 +932,10 @@ findings of the review are in [security.md](security.md)._
   strict character set; transports reject `;`, quotes and line breaks; kick uses numeric ids.
 - **Untrusted server data** (1.6 onwards) – autoescaping, strict Content-Security-Policy
   without inline scripts, size and time limits in all protocol clients, parser fuzz tests.
-- **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 11 MB with 413 before
-  anything reads them, and requests with a body but without `Content-Length` with 411.
+- **Request size** (1.7 ✔) – `BodyLimitMiddleware` rejects bodies over 256 KB with 413 before
+  anything reads them (11 MB for the map image upload,
+  `/admin/servers/{id}/maps/{map}/image`, only), and requests with a body but without
+  `Content-Length` with 411.
 - **Uploads** (1.7 ✔) – images are never stored as received; see "Map images".
 - **LAN scan** (6 ✔) – on request by an administrator only, only inside the configured
   networks (answers from elsewhere are dropped), bounded in hosts, answers and time; names

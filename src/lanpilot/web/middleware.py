@@ -7,6 +7,7 @@ streaming responses such as server-sent events.
 from __future__ import annotations
 
 import logging
+import re
 from collections.abc import Iterable
 from urllib.parse import urlsplit
 
@@ -123,12 +124,31 @@ class BodyLimitMiddleware:
 
     Requests that carry a body must announce its size: without ``Content-Length`` the limit
     could only be enforced while reading, when part of the work is already done. Browsers
-    always send it.
+    always send it. Paths that match ``upload_paths`` (below the root path) may send up to
+    ``upload_bytes``; everything else, the sign-in form included, ``max_bytes``.
     """
 
-    def __init__(self, app: ASGIApp, *, max_bytes: int) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        *,
+        max_bytes: int,
+        upload_bytes: int | None = None,
+        upload_paths: re.Pattern[str] | None = None,
+        root_path: str = "",
+    ) -> None:
         self.app = app
         self.max_bytes = max_bytes
+        self.upload_bytes = upload_bytes or max_bytes
+        self.upload_paths = upload_paths
+        self.root_path = root_path
+
+    def _limit(self, path: str) -> int:
+        if self.upload_paths is None:
+            return self.max_bytes
+        if self.root_path and path.startswith(self.root_path + "/"):
+            path = path[len(self.root_path) :]
+        return self.upload_bytes if self.upload_paths.fullmatch(path) else self.max_bytes
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http" or scope["method"] in SAFE_METHODS:
@@ -136,13 +156,12 @@ class BodyLimitMiddleware:
             return
 
         declared = Headers(scope=scope).get("content-length")
+        limit = self._limit(scope["path"])
         if declared is None or not declared.isdigit():
             response = PlainTextResponse("Content-Length required.\n", status_code=411)
-        elif int(declared) > self.max_bytes:
-            megabytes = self.max_bytes // (1024 * 1024)
-            response = PlainTextResponse(
-                f"The request is larger than {megabytes} MB.\n", status_code=413
-            )
+        elif int(declared) > limit:
+            size = f"{limit // (1024 * 1024)} MB" if limit >= 1024 * 1024 else f"{limit // 1024} KB"
+            response = PlainTextResponse(f"The request is larger than {size}.\n", status_code=413)
         else:
             await self.app(scope, receive, send)
             return

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from urllib.parse import quote
@@ -49,8 +50,11 @@ from lanpilot.web.templating import STATIC_DIR, render
 
 logger = logging.getLogger(__name__)
 
+# Forms (sign-in, settings, servers) are a few KB; only the map image upload is large.
+MAX_BODY_BYTES = 256 * 1024
 # Room for the largest upload (a map image) plus the form around it.
-MAX_BODY_BYTES = map_images.MAX_UPLOAD_BYTES + 1024 * 1024
+MAX_UPLOAD_BODY_BYTES = map_images.MAX_UPLOAD_BYTES + 1024 * 1024
+UPLOAD_PATHS = re.compile(r"/admin/servers/[0-9]+/maps/[0-9]+/image")
 
 ERROR_TITLES = {
     400: M("Bad request"),
@@ -178,7 +182,13 @@ def create_app(settings: Settings) -> FastAPI:
     # everything else, then the host check, then
     # the origin check (which relies on the Host header having been validated), then the
     # body size limit.
-    app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_BODY_BYTES)
+    app.add_middleware(
+        BodyLimitMiddleware,
+        max_bytes=MAX_BODY_BYTES,
+        upload_bytes=MAX_UPLOAD_BODY_BYTES,
+        upload_paths=UPLOAD_PATHS,
+        root_path=server.root_path,
+    )
     app.add_middleware(OriginCheckMiddleware, public_origin=server.public_origin)
     app.add_middleware(
         HostCheckMiddleware,

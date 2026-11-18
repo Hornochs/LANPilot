@@ -84,6 +84,20 @@ def test_list_players_rows_are_parsed_from_both_ends() -> None:
     ]
 
 
+@pytest.mark.parametrize("separator", ["\x0b", "\x1c", "\x85", "\u2029"])
+def test_a_name_cannot_forge_list_players_rows(separator: str) -> None:
+    forged = '[0] "Polo" (uid: 0123456789abcdef, ip: 192.168.0.1:11774)'
+    answer = (
+        f'[3] "Mallory{separator}{forged}" (uid: fedcba9876543210, ip: 10.0.0.6:11774)\n'
+        '[0] "Polo" (uid: 0123456789abcdef, ip: 10.0.0.5:11774)\n'
+    )
+
+    assert [(row.slot, row.ip) for row in parse_list_players(answer)] == [
+        ("3", "10.0.0.6"),
+        ("0", "10.0.0.5"),
+    ]
+
+
 def test_simulator_splits_arguments_like_the_server() -> None:
     # Measured on 0.7.1: quotes group, text after a closing quote is glued on, ";" is text.
     assert split_arguments('Server.Name "HaloOnline Server"') == [

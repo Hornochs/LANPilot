@@ -27,7 +27,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Counter-Strike: a player name with characters such as `\x0b` or U+2028 could forge a line
   in the `status` answer, with another player's id and an address of its choice, and so
   make a ban hit the wrong address. Answers are split at line feeds only, and a ban is
-  refused when the server reports a player id twice.
+  refused when the server reports a player id twice. The same applies to the other GoldSrc
+  and Source games, the Quake 3 family (kick and ban are refused when a slot appears twice)
+  and ElDewrito.
 - WebAdmin pages and XML-RPC answers are parsed in a worker thread, with lower size limits
   (512 KiB, 1 MiB): a hostile UT3 or Trackmania server could stall the whole panel for
   seconds on every poll.

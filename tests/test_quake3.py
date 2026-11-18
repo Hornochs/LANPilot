@@ -47,6 +47,7 @@ from lanpilot.games.quake3.common import (
     GAME_TYPE_KEY,
     Quake3Connection,
     Quake3FamilyAdapter,
+    StatusEntry,
     cvar_value,
     directory_maps,
     parse_status,
@@ -494,6 +495,40 @@ async def test_a_reused_slot_is_not_kicked(q3: Quake3Simulator) -> None:
     with pytest.raises(CommandRejectedError, match="cannot be named"):
         await game_adapter.kick(Player("0; quit", "Ada"))
     assert q3.kicks == []
+
+
+@pytest.mark.parametrize("separator", ["\x0b", "\x1e", "\x85", "\u2028"])
+def test_a_name_cannot_forge_status_rows(separator: str) -> None:
+    forged = "  1    12   24 Ada^7 0 192.168.0.1:27960 1 25000"
+    answer = (
+        "num score ping name            lastmsg address               qport rate\n"
+        f"  0     0   10 Mallory{separator}{forged}^7 0 10.0.0.6:27960 2 25000\n"
+        "  1    12   24 ^1Ada^7                 0 10.0.0.5:27960        12345 25000\n"
+    )
+
+    rows = parse_status(answer)
+
+    # Mallory stays one row; no second row with Ada's slot and another address appears.
+    assert [(r.slot, r.address) for r in rows] == [("0", "10.0.0.6:27960"), ("1", "10.0.0.5:27960")]
+
+
+async def test_a_slot_reported_twice_is_not_acted_on(
+    q3: Quake3Simulator, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    game_adapter = adapter("q3a", q3)
+    ada = (await game_adapter.list_players())[1]
+    twice = [
+        StatusEntry("1", "Ada", 0, 10, "192.168.0.1:27960"),
+        StatusEntry("1", "Ada", 12, 24, "10.0.0.5:27960"),
+    ]
+
+    async def entries() -> list[StatusEntry]:
+        return twice
+
+    monkeypatch.setattr(game_adapter, "_entries", entries)
+    with pytest.raises(CommandRejectedError, match="more than once"):
+        await game_adapter.ban(ada)
+    assert q3.banned == [] and q3.kicks == []
 
 
 async def test_quake3_bans_by_address(q3: Quake3Simulator) -> None:

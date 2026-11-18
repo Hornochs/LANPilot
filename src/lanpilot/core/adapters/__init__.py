@@ -15,6 +15,7 @@ from lanpilot.core.adapters.base import (
     ServerStatus,
     ServerUnreachableError,
     UnsupportedError,
+    answer_lines,
     validate_adapter_class,
 )
 
@@ -33,5 +34,6 @@ __all__ = [
     "ServerStatus",
     "ServerUnreachableError",
     "UnsupportedError",
+    "answer_lines",
     "validate_adapter_class",
 ]

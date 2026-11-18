@@ -30,6 +30,7 @@ from lanpilot.core.adapters import (
     RestartMode,
     ServerStatus,
     UnsupportedError,
+    answer_lines,
 )
 from lanpilot.core.transports.source_rcon import SourceRcon
 from lanpilot.games.valve.common import (
@@ -38,7 +39,6 @@ from lanpilot.games.valve.common import (
     STATS_INTERVAL_SECONDS,
     DiscoverValve,
     RconPlayerControl,
-    answer_lines,
     ip_of,
     parse_stats,
     query_status,

@@ -32,17 +32,6 @@ MAX_NAME_LENGTH = 100
 UNSAFE_IN_MESSAGE = re.compile(r"[^A-Za-z0-9 .,!?()_-]")
 MAX_MESSAGE_LENGTH = 64
 USER_ID = re.compile(r"[0-9]{1,9}")
-LINE_BREAK = re.compile(r"\r?\n")
-
-
-def answer_lines(answer: str) -> list[str]:
-    """The lines of an RCON answer, split at line feeds only.
-
-    ``str.splitlines()`` also splits at ``\\x0b``, ``\\x0c``, ``\\x1c``-``\\x1e``, ``\\x85``,
-    U+2028 and U+2029. A player can put those into a name and so turn one ``status`` line
-    into several, one of them a forged player line with an id and address of their choice.
-    """
-    return LINE_BREAK.split(answer)
 
 
 async def query_status(host: str, port: int) -> ServerStatus:

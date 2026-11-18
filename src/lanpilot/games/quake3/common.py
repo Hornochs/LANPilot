@@ -37,6 +37,7 @@ from lanpilot.core.adapters import (
     ProtocolError,
     RestartMode,
     ServerStatus,
+    answer_lines,
 )
 from lanpilot.core.transports.quake3 import (
     HEADER,
@@ -104,7 +105,7 @@ def parse_status(answer: str) -> list[StatusEntry]:
     """
     before = after = None
     rows: list[StatusEntry] = []
-    for line in answer.splitlines():
+    for line in answer_lines(answer):
         words = line.split()
         if words[:3] == ["num", "score", "ping"] and "name" in words:
             before = words.index("name")
@@ -352,9 +353,15 @@ class Quake3FamilyAdapter(GameAdapter):
         must still match before a slot number goes into a command."""
         if not SLOT.fullmatch(player.id):
             raise CommandRejectedError(M("This player cannot be named in a command."))
-        for entry in await self._entries():
-            if entry.slot == player.id and entry.name == player.name:
-                return entry
+        entries = [entry for entry in await self._entries() if entry.slot == player.id]
+        if len(entries) > 1:
+            # A forged status line can repeat another player's slot and name with an address
+            # of its choice; acting on the first match could then ban someone else.
+            raise CommandRejectedError(
+                M("The server reported this player more than once, so LANPilot does not act on it.")
+            )
+        if entries and entries[0].name == player.name:
+            return entries[0]
         raise CommandRejectedError(M("The player is no longer on the server."))
 
     def _kick_command(self, slot: str, reason: str) -> str:

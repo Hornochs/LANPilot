@@ -42,6 +42,7 @@ from lanpilot.core.adapters import (
     Player,
     RestartMode,
     ServerStatus,
+    answer_lines,
 )
 from lanpilot.core.transports.dewrito import DewRcon, get_info
 from lanpilot.i18n import M
@@ -148,7 +149,7 @@ class PlayerRow:
 
 def parse_list_players(answer: str) -> list[PlayerRow]:
     rows: list[PlayerRow] = []
-    for line in answer.splitlines()[:MAX_PLAYERS]:
+    for line in answer_lines(answer)[:MAX_PLAYERS]:
         match = LIST_PLAYERS_ROW.fullmatch(line.strip())
         if match is None:
             continue

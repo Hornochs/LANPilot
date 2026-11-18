@@ -607,12 +607,53 @@ def test_pages_use_no_inline_scripts_styles_or_handlers(site: TestClient, query:
         assert not re.search(r"\son[a-z]+=", page), path
 
 
+async def test_a_busy_stream_still_notices_the_end_of_the_session() -> None:
+    bus = EventBus()
+    checks = 0
+
+    async def still_signed_in() -> bool:
+        nonlocal checks
+        checks += 1
+        return False
+
+    async def flood() -> None:
+        while True:
+            bus.publish(Event(SERVER_CHANGED, 1))
+            await asyncio.sleep(0.005)  # always sooner than the keepalive
+
+    flooding = asyncio.create_task(flood())
+    frames = 0
+    try:
+        stream = event_stream(bus, still_signed_in=still_signed_in, keepalive_seconds=0.1)
+        async with asyncio.timeout(5):
+            async for _ in stream:
+                frames += 1
+    finally:
+        flooding.cancel()
+
+    assert checks == 1 and frames > 2  # events flowed, then the check ended the stream
+
+
 def test_open_streams_are_limited_per_session() -> None:
     from lanpilot.web.routes_events import MAX_STREAMS_PER_SESSION, StreamLimit
 
     limit = StreamLimit()
-    assert all(limit.acquire("a") for _ in range(MAX_STREAMS_PER_SESSION))
-    assert not limit.acquire("a")
-    assert limit.acquire("b")  # another session is not affected
-    limit.release("a")
-    assert limit.acquire("a")
+    assert all(limit.acquire("a", 1) for _ in range(MAX_STREAMS_PER_SESSION))
+    assert not limit.acquire("a", 1)
+    assert limit.acquire("b", 1)  # another session is not affected
+    limit.release("a", 1)
+    assert limit.acquire("a", 1)
+
+
+def test_open_streams_are_limited_per_user() -> None:
+    from lanpilot.web.routes_events import MAX_STREAMS_PER_USER, StreamLimit
+
+    limit = StreamLimit()
+    # One account signed in many times cannot take every stream.
+    assert all(limit.acquire(f"session{index}", 7) for index in range(MAX_STREAMS_PER_USER))
+    assert not limit.acquire("one-more", 7)
+    assert limit.acquire("one-more", 8)  # other users are not affected
+    limit.release("session0", 7)
+    limit.release("session0", 7)  # released twice: counted once
+    assert limit.acquire("one-more", 7)
+    assert not limit.acquire("and-another", 7)

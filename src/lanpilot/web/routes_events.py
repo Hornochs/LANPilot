@@ -7,8 +7,10 @@ the part it shows through the normal routes, which apply the access checks.
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from datetime import timedelta
+from typing import TypeVar
 
 from fastapi import APIRouter, Request
 from starlette.responses import PlainTextResponse, Response, StreamingResponse
@@ -18,31 +20,52 @@ from lanpilot.core.events import SERVER_CHANGED, Event, EventBus
 
 router = APIRouter()
 
+K = TypeVar("K")
+
 KEEPALIVE_SECONDS = 15.0
-# Open streams per session (one per browser tab) and in all; each holds a subscription.
+# Open streams per session (one per browser tab), per user (who may sign in many times) and
+# in all; each holds a subscription.
 MAX_STREAMS_PER_SESSION = 8
+MAX_STREAMS_PER_USER = 16
 MAX_STREAMS = 500
 
 
 class StreamLimit:
-    """Counts the open streams per session."""
+    """Counts the open streams per session and per user."""
 
     def __init__(self) -> None:
-        self._open: dict[str, int] = {}
+        self._sessions: dict[str, int] = {}
+        self._users: dict[int, int] = {}
+        self._total = 0
 
-    def acquire(self, key: str) -> bool:
-        count = self._open.get(key, 0)
-        if count >= MAX_STREAMS_PER_SESSION or sum(self._open.values()) >= MAX_STREAMS:
+    def acquire(self, session: str, user: int) -> bool:
+        in_session = self._sessions.get(session, 0)
+        of_user = self._users.get(user, 0)
+        if (
+            in_session >= MAX_STREAMS_PER_SESSION
+            or of_user >= MAX_STREAMS_PER_USER
+            or self._total >= MAX_STREAMS
+        ):
             return False
-        self._open[key] = count + 1
+        self._sessions[session] = in_session + 1
+        self._users[user] = of_user + 1
+        self._total += 1
         return True
 
-    def release(self, key: str) -> None:
-        count = self._open.get(key, 0) - 1
-        if count > 0:
-            self._open[key] = count
-        else:
-            self._open.pop(key, None)
+    def release(self, session: str, user: int) -> None:
+        if session not in self._sessions:
+            return
+        _decrement(self._sessions, session)
+        _decrement(self._users, user)
+        self._total -= 1
+
+
+def _decrement(counts: dict[K, int], key: K) -> None:
+    count = counts.get(key, 0) - 1
+    if count > 0:
+        counts[key] = count
+    else:
+        counts.pop(key, None)
 
 
 def _frame(event: Event) -> str:
@@ -58,20 +81,26 @@ async def event_stream(
     keepalive_seconds: float = KEEPALIVE_SECONDS,
     on_close: Callable[[], None] | None = None,
 ) -> AsyncGenerator[str]:
-    """Yield SSE frames until the client's session ends or the client disconnects."""
+    """Yield SSE frames until the client's session ends or the client disconnects.
+
+    The session is checked again every ``keepalive_seconds``, also while events keep the
+    stream busy, so a signed-out or removed user stops receiving them.
+    """
     try:
         with bus.subscribe() as queue:
             yield "retry: 5000\n: connected\n\n"
+            checked = time.monotonic()
             while True:
                 try:
                     async with asyncio.timeout(keepalive_seconds):
                         event = await queue.get()
                 except TimeoutError:
+                    event = None
+                if time.monotonic() - checked >= keepalive_seconds:
                     if not await still_signed_in():
                         return
-                    yield ": keepalive\n\n"
-                    continue
-                yield _frame(event)
+                    checked = time.monotonic()
+                yield ": keepalive\n\n" if event is None else _frame(event)
     finally:
         if on_close is not None:
             on_close()
@@ -85,23 +114,26 @@ async def events(request: Request) -> Response:
     token = request.cookies.get(sessions.cookie_spec(settings.server).name, "")
     idle_timeout = timedelta(minutes=settings.auth.session_idle_minutes)
 
-    async def signed_in(*, touch: bool) -> bool:
+    async def user_id(*, touch: bool) -> int | None:
         async with request.app.state.sessionmaker() as db:
-            return (
-                await sessions.load(db, token, idle_timeout=idle_timeout, touch=touch) is not None
-            )
+            session = await sessions.load(db, token, idle_timeout=idle_timeout, touch=touch)
+            return session.user_id if session is not None else None
 
-    if not await signed_in(touch=True):
+    async def still_signed_in() -> bool:
+        return await user_id(touch=False) is not None
+
+    user = await user_id(touch=True)
+    if user is None:
         return PlainTextResponse("Sign in required.\n", status_code=401)
     limit: StreamLimit = request.app.state.event_streams
     key = sessions.hash_token(token)
-    if not limit.acquire(key):
+    if not limit.acquire(key, user):
         return PlainTextResponse("Too many open pages.\n", status_code=429)
 
     stream = event_stream(
         request.app.state.bus,
-        still_signed_in=lambda: signed_in(touch=False),
-        on_close=lambda: limit.release(key),
+        still_signed_in=still_signed_in,
+        on_close=lambda: limit.release(key, user),
     )
     return StreamingResponse(
         stream,

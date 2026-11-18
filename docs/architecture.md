@@ -730,9 +730,9 @@ server_id)` to subscribers through bounded queues; a subscriber that falls behin
 names `server-<id>`, `servers` and `resync` and **no payload**: pages react by fetching what
 they show through the normal routes, so nothing bypasses the access checks. The stream
 authenticates with short-lived database sessions (the request dependency would pin a
-connection for the stream's lifetime), allows eight streams per session and 500 in all
-(`StreamLimit`), re-checks the session every 15 s with the keepalive
-and ends when it is gone. It sends `X-Accel-Buffering: no`.
+connection for the stream's lifetime), allows eight streams per session, 16 per user (who may
+be signed in many times) and 500 in all (`StreamLimit`), re-checks the session every 15 s,
+also while events keep the stream busy, and ends when it is gone. It sends `X-Accel-Buffering: no`.
 
 ## Languages
 
